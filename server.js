@@ -2,15 +2,39 @@ const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
 
+// Needed for keep-alive fetch
+const fetch = (...args) => import("node-fetch").then(({default: fetch}) => fetch(...args));
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // ===============================
-// AMC Academy Tech AI Backend
-// Integrated from amc-ai.js
+// Root Route (Fixes "Cannot GET /")
 // ===============================
+app.get("/", (req, res) => {
+    res.send("AMC AI Backend is running");
+});
 
+// ===============================
+// Health Check Route (Keep-Alive)
+// ===============================
+app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
+});
+
+// ===============================
+// Keep-Alive Ping (Free Render Fix)
+// ===============================
+setInterval(() => {
+    fetch("https://amc-ai-backend-1.onrender.com/health")
+        .then(() => console.log("Keep-alive ping sent"))
+        .catch(() => console.log("Keep-alive failed"));
+}, 5 * 60 * 1000); // every 5 minutes
+
+// ===============================
+// AMC Academy Tech AI Backend
+// ===============================
 app.post("/api/amc-ai", async (req, res) => {
     const { message } = req.body;
 
