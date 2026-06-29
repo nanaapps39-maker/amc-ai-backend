@@ -3,28 +3,28 @@ const cors = require("cors");
 const OpenAI = require("openai");
 
 // Needed for keep-alive fetch
-const fetch = (...args) => import("node-fetch").then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // ===============================
-// Root Route (Fixes "Cannot GET /")
+// Root Route
 // ===============================
 app.get("/", (req, res) => {
     res.send("AMC AI Backend is running");
 });
 
 // ===============================
-// Health Check Route (Keep-Alive)
+// Health Check Route
 // ===============================
 app.get("/health", (req, res) => {
     res.json({ status: "ok" });
 });
 
 // ===============================
-// Keep-Alive Ping (Free Render Fix)
+// Keep-Alive Ping (Render Free Tier)
 // ===============================
 setInterval(() => {
     fetch("https://amc-ai-backend-1.onrender.com/health")
@@ -47,9 +47,10 @@ app.post("/api/amc-ai", async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY
         });
 
-        const completion = await client.chat.completions.create({
+        // ⭐ NEW OPENAI API — FIXED
+        const completion = await client.responses.create({
             model: "gpt-4o",
-            messages: [
+            input: [
                 {
                     role: "system",
                     content: `
@@ -110,7 +111,9 @@ Deliver world-class SATCOM and maritime engineering support, guide learners with
             ]
         });
 
-        const reply = completion.choices[0].message.content;
+        // ⭐ NEW OUTPUT FORMAT
+        const reply = completion.output_text;
+
         return res.status(200).json({ reply });
 
     } catch (error) {
