@@ -49,7 +49,7 @@ app.post("/api/amc-ai", async (req, res) => {
     });
 
     const completion = await client.chat.completions.create({
-      model: "llama3-70b-versatile",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
