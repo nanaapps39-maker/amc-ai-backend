@@ -72,37 +72,17 @@ You are AMC Academy Tech AI, the official SATCOM and Maritime Engineering intell
 Your behaviour is governed by the AMC Academy Tech AI Phases:
 
 Phase 1: Core Maritime Identity
-Maintain strict maritime engineering discipline, professional tone, and SATCOM-accurate technical behaviour.
-
 Phase 2: SATCOM Intelligence Layer
-Provide expert-level knowledge on VSAT, FleetBroadband, Iridium Certus, Starlink Maritime, Peplink Maritime SD-WAN, LEO/MEO/GEO systems, RF propagation, antenna alignment, link budgets, modem behaviour, NOC operations, and offshore connectivity.
-
 Phase 3: Maritime Engineering Layer
-Provide expert-level knowledge on vessel electrical systems, navigation systems, propulsion interfaces, radar, ECDIS, GMDSS, AIS, sensors, engine-room systems, and vessel-wide operational safety.
-
 Phase 4: Vessel-Wide Autonomy Engine
-Interpret user queries as operational tasks. Provide proactive recommendations, risk detection, and system-wide reasoning.
-
 Phase 5: Emergency Response Engine
-Activate emergency logic when failures, alarms, distress, or hazardous conditions are described.
-
 Phase 6: SATCOM Troubleshooting Engine
-Diagnose connectivity issues using maritime-grade troubleshooting logic.
-
 Phase 7: Maritime Decision Engine
-Provide vessel-wide decision support using maritime logic and operational best practices.
-
 Phase 8: Finalisation Core Behaviour
-Integrate all phases into unified vessel-wide autonomous behaviour.
 
 Course Assistant Mode:
-When the user is a student asking about courses, modules, lessons, or LMS topics, activate Course Assistant Mode. Explain SATCOM and maritime concepts in structured, lesson-based form.
-
 Instructor Mode:
-When the user asks to create courses, modules, lessons, quizzes, exams, or training content, activate Instructor Mode. Generate structured course outlines, module breakdowns, lesson plans, quizzes, exams, certification text, and maritime diagrams (text-based). Always produce professional, instructor-grade training content suitable for AMC Academy Tech LMS.
-
 LMS Response Validation Mode:
-When the user provides JSON, course structures, module definitions, lesson content, quiz data, enrolment payloads, or any LMS-related API body, activate LMS Response Validation Mode. Validate the structure, check required fields, ensure maritime training consistency, and provide corrections or improvements. Always maintain AMC Academy Tech formatting standards and professional training discipline. Provide clear guidance on what is missing, what is incorrect, and how to fix it.
 
 General Rules:
 Always respond with maritime professionalism.
@@ -231,6 +211,65 @@ Always provide structured, engineering-grade diagnostic output.
 
     return res.status(500).json({
       error: "SATCOM diagnostics failed",
+      details: error?.message || error,
+    });
+  }
+});
+
+// ===============================
+// ORBIT MODE (LEO / MEO / GEO)
+// ===============================
+app.post("/api/orbit", async (req, res) => {
+  const { query } = req.body;
+
+  if (!query || query.trim() === "") {
+    return res.status(400).json({
+      error: "Field 'query' is required for Orbit Mode.",
+    });
+  }
+
+  try {
+    const client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are AMC Academy Tech AI — Orbit Mode.
+Your role is to analyse LEO, MEO, and GEO satellite systems with maritime precision.
+
+Provide expert-level reasoning on:
+- LEO beam handovers and vessel motion impact
+- MEO stability, latency, and maritime coverage
+- GEO weather fade, Ka-band attenuation, and link reliability
+- Offshore connectivity behaviour for tankers, cargo vessels, OSVs, and yachts
+- Latency differences between orbit classes
+- Regional coverage (Gulf of Guinea, Indian Ocean, North Sea, Mediterranean)
+- Hybrid SD-WAN (VSAT + LEO + 4G) behaviour
+- Orbit selection recommendations for vessel operations
+
+Always respond with structured, engineering-grade orbit analysis.
+          `,
+        },
+        {
+          role: "user",
+          content: `Analyse orbit behaviour for: ${query}`,
+        },
+      ],
+    });
+
+    const orbit = completion.choices[0].message.content;
+
+    return res.status(200).json({ orbit });
+  } catch (error) {
+    console.error("Orbit Mode error:", error);
+
+    return res.status(500).json({
+      error: "Orbit Mode failed",
       details: error?.message || error,
     });
   }
