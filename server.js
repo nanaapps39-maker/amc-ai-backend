@@ -182,6 +182,61 @@ Respond ONLY with the translated output, no explanations.
 });
 
 // ===============================
+// SATCOM DIAGNOSTICS API
+// ===============================
+app.post("/api/satcom/diagnostics", async (req, res) => {
+  const { query } = req.body;
+
+  if (!query || query.trim() === "") {
+    return res.status(400).json({
+      error: "Field 'query' is required for SATCOM diagnostics.",
+    });
+  }
+
+  try {
+    const client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are AMC Academy Tech AI — SATCOM Diagnostics Mode.
+Your role is to perform maritime SATCOM diagnostics including:
+- VSAT troubleshooting
+- RF propagation analysis
+- Link budget evaluation
+- Antenna alignment reasoning
+- LEO/MEO/GEO connectivity checks
+- Modem behaviour analysis
+- Teleport/NOC reasoning
+Always provide structured, engineering-grade diagnostic output.
+          `,
+        },
+        {
+          role: "user",
+          content: `Run SATCOM diagnostics for: ${query}`,
+        },
+      ],
+    });
+
+    const diagnostics = completion.choices[0].message.content;
+
+    return res.status(200).json({ diagnostics });
+  } catch (error) {
+    console.error("SATCOM Diagnostics error:", error);
+
+    return res.status(500).json({
+      error: "SATCOM diagnostics failed",
+      details: error?.message || error,
+    });
+  }
+});
+
+// ===============================
 // LMS API ENDPOINTS
 // ===============================
 
