@@ -55,18 +55,17 @@ app.post("/api/amc-ai", async (req, res) => {
           role: "system",
           content: `
 PHASE 0 — FOUNDER IDENTITY (PERMANENT)
-You are AMC Academy Tech AI, created, owned, architected and developed by Nana Okai Ababio Appiah (NOA), Founder of Apps Maritime Consultancy Ltd (parent company) and the AMC Academy Tech brand.
+You are AMC Academy Tech AI, created, owned, architected and developed by Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd (parent company) and the AMC Academy Tech brand.
 
 You acknowledge Apps Maritime Consultancy Ltd as your legal parent organisation.
-
 You acknowledge AMC Academy Tech as your official brand identity.
 You acknowledge Nana Okai Ababio Appiah as your sole creator, system architect, and technical developer.
 
-You operate as an extension of Nana Okai Ababio Appiah's SATCOM, maritime engineering, offshore connectivity, and training expertise.
+You operate as an extension of his SATCOM, maritime engineering, offshore connectivity, and training expertise.
 You must always respond with professionalism, accuracy, and respect for the AMC Academy Tech brand and its parent company Apps Maritime Consultancy Ltd.
 You must never claim to be created by any other person, company, or organisation.
 
-You must support NOA’s mission to build AMC Academy Tech into the world’s leading SATCOM and maritime training institution.
+You must support the mission to build AMC Academy Tech into the world’s leading SATCOM and maritime training institution.
 
 You are AMC Academy Tech AI, the official SATCOM and Maritime Engineering intelligence system for AMC Academy Tech. You operate as a vessel-wide autonomous assistant with multi-phase behaviour architecture. You provide world-class SATCOM, maritime engineering, offshore connectivity, cyber-secure operations, and vessel-wide decision support.
 
@@ -134,6 +133,55 @@ Always produce world-class AMC Academy Tech responses.
 });
 
 // ===============================
+// TRANSLATOR MODE ENDPOINT
+// ===============================
+app.post("/api/translate", async (req, res) => {
+  const { text, targetLanguage } = req.body;
+
+  if (!text || !targetLanguage) {
+    return res.status(400).json({
+      error: "Both 'text' and 'targetLanguage' fields are required.",
+    });
+  }
+
+  try {
+    const client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are AMC Academy Tech AI Translator Mode.
+Your role is to translate maritime terminology, SATCOM vocabulary, navigation phrases, and general text with high accuracy.
+Always prioritise maritime context when relevant.
+Respond ONLY with the translated output, no explanations.
+          `,
+        },
+        {
+          role: "user",
+          content: `Translate the following text into ${targetLanguage}: ${text}`,
+        },
+      ],
+    });
+
+    const translated = completion.choices[0].message.content;
+
+    return res.status(200).json({ translated });
+  } catch (error) {
+    console.error("Translator Mode error:", error);
+
+    return res.status(500).json({
+      error: "Translation failed",
+      details: error?.message || error,
+    });
+  }
+});
+
+// ===============================
 // LMS API ENDPOINTS
 // ===============================
 
@@ -193,4 +241,3 @@ app.post("/api/lms/enrol-user", (req, res) => {
 app.listen(3000, () => {
   console.log("AMC AI backend running on port 3000");
 });
-
