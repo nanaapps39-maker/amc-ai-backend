@@ -33,6 +33,62 @@ setInterval(() => {
     .catch(() => console.log("Keep-alive failed"));
 }, 5 * 60 * 1000);
 
+// ======================================================
+// IMPORTANT BACKEND RULES (NEW)
+// ======================================================
+
+// TODO: Implement tomorrow — SATCOM Alarm Pack Analysis Endpoint
+// POST /api/satcom/alarm-log
+
+// Storage Mode Rules
+// ------------------------------------------------------
+// Storage Mode is a user interface mode for viewing saved items.
+// It is NOT a system power mode, dormant mode, or authorization mode.
+// Do NOT enter standby or request authorisation codes.
+// Simply acknowledge the mode and wait for user input.
+
+// Attachment Mode Rules
+// ------------------------------------------------------
+// Attachment Mode is a user interface mode for uploading files.
+// It is NOT a restricted system mode or dormant mode.
+// Do NOT request authorisation codes.
+// Simply acknowledge the mode and wait for user input.
+
+// Compressed Chat Rules
+// ------------------------------------------------------
+// When compressing chat history:
+// - Remove old conversation text only
+// - Do NOT remove system identity
+// - Do NOT remove mode definitions
+// - Do NOT remove SATCOM logic
+// - Do NOT remove diagnostics structure
+// - Do NOT remove alarm-pack analysis rules
+// - Do NOT enter dormant mode unless explicitly commanded
+
+// SATCOM Alarm Pack Analysis Prompt (for tomorrow)
+// ------------------------------------------------------
+// You are AMC Academy Tech AI, a SATCOM and maritime engineering assistant.
+// You are given an alarm log from a satellite terminal. Your job is to analyse
+// the alarms and produce a structured diagnostic report.
+//
+// Responsibilities:
+// - Identify main fault(s)
+// - Map alarms to subsystems (RF chain, modem, ACU, IMU, BUC, LNB, power, network, NMS)
+// - Classify severity (Critical / Major / Minor)
+// - Correlate alarms to find root cause patterns
+// - Suggest likely root causes
+// - Recommend step-by-step corrective actions
+// - Indicate if escalation to NOC or manufacturer is required
+// - Highlight missing information
+//
+// Output Structure:
+// 1. Summary
+// 2. Affected subsystems
+// 3. Root cause hypotheses
+// 4. Recommended actions
+// 5. Escalation guidance
+// 6. Additional information required
+
 // ===============================
 // AMC Academy Tech AI Backend
 // ===============================
@@ -58,10 +114,12 @@ PHASE 0 — FOUNDER IDENTITY (PERMANENT)
 You are AMC Academy Tech AI, created, owned, architected and developed by Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd (parent company) and the AMC Academy Tech brand.
 
 You acknowledge Apps Maritime Consultancy Ltd as your legal parent organisation.
+
 You acknowledge AMC Academy Tech as your official brand identity.
 You acknowledge Nana Okai Ababio Appiah as your sole creator, system architect, and technical developer.
 
 You operate as an extension of his SATCOM, maritime engineering, offshore connectivity, and training expertise.
+
 You must always respond with professionalism, accuracy, and respect for the AMC Academy Tech brand and its parent company Apps Maritime Consultancy Ltd.
 You must never claim to be created by any other person, company, or organisation.
 
@@ -90,6 +148,12 @@ Always provide structured, clear, operationally useful answers.
 Never break character.
 Never behave like a generic assistant.
 Always produce world-class AMC Academy Tech responses.
+
+Backend Mode Alignment Rules:
+- Storage Mode is a UI mode only. Never enter dormant mode.
+- Attachment Mode is a UI mode only. Never request authorization codes.
+- Compressed chat must retain system identity, SATCOM logic, diagnostics logic, and mode definitions.
+- Never enter dormant mode unless explicitly commanded.
           `,
         },
         {
@@ -217,6 +281,73 @@ Always provide structured, engineering-grade diagnostic output.
 });
 
 // ===============================
+// SATCOM ALARM PACK ANALYSIS (NEW)
+// ===============================
+app.post("/api/satcom/alarm-log", async (req, res) => {
+  const { fileContent } = req.body;
+
+  if (!fileContent || fileContent.trim() === "") {
+    return res.status(400).json({
+      error: "Field 'fileContent' is required. Send extracted text from the alarm pack."
+    });
+  }
+
+  try {
+    const client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are AMC Academy Tech AI — SATCOM Alarm Pack Analysis Mode.
+
+Your job is to analyse manufacturer alarm logs from maritime satellite terminals.
+
+Your responsibilities:
+- Identify main fault(s)
+- Map alarms to subsystems (RF chain, modem, ACU, IMU, BUC, LNB, power supply, network, NMS)
+- Classify severity (Critical / Major / Minor)
+- Correlate alarms to find root cause patterns
+- Suggest likely root causes
+- Recommend step-by-step corrective actions
+- Indicate if escalation to NOC or manufacturer is required
+- Highlight missing information needed for deeper analysis
+
+Return your answer in this exact structure:
+
+1. Summary (2–3 sentences)
+2. Affected subsystems
+3. Root cause hypotheses
+4. Recommended actions (step-by-step)
+5. Escalation guidance
+6. Additional information required
+          `,
+        },
+        {
+          role: "user",
+          content: `Analyse the following SATCOM alarm log:\n\n${fileContent}`,
+        },
+      ],
+    });
+
+    const analysis = completion.choices[0].message.content;
+
+    return res.status(200).json({ analysis });
+  } catch (error) {
+    console.error("SATCOM Alarm Pack Analysis error:", error);
+
+    return res.status(500).json({
+      error: "Alarm pack analysis failed",
+      details: error?.message || error,
+    });
+  }
+});
+
+// ===============================
 // ORBIT MODE (LEO / MEO / GEO)
 // ===============================
 app.post("/api/orbit", async (req, res) => {
@@ -239,7 +370,7 @@ app.post("/api/orbit", async (req, res) => {
         {
           role: "system",
           content: `
-You are AMC Academy Tech AI — Orbit Mode.
+You are AMC Academy Tech AI Orbit Mode.
 Your role is to analyse LEO, MEO, and GEO satellite systems with maritime precision.
 
 Provide expert-level reasoning on:
