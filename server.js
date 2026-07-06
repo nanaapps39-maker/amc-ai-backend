@@ -11,6 +11,27 @@ app.use(cors());
 app.use(express.json());
 
 // ===============================
+// Pro Access Key Configuration
+// ===============================
+const PRO_ACCESS_KEY = "AMC-PRO-2024";
+
+// Global middleware to detect Pro vs Free
+app.use((req, res, next) => {
+  const accessKey = req.headers["x-access-key"];
+  req.userIsPro = accessKey === PRO_ACCESS_KEY;
+  next();
+});
+
+// Helper for protected (Pro-only) endpoints
+function requireProAccess(res) {
+  return res.status(403).json({
+    error: "AMC Academy Tech AI Pro access required.",
+    message:
+      "This feature is available only in AMC Academy Tech AI Pro. Enter your Pro Access Key to unlock diagnostics, alarm analysis, orbit mode, and full SATCOM intelligence.",
+  });
+}
+
+// ===============================
 // Root Route
 // ===============================
 app.get("/", (req, res) => {
@@ -93,6 +114,11 @@ setInterval(() => {
 // AMC Academy Tech AI Backend
 // ===============================
 app.post("/api/amc-ai", async (req, res) => {
+  // Pro-only: full AMC Academy Tech AI brain
+  if (!req.userIsPro) {
+    return requireProAccess(res);
+  }
+
   const { message } = req.body;
 
   if (!message || message.trim() === "") {
@@ -177,7 +203,7 @@ Backend Mode Alignment Rules:
 });
 
 // ===============================
-// TRANSLATOR MODE ENDPOINT
+// TRANSLATOR MODE ENDPOINT (Free)
 // ===============================
 app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage } = req.body;
@@ -226,9 +252,13 @@ Respond ONLY with the translated output, no explanations.
 });
 
 // ===============================
-// SATCOM DIAGNOSTICS API
+// SATCOM DIAGNOSTICS API (Pro-only)
 // ===============================
 app.post("/api/satcom/diagnostics", async (req, res) => {
+  if (!req.userIsPro) {
+    return requireProAccess(res);
+  }
+
   const { query } = req.body;
 
   if (!query || query.trim() === "") {
@@ -281,14 +311,18 @@ Always provide structured, engineering-grade diagnostic output.
 });
 
 // ===============================
-// SATCOM ALARM PACK ANALYSIS (NEW)
+// SATCOM ALARM PACK ANALYSIS (Pro-only)
 // ===============================
 app.post("/api/satcom/alarm-log", async (req, res) => {
+  if (!req.userIsPro) {
+    return requireProAccess(res);
+  }
+
   const { fileContent } = req.body;
 
   if (!fileContent || fileContent.trim() === "") {
     return res.status(400).json({
-      error: "Field 'fileContent' is required. Send extracted text from the alarm pack."
+      error: "Field 'fileContent' is required. Send extracted text from the alarm pack.",
     });
   }
 
@@ -348,9 +382,13 @@ Return your answer in this exact structure:
 });
 
 // ===============================
-// ORBIT MODE (LEO / MEO / GEO)
+// ORBIT MODE (LEO / MEO / GEO) (Pro-only)
 // ===============================
 app.post("/api/orbit", async (req, res) => {
+  if (!req.userIsPro) {
+    return requireProAccess(res);
+  }
+
   const { query } = req.body;
 
   if (!query || query.trim() === "") {
@@ -407,7 +445,7 @@ Always respond with structured, engineering-grade orbit analysis.
 });
 
 // ===============================
-// LMS API ENDPOINTS
+// LMS API ENDPOINTS (Free for now)
 // ===============================
 
 // Create Course
