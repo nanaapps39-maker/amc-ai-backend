@@ -1474,6 +1474,118 @@ app.get("/api/knowledge/training-scenarios", (req, res) => {
 });
 
 // ===============================
+// SATCOM Diagnostics Engine — Phase 9 Module 1
+// AI Fault Analysis (Pro)
+// ===============================
+
+app.post("/api/diagnostics/analyse", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { issue, subsystem, region, orbitClass, severity } = req.body || {};
+
+  if (!issue) {
+    return res.status(400).json({
+      error: "Issue description is required for diagnostics analysis."
+    });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+
+    // ===============================
+    // DIAGNOSTIC ENGINE
+    // ===============================
+
+    const issueLower = issue.toLowerCase();
+
+    // Subsystem probability scoring
+    const subsystemScores = {
+      ACU: 0,
+      BUC: 0,
+      Modem: 0,
+      Antenna: 0,
+      RFChain: 0,
+      Cabling: 0,
+      Power: 0
+    };
+
+    // Keyword-based scoring
+    if (issueLower.includes("tracking") || issueLower.includes("acu")) {
+      subsystemScores.ACU += 20;
+    }
+    if (issueLower.includes("overcurrent") || issueLower.includes("buc")) {
+      subsystemScores.BUC += 20;
+    }
+    if (issueLower.includes("lock loss") || issueLower.includes("modem")) {
+      subsystemScores.Modem += 20;
+    }
+    if (issueLower.includes("signal") || issueLower.includes("antenna")) {
+      subsystemScores.Antenna += 15;
+    }
+    if (issueLower.includes("rf") || issueLower.includes("chain")) {
+      subsystemScores.RFChain += 15;
+    }
+    if (issueLower.includes("cable") || issueLower.includes("connector")) {
+      subsystemScores.Cabling += 10;
+    }
+    if (issueLower.includes("power") || issueLower.includes("voltage")) {
+      subsystemScores.Power += 10;
+    }
+
+    // Region influence
+    if (region && region.toLowerCase().includes("west africa")) {
+      subsystemScores.Modem += 5; // beam-edge instability
+    }
+
+    // Orbit influence
+    if (orbitClass && orbitClass.toLowerCase() === "geo") {
+      subsystemScores.ACU += 5; // GEO tracking sensitivity
+    }
+
+    // Severity influence
+    let severityScore = severity || 4;
+    if (severityScore >= 6) {
+      subsystemScores.RFChain += 5;
+      subsystemScores.BUC += 5;
+    }
+
+    // Build root cause estimation
+    const sortedSubsystems = Object.entries(subsystemScores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, score]) => ({ subsystem: name, score }));
+
+    const topCause = sortedSubsystems[0];
+
+    // Recommended engineering actions
+    const recommendations = [
+      "Verify physical connections and inspect for corrosion.",
+      "Check ACU and modem logs for correlated events.",
+      "Perform subsystem-specific diagnostics.",
+      "Validate RF chain integrity and check connectors.",
+      "If issue persists, escalate to OEM support."
+    ];
+
+    return res.status(200).json({
+      status: "success",
+      diagnostics: {
+        issue,
+        region,
+        orbitClass,
+        severity: severityScore,
+        subsystemScores: sortedSubsystems,
+        likelyRootCause: topCause,
+        recommendations
+      }
+    });
+  } catch (error) {
+    console.error("Diagnostics analysis error:", error);
+    return res.status(500).json({
+      error: "Failed to perform diagnostics analysis"
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
