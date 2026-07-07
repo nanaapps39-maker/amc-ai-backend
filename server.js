@@ -1403,6 +1403,77 @@ app.get("/api/knowledge/fleet-summary", (req, res) => {
 });
 
 // ===============================
+// SATCOM Knowledge Engine — Phase 8 Module 4
+// Training Scenario Generator (Pro)
+// ===============================
+
+app.get("/api/knowledge/training-scenarios", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+
+    if (!Array.isArray(storageData) || storageData.length === 0) {
+      return res.status(200).json({
+        status: "success",
+        scenarios: [],
+        message: "No cases available to generate training scenarios."
+      });
+    }
+
+    const scenarios = storageData.slice(0, 20).map((item, index) => {
+      const data = item.data || {};
+
+      const subsystem = data.subsystem || "Unknown subsystem";
+      const issue = data.issue || "Unspecified issue";
+      const region = data.region || "Unknown region";
+      const orbitClass = data.orbitClass || "Unknown orbit class";
+      const severity = data.severity || "N/A";
+
+      return {
+        id: index + 1,
+        title: `${subsystem} Fault Scenario`,
+        description: `A real-world SATCOM fault involving the ${subsystem} subsystem. Issue reported: ${issue}.`,
+        context: {
+          region,
+          orbitClass,
+          severity
+        },
+        expectedSymptoms: [
+          "Intermittent connectivity loss",
+          "Reduced link stability",
+          "Performance degradation under load",
+          "Potential alarm triggers depending on subsystem"
+        ],
+        recommendedSteps: [
+          "Verify subsystem power and physical connections",
+          "Check modem/ACU logs for correlated events",
+          "Perform subsystem-specific diagnostics",
+          "Validate RF chain integrity if applicable",
+          "Escalate to OEM if fault persists"
+        ],
+        assessmentQuestions: [
+          `What is the most likely root cause of the ${subsystem} issue?`,
+          `How does operating in the ${region} region affect this fault?`,
+          `What diagnostic steps would you perform first?`,
+          `How does ${orbitClass} orbit class influence link stability?`
+        ]
+      };
+    });
+
+    return res.status(200).json({
+      status: "success",
+      scenarios
+    });
+  } catch (error) {
+    console.error("Training scenario generator error:", error);
+    return res.status(500).json({
+      error: "Failed to generate training scenarios"
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
