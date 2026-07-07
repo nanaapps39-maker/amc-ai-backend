@@ -842,6 +842,136 @@ app.get("/api/vessel/:name/score", (req, res) => {
 });
 
 // ===============================
+// Vessel Intelligence Mode — Module 3
+// Vessel Insights Engine (Pro)
+// ===============================
+
+app.get("/api/vessel/:name/insights", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "") {
+    return res.status(400).json({ error: "Vessel name is required." });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const attachments = attachmentData.filter((item) => {
+      const v =
+        item.vessel &&
+        typeof item.vessel === "string" &&
+        item.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    // ===============================
+    // INSIGHT ENGINE
+    // ===============================
+
+    const insights = [];
+
+    // 1. Recurring subsystem issues
+    const subsystemCounts = {};
+    cases.forEach((c) => {
+      if (c.data && c.data.subsystem) {
+        const s = c.data.subsystem;
+        subsystemCounts[s] = (subsystemCounts[s] || 0) + 1;
+      }
+    });
+
+    Object.keys(subsystemCounts).forEach((subsystem) => {
+      if (subsystemCounts[subsystem] >= 3) {
+        insights.push(
+          `Recurring issues detected in the ${subsystem} subsystem (${subsystemCounts[subsystem]} cases).`
+        );
+      }
+    });
+
+    // 2. Weather fade sensitivity
+    const rainCases = cases.filter(
+      (c) =>
+        c.data &&
+        c.data.issue &&
+        c.data.issue.toLowerCase().includes("rain")
+    );
+
+    if (rainCases.length >= 3) {
+      insights.push(
+        `High weather fade sensitivity detected — ${rainCases.length} rain-related cases.`
+      );
+    }
+
+    // 3. Orbit behaviour patterns
+    const orbitClasses = new Set();
+    cases.forEach((c) => {
+      if (c.data && c.data.orbitClass) {
+        orbitClasses.add(c.data.orbitClass);
+      }
+    });
+
+    if (orbitClasses.size > 1) {
+      insights.push(
+        `Vessel operates across multiple orbit classes: ${Array.from(
+          orbitClasses
+        ).join(", ")}.`
+      );
+    }
+
+    // 4. Alarm frequency
+    if (attachments.length > 20) {
+      insights.push(
+        `High alarm frequency detected — ${attachments.length} attachments logged.`
+      );
+    }
+
+    // 5. Diagnostics severity trend
+    const severityValues = cases
+      .map((c) => (c.data && c.data.severity ? c.data.severity : null))
+      .filter((s) => s !== null);
+
+    if (severityValues.length > 0) {
+      const avgSeverity =
+        severityValues.reduce((a, b) => a + b, 0) / severityValues.length;
+
+      if (avgSeverity >= 6) {
+        insights.push(
+          `Diagnostics indicate high severity trend (average severity ${avgSeverity.toFixed(
+            1
+          )}).`
+        );
+      }
+    }
+
+    // 6. No insights fallback
+    if (insights.length === 0) {
+      insights.push(
+        "No significant SATCOM patterns detected for this vessel at this time."
+      );
+    }
+
+    return res.status(200).json({
+      status: "success",
+      vessel: vesselName,
+      insights,
+    });
+  } catch (error) {
+    console.error("Vessel insights error:", error);
+    return res.status(500).json({ error: "Failed to generate vessel insights" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
