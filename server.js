@@ -727,6 +727,121 @@ app.get("/api/vessel/:name/profile", (req, res) => {
 });
 
 // ===============================
+// Vessel Intelligence Mode — Module 2
+// Vessel SATCOM Performance Score (Pro)
+// ===============================
+
+app.get("/api/vessel/:name/score", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "") {
+    return res.status(400).json({ error: "Vessel name is required." });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const attachments = attachmentData.filter((item) => {
+      const v =
+        item.vessel &&
+        typeof item.vessel === "string" &&
+        item.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    // ===============================
+    // SCORING ENGINE
+    // ===============================
+
+    // Stability Score: based on number of cases
+    let stabilityScore = 100;
+    if (cases.length > 20) stabilityScore = 60;
+    if (cases.length > 40) stabilityScore = 40;
+    if (cases.length > 60) stabilityScore = 25;
+
+    // RF Chain Reliability Score: based on RF-related cases
+    const rfCases = cases.filter((c) => {
+      return (
+        c.data &&
+        c.data.subsystem &&
+        ["BUC", "LNB", "Modem", "RF Chain"].includes(c.data.subsystem)
+      );
+    });
+
+    let rfScore = 100 - rfCases.length * 5;
+    if (rfScore < 20) rfScore = 20;
+
+    // Weather Fade Sensitivity Score: based on region + keywords
+    const weatherCases = cases.filter((c) => {
+      return (
+        c.data &&
+        c.data.issue &&
+        c.data.issue.toLowerCase().includes("rain")
+      );
+    });
+
+    let weatherScore = 100 - weatherCases.length * 10;
+    if (weatherScore < 30) weatherScore = 30;
+
+    // Alarm Frequency Score: based on attachments count
+    let alarmScore = 100;
+    if (attachments.length > 10) alarmScore = 70;
+    if (attachments.length > 25) alarmScore = 40;
+    if (attachments.length > 50) alarmScore = 20;
+
+    // Diagnostics Severity Score: based on severity field
+    const severityValues = cases
+      .map((c) => (c.data && c.data.severity ? c.data.severity : null))
+      .filter((s) => s !== null);
+
+    let diagnosticsScore = 100;
+    if (severityValues.length > 0) {
+      const avgSeverity =
+        severityValues.reduce((a, b) => a + b, 0) / severityValues.length;
+      diagnosticsScore = 100 - avgSeverity * 10;
+      if (diagnosticsScore < 20) diagnosticsScore = 20;
+    }
+
+    // Combined SATCOM Score
+    const combinedScore = Math.round(
+      (stabilityScore +
+        rfScore +
+        weatherScore +
+        alarmScore +
+        diagnosticsScore) /
+        5
+    );
+
+    return res.status(200).json({
+      status: "success",
+      vessel: vesselName,
+      scores: {
+        stabilityScore,
+        rfScore,
+        weatherScore,
+        alarmScore,
+        diagnosticsScore,
+        combinedScore,
+      },
+    });
+  } catch (error) {
+    console.error("Vessel score error:", error);
+    return res.status(500).json({ error: "Failed to build vessel score" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
