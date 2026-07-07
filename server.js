@@ -1298,6 +1298,111 @@ app.post("/api/knowledge/similar", (req, res) => {
 });
 
 // ===============================
+// SATCOM Knowledge Engine — Phase 8 Module 3
+// Fleet SATCOM Health Summary (Pro)
+// ===============================
+
+app.get("/api/knowledge/fleet-summary", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+
+    // ===============================
+    // FLEET SUMMARY ENGINE
+    // ===============================
+
+    const totalCases = storageData.length;
+    const totalAttachments = attachmentData.length;
+
+    const subsystemCounts = {};
+    const regionCounts = {};
+    const orbitCounts = {};
+    const severityValues = [];
+
+    storageData.forEach((item) => {
+      const data = item.data || {};
+
+      // Subsystem
+      const subsystem = data.subsystem || "Unknown";
+      subsystemCounts[subsystem] = (subsystemCounts[subsystem] || 0) + 1;
+
+      // Region
+      const region = data.region || "Unknown";
+      regionCounts[region] = (regionCounts[region] || 0) + 1;
+
+      // Orbit class
+      const orbitClass = data.orbitClass || "Unknown";
+      orbitCounts[orbitClass] = (orbitCounts[orbitClass] || 0) + 1;
+
+      // Severity
+      if (data.severity !== undefined && data.severity !== null) {
+        severityValues.push(data.severity);
+      }
+    });
+
+    // Average severity
+    let avgSeverity = 0;
+    if (severityValues.length > 0) {
+      avgSeverity =
+        severityValues.reduce((a, b) => a + b, 0) / severityValues.length;
+    }
+
+    // Fleet Health Score (0–100)
+    let fleetScore = 100;
+
+    // More cases → lower score
+    if (totalCases > 50) fleetScore -= 10;
+    if (totalCases > 100) fleetScore -= 10;
+
+    // More alarms → lower score
+    if (totalAttachments > 50) fleetScore -= 10;
+    if (totalAttachments > 100) fleetScore -= 10;
+
+    // Higher severity → lower score
+    if (avgSeverity >= 5) fleetScore -= 15;
+    if (avgSeverity >= 7) fleetScore -= 10;
+
+    if (fleetScore < 10) fleetScore = 10;
+
+    // Build readable summaries
+    const topSubsystems = Object.entries(subsystemCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([subsystem, count]) => `${subsystem}: ${count} cases`);
+
+    const topRegions = Object.entries(regionCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([region, count]) => `${region}: ${count} cases`);
+
+    const topOrbits = Object.entries(orbitCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([orbitClass, count]) => `${orbitClass}: ${count} cases`);
+
+    return res.status(200).json({
+      status: "success",
+      fleetSummary: {
+        totalCases,
+        totalAttachments,
+        avgSeverity,
+        fleetScore,
+        topSubsystems,
+        topRegions,
+        topOrbits,
+      },
+    });
+  } catch (error) {
+    console.error("Fleet summary error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to generate fleet SATCOM summary" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
