@@ -569,6 +569,94 @@ app.post("/api/search", (req, res) => {
 });
 
 // ===============================
+// SATCOM Case History Mode (Pro)
+// ===============================
+
+app.get("/api/history/vessel/:name", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "")
+    return res.status(400).json({ error: "Vessel name is required." });
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    // Sort by timestamp ascending
+    cases.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return res.status(200).json({
+      status: "success",
+      vessel: vesselName,
+      cases,
+      totalCases: cases.length,
+    });
+  } catch (error) {
+    console.error("Vessel history error:", error);
+    return res.status(500).json({ error: "Failed to build vessel history" });
+  }
+});
+
+app.get("/api/history/vessel/:name/full", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "")
+    return res.status(400).json({ error: "Vessel name is required." });
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const attachments = attachmentData.filter((item) => {
+      const v =
+        item.vessel &&
+        typeof item.vessel === "string" &&
+        item.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    // Sort both by timestamp ascending
+    cases.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    attachments.sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    return res.status(200).json({
+      status: "success",
+      vessel: vesselName,
+      cases,
+      attachments,
+      totalCases: cases.length,
+      totalAttachments: attachments.length,
+    });
+  } catch (error) {
+    console.error("Full vessel history error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to build full vessel history" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
