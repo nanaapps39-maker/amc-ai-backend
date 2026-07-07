@@ -460,6 +460,72 @@ app.post("/api/attachments/upload", async (req, res) => {
 });
 
 // ===============================
+// Retrieval Mode (Pro)
+// ===============================
+
+// Retrieve all stored SATCOM cases
+app.get("/api/storage/list", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const data = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    return res.status(200).json({ status: "success", items: data });
+  } catch (error) {
+    console.error("Storage list error:", error);
+    return res.status(500).json({ error: "Failed to list storage items" });
+  }
+});
+
+// Retrieve a single SATCOM case by ID
+app.get("/api/storage/get/:id", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const data = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const item = data.find((x) => x.id === req.params.id);
+
+    if (!item)
+      return res.status(404).json({ error: "Storage item not found" });
+
+    return res.status(200).json({ status: "success", item });
+  } catch (error) {
+    console.error("Storage get error:", error);
+    return res.status(500).json({ error: "Failed to retrieve storage item" });
+  }
+});
+
+// List all attachments
+app.get("/api/attachments/list", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const data = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    return res.status(200).json({ status: "success", items: data });
+  } catch (error) {
+    console.error("Attachment list error:", error);
+    return res.status(500).json({ error: "Failed to list attachments" });
+  }
+});
+
+// Retrieve a single attachment by ID
+app.get("/api/attachments/get/:id", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const data = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const item = data.find((x) => x.id === req.params.id);
+
+    if (!item)
+      return res.status(404).json({ error: "Attachment not found" });
+
+    return res.status(200).json({ status: "success", item });
+  } catch (error) {
+    console.error("Attachment get error:", error);
+    return res.status(500).json({ error: "Failed to retrieve attachment" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
