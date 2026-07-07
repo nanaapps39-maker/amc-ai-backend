@@ -1100,6 +1100,106 @@ app.get("/api/vessel/:name/predict", (req, res) => {
 });
 
 // ===============================
+// SATCOM Knowledge Engine — Phase 8 Module 1
+// Global SATCOM Pattern Engine (Pro)
+// ===============================
+
+app.get("/api/knowledge/patterns", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+
+    // ===============================
+    // GLOBAL PATTERN ENGINE
+    // ===============================
+
+    const regionSubsystemCounts = {};
+    const orbitSubsystemCounts = {};
+    const globalSubsystemCounts = {};
+
+    storageData.forEach((item) => {
+      const data = item.data || {};
+      const region = data.region || "Unknown";
+      const orbitClass = data.orbitClass || "Unknown";
+      const subsystem = data.subsystem || "Unknown";
+
+      // Global subsystem counts
+      globalSubsystemCounts[subsystem] =
+        (globalSubsystemCounts[subsystem] || 0) + 1;
+
+      // Region + subsystem
+      const regionKey = `${region}::${subsystem}`;
+      regionSubsystemCounts[regionKey] =
+        (regionSubsystemCounts[regionKey] || 0) + 1;
+
+      // Orbit + subsystem
+      const orbitKey = `${orbitClass}::${subsystem}`;
+      orbitSubsystemCounts[orbitKey] =
+        (orbitSubsystemCounts[orbitKey] || 0) + 1;
+    });
+
+    // Build human-readable patterns
+    const regionPatterns = [];
+    Object.keys(regionSubsystemCounts).forEach((key) => {
+      const [region, subsystem] = key.split("::");
+      const count = regionSubsystemCounts[key];
+      if (count >= 3) {
+        regionPatterns.push(
+          `Subsystem ${subsystem} shows ${count} recorded issues in region ${region}.`
+        );
+      }
+    });
+
+    const orbitPatterns = [];
+    Object.keys(orbitSubsystemCounts).forEach((key) => {
+      const [orbitClass, subsystem] = key.split("::");
+      const count = orbitSubsystemCounts[key];
+      if (count >= 3) {
+        orbitPatterns.push(
+          `Subsystem ${subsystem} shows ${count} recorded issues in orbit class ${orbitClass}.`
+        );
+      }
+    });
+
+    const globalPatterns = [];
+    Object.keys(globalSubsystemCounts).forEach((subsystem) => {
+      const count = globalSubsystemCounts[subsystem];
+      if (count >= 5) {
+        globalPatterns.push(
+          `Subsystem ${subsystem} appears in ${count} total cases across all vessels and regions.`
+        );
+      }
+    });
+
+    if (
+      regionPatterns.length === 0 &&
+      orbitPatterns.length === 0 &&
+      globalPatterns.length === 0
+    ) {
+      globalPatterns.push(
+        "No significant global SATCOM fault patterns detected at this time."
+      );
+    }
+
+    return res.status(200).json({
+      status: "success",
+      patterns: {
+        regionPatterns,
+        orbitPatterns,
+        globalPatterns,
+      },
+    });
+  } catch (error) {
+    console.error("Global SATCOM pattern engine error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to generate global SATCOM patterns" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
