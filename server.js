@@ -526,6 +526,49 @@ app.get("/api/attachments/get/:id", (req, res) => {
 });
 
 // ===============================
+// Search Mode (Pro)
+// ===============================
+
+app.post("/api/search", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { query } = req.body;
+  if (!query || query.trim() === "")
+    return res.status(400).json({ error: "Field 'query' is required." });
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+
+    const q = query.toLowerCase();
+
+    // Search storage items
+    const storageMatches = storageData.filter((item) =>
+      JSON.stringify(item.data).toLowerCase().includes(q)
+    );
+
+    // Search attachments
+    const attachmentMatches = attachmentData.filter((item) =>
+      item.content.toLowerCase().includes(q)
+    );
+
+    return res.status(200).json({
+      status: "success",
+      query,
+      storageMatches,
+      attachmentMatches,
+      totalMatches: storageMatches.length + attachmentMatches.length,
+    });
+  } catch (error) {
+    console.error("Search Mode error:", error);
+    return res.status(500).json({
+      error: "Search Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
