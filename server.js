@@ -1754,6 +1754,72 @@ app.post("/api/diagnostics/subsystem-score", (req, res) => {
 });
 
 // ===============================
+// SATCOM Diagnostics Engine — Phase 9 Module 4
+// Diagnostics Explanation Engine (Pro)
+// ===============================
+
+app.post("/api/diagnostics/explain", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { issue, subsystem, severity, region, orbitClass } = req.body || {};
+
+  if (!issue) {
+    return res.status(400).json({
+      error: "Issue description is required for diagnostics explanation."
+    });
+  }
+
+  try {
+    const sev = severity || 4;
+
+    // Build explanation
+    let explanation = `The reported issue "${issue}" indicates a potential fault within the vessel's SATCOM system. `;
+
+    if (subsystem) {
+      explanation += `Initial analysis suggests the ${subsystem} subsystem is likely involved. `;
+    }
+
+    // Severity interpretation
+    if (sev <= 3) {
+      explanation += `The severity level is low, meaning the impact on connectivity is minimal and the fault is likely intermittent. `;
+    } else if (sev <= 6) {
+      explanation += `The severity level is moderate, indicating noticeable degradation in link stability or performance. `;
+    } else {
+      explanation += `The severity level is high, suggesting significant disruption to SATCOM connectivity and requiring urgent attention. `;
+    }
+
+    // Region influence
+    if (region) {
+      explanation += `Operating in the ${region} region may influence this fault due to known environmental or beam-edge conditions. `;
+    }
+
+    // Orbit influence
+    if (orbitClass) {
+      explanation += `The ${orbitClass} orbit class also affects system behaviour, particularly during tracking or handover events. `;
+    }
+
+    explanation += `Further diagnostics should be performed to confirm subsystem involvement and determine the appropriate corrective actions.`;
+
+    return res.status(200).json({
+      status: "success",
+      explanation: {
+        issue,
+        subsystem,
+        severity: sev,
+        region,
+        orbitClass,
+        text: explanation
+      }
+    });
+  } catch (error) {
+    console.error("Diagnostics explanation error:", error);
+    return res.status(500).json({
+      error: "Failed to generate diagnostics explanation"
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
