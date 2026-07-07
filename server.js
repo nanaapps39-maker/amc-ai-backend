@@ -972,6 +972,134 @@ app.get("/api/vessel/:name/insights", (req, res) => {
 });
 
 // ===============================
+// Vessel Intelligence Mode — Module 4
+// Vessel Predictive Intelligence (Pro)
+// ===============================
+
+app.get("/api/vessel/:name/predict", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "") {
+    return res.status(400).json({ error: "Vessel name is required." });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const attachments = attachmentData.filter((item) => {
+      const v =
+        item.vessel &&
+        typeof item.vessel === "string" &&
+        item.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    // ===============================
+    // PREDICTIVE ENGINE
+    // ===============================
+
+    const totalCases = cases.length;
+    const totalAttachments = attachments.length;
+
+    const rainCases = cases.filter(
+      (c) =>
+        c.data &&
+        c.data.issue &&
+        c.data.issue.toLowerCase().includes("rain")
+    );
+
+    const severityValues = cases
+      .map((c) => (c.data && c.data.severity ? c.data.severity : null))
+      .filter((s) => s !== null);
+
+    let avgSeverity = 0;
+    if (severityValues.length > 0) {
+      avgSeverity =
+        severityValues.reduce((a, b) => a + b, 0) / severityValues.length;
+    }
+
+    // Base risk score
+    let riskScore = 30;
+
+    // More cases → higher risk
+    if (totalCases > 20) riskScore += 10;
+    if (totalCases > 40) riskScore += 10;
+
+    // More alarms/attachments → higher risk
+    if (totalAttachments > 20) riskScore += 10;
+    if (totalAttachments > 40) riskScore += 10;
+
+    // High severity → higher risk
+    if (avgSeverity >= 5) riskScore += 15;
+    if (avgSeverity >= 7) riskScore += 10;
+
+    // Weather fade sensitivity → higher risk
+    if (rainCases.length >= 3) riskScore += 15;
+
+    if (riskScore > 100) riskScore = 100;
+
+    const prediction = [];
+
+    if (riskScore >= 80) {
+      prediction.push(
+        "High likelihood of future SATCOM instability. Consider proactive RF and ACU checks."
+      );
+    } else if (riskScore >= 60) {
+      prediction.push(
+        "Moderate risk of future SATCOM issues. Monitor alarms and weather-related events closely."
+      );
+    } else {
+      prediction.push(
+        "Low to moderate expected SATCOM risk based on current history."
+      );
+    }
+
+    if (rainCases.length >= 3) {
+      prediction.push(
+        "Future instability is more likely during heavy rain or adverse weather conditions."
+      );
+    }
+
+    if (avgSeverity >= 6) {
+      prediction.push(
+        `Average diagnostic severity (${avgSeverity.toFixed(
+          1
+        )}) suggests non-trivial future fault impact.`
+      );
+    }
+
+    return res.status(200).json({
+      status: "success",
+      vessel: vesselName,
+      riskScore,
+      prediction,
+      metrics: {
+        totalCases,
+        totalAttachments,
+        rainCases: rainCases.length,
+        avgSeverity,
+      },
+    });
+  } catch (error) {
+    console.error("Vessel predictive intelligence error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to generate predictive intelligence" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
