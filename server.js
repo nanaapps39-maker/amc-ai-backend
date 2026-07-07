@@ -1586,6 +1586,95 @@ app.post("/api/diagnostics/analyse", (req, res) => {
 });
 
 // ===============================
+// SATCOM Diagnostics Engine — Phase 9 Module 2
+// Fix Likelihood Prediction (Pro)
+// ===============================
+
+app.post("/api/diagnostics/fix-likelihood", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { issue, severity, subsystem } = req.body || {};
+
+  if (!issue) {
+    return res.status(400).json({
+      error: "Issue description is required for fix likelihood analysis."
+    });
+  }
+
+  try {
+    const issueLower = issue.toLowerCase();
+    const sev = severity || 4;
+
+    let remoteFix = 50;
+    let onboardFix = 30;
+    let oemFix = 20;
+
+    // Severity influence
+    if (sev >= 6) {
+      remoteFix -= 15;
+      onboardFix += 10;
+      oemFix += 5;
+    }
+    if (sev >= 8) {
+      remoteFix -= 20;
+      onboardFix += 10;
+      oemFix += 10;
+    }
+
+    // Subsystem influence
+    if (subsystem) {
+      const sub = subsystem.toLowerCase();
+
+      if (sub.includes("modem")) {
+        remoteFix += 20;
+      }
+      if (sub.includes("acu")) {
+        onboardFix += 15;
+      }
+      if (sub.includes("buc")) {
+        oemFix += 20;
+      }
+      if (sub.includes("rf")) {
+        onboardFix += 10;
+      }
+    }
+
+    // Issue keyword influence
+    if (issueLower.includes("tracking")) {
+      onboardFix += 15;
+    }
+    if (issueLower.includes("lock loss")) {
+      remoteFix += 10;
+    }
+    if (issueLower.includes("overcurrent")) {
+      oemFix += 20;
+    }
+
+    // Normalize to 100
+    const total = remoteFix + onboardFix + oemFix;
+    remoteFix = Math.round((remoteFix / total) * 100);
+    onboardFix = Math.round((onboardFix / total) * 100);
+    oemFix = Math.round((oemFix / total) * 100);
+
+    return res.status(200).json({
+      status: "success",
+      fixLikelihood: {
+        remoteFix,
+        onboardFix,
+        oemFix,
+        severity: sev,
+        issue
+      }
+    });
+  } catch (error) {
+    console.error("Fix likelihood error:", error);
+    return res.status(500).json({
+      error: "Failed to calculate fix likelihood"
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
