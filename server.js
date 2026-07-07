@@ -359,6 +359,107 @@ app.post("/api/orbit", async (req, res) => {
 });
 
 // ===============================
+// Storage Mode (Pro)
+// ===============================
+const fs = require("fs");
+const path = require("path");
+
+// Ensure storage folder exists
+const storageFolder = path.join(__dirname, "storage");
+if (!fs.existsSync(storageFolder)) {
+  fs.mkdirSync(storageFolder);
+}
+
+// Ensure storage.json exists
+const storageFile = path.join(storageFolder, "storage.json");
+if (!fs.existsSync(storageFile)) {
+  fs.writeFileSync(storageFile, JSON.stringify([]));
+}
+
+app.post("/api/storage/save", async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { data } = req.body;
+  if (!data)
+    return res.status(400).json({ error: "Field 'data' is required." });
+
+  try {
+    const existing = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+
+    const entry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      data,
+    };
+
+    existing.push(entry);
+    fs.writeFileSync(storageFile, JSON.stringify(existing, null, 2));
+
+    return res.status(200).json({
+      status: "success",
+      message: "Data stored successfully",
+      id: entry.id,
+    });
+  } catch (error) {
+    console.error("Storage Mode error:", error);
+    return res.status(500).json({
+      error: "Storage Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
+// Attachment Mode (Pro)
+// ===============================
+
+// Ensure attachments folder exists
+const attachmentsFolder = path.join(__dirname, "attachments");
+if (!fs.existsSync(attachmentsFolder)) {
+  fs.mkdirSync(attachmentsFolder);
+}
+
+// Ensure attachments.json exists
+const attachmentsFile = path.join(attachmentsFolder, "attachments.json");
+if (!fs.existsSync(attachmentsFile)) {
+  fs.writeFileSync(attachmentsFile, JSON.stringify([]));
+}
+
+app.post("/api/attachments/upload", async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { content, filename } = req.body;
+  if (!content)
+    return res.status(400).json({ error: "Field 'content' is required." });
+
+  try {
+    const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+
+    const entry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      filename: filename || "attachment.txt",
+      content,
+    };
+
+    existing.push(entry);
+    fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
+
+    return res.status(200).json({
+      status: "success",
+      message: "Attachment stored successfully",
+      id: entry.id,
+    });
+  } catch (error) {
+    console.error("Attachment Mode error:", error);
+    return res.status(500).json({
+      error: "Attachment Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
