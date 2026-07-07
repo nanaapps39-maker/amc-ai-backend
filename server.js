@@ -657,6 +657,76 @@ app.get("/api/history/vessel/:name/full", (req, res) => {
 });
 
 // ===============================
+// Vessel Intelligence Mode — Module 1
+// Vessel Profile (Pro)
+// ===============================
+
+app.get("/api/vessel/:name/profile", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const vesselName = req.params.name;
+  if (!vesselName || vesselName.trim() === "") {
+    return res.status(400).json({ error: "Vessel name is required." });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+    const nameLower = vesselName.toLowerCase();
+
+    const cases = storageData.filter((item) => {
+      const v =
+        item.data &&
+        typeof item.data.vessel === "string" &&
+        item.data.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const attachments = attachmentData.filter((item) => {
+      const v =
+        item.vessel &&
+        typeof item.vessel === "string" &&
+        item.vessel.toLowerCase();
+      return v && v === nameLower;
+    });
+
+    const totalCases = cases.length;
+    const totalAttachments = attachments.length;
+
+    const regions = new Set();
+    const orbitClasses = new Set();
+
+    cases.forEach((item) => {
+      if (item.data && item.data.region) {
+        regions.add(item.data.region);
+      }
+      if (item.data && item.data.orbitClass) {
+        orbitClasses.add(item.data.orbitClass);
+      }
+    });
+
+    const profile = {
+      vessel: vesselName,
+      totalCases,
+      totalAttachments,
+      regions: Array.from(regions),
+      orbitClasses: Array.from(orbitClasses),
+      latestCase: totalCases > 0 ? cases[cases.length - 1] : null,
+      latestAttachment:
+        totalAttachments > 0 ? attachments[attachments.length - 1] : null,
+    };
+
+    return res.status(200).json({
+      status: "success",
+      profile,
+    });
+  } catch (error) {
+    console.error("Vessel profile error:", error);
+    return res.status(500).json({ error: "Failed to build vessel profile" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
