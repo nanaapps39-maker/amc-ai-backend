@@ -1200,6 +1200,104 @@ app.get("/api/knowledge/patterns", (req, res) => {
 });
 
 // ===============================
+// SATCOM Knowledge Engine — Phase 8 Module 2
+// Case Similarity Search (Pro)
+// ===============================
+
+app.post("/api/knowledge/similar", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const queryCase = req.body || {};
+  const queryIssue =
+    (queryCase.issue && queryCase.issue.toLowerCase()) || "";
+  const querySubsystem = queryCase.subsystem || "";
+  const queryRegion = queryCase.region || "";
+  const queryOrbitClass = queryCase.orbitClass || "";
+
+  if (!queryIssue && !querySubsystem && !queryRegion && !queryOrbitClass) {
+    return res
+      .status(400)
+      .json({ error: "At least one field (issue, subsystem, region, orbitClass) is required." });
+  }
+
+  try {
+    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
+
+    const similarCases = [];
+
+    storageData.forEach((item) => {
+      const data = item.data || {};
+      const issue = (data.issue && data.issue.toLowerCase()) || "";
+      const subsystem = data.subsystem || "";
+      const region = data.region || "";
+      const orbitClass = data.orbitClass || "";
+
+      let score = 0;
+
+      // Issue text similarity (simple keyword overlap)
+      if (queryIssue && issue) {
+        const qWords = queryIssue.split(/\s+/);
+        const iWords = issue.split(/\s+/);
+        const overlap = qWords.filter((w) => iWords.includes(w));
+        if (overlap.length > 0) score += overlap.length * 2;
+      }
+
+      // Subsystem match
+      if (querySubsystem && subsystem && querySubsystem === subsystem) {
+        score += 5;
+      }
+
+      // Region match
+      if (queryRegion && region && queryRegion === region) {
+        score += 3;
+      }
+
+      // Orbit class match
+      if (queryOrbitClass && orbitClass && queryOrbitClass === orbitClass) {
+        score += 3;
+      }
+
+      if (score > 0) {
+        similarCases.push({
+          score,
+          case: item,
+        });
+      }
+    });
+
+    // Sort by score descending
+    similarCases.sort((a, b) => b.score - a.score);
+
+    // Limit to top 10
+    const topSimilar = similarCases.slice(0, 10);
+
+    if (topSimilar.length === 0) {
+      return res.status(200).json({
+        status: "success",
+        message: "No similar cases found based on the provided criteria.",
+        similarCases: [],
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      query: {
+        issue: queryIssue,
+        subsystem: querySubsystem,
+        region: queryRegion,
+        orbitClass: queryOrbitClass,
+      },
+      similarCases: topSimilar,
+    });
+  } catch (error) {
+    console.error("Case similarity search error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to perform case similarity search" });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
