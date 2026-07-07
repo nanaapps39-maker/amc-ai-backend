@@ -1675,6 +1675,85 @@ app.post("/api/diagnostics/fix-likelihood", (req, res) => {
 });
 
 // ===============================
+// SATCOM Diagnostics Engine — Phase 9 Module 3
+// Subsystem Score Engine (Pro)
+// ===============================
+
+app.post("/api/diagnostics/subsystem-score", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { issue, region, orbitClass, severity } = req.body || {};
+
+  if (!issue) {
+    return res.status(400).json({
+      error: "Issue description is required for subsystem scoring."
+    });
+  }
+
+  try {
+    const issueLower = issue.toLowerCase();
+    const sev = severity || 4;
+
+    const scores = {
+      ACU: 10,
+      BUC: 10,
+      Modem: 10,
+      Antenna: 10,
+      RFChain: 10,
+      Cabling: 10,
+      Power: 10
+    };
+
+    // Issue keyword influence
+    if (issueLower.includes("tracking")) scores.ACU += 25;
+    if (issueLower.includes("lock loss")) scores.Modem += 20;
+    if (issueLower.includes("overcurrent")) scores.BUC += 30;
+    if (issueLower.includes("signal")) scores.Antenna += 15;
+    if (issueLower.includes("rf")) scores.RFChain += 20;
+    if (issueLower.includes("connector")) scores.Cabling += 15;
+    if (issueLower.includes("voltage")) scores.Power += 15;
+
+    // Region influence
+    if (region && region.toLowerCase().includes("west africa")) {
+      scores.Modem += 10; // beam-edge instability
+    }
+
+    // Orbit influence
+    if (orbitClass && orbitClass.toLowerCase() === "geo") {
+      scores.ACU += 10; // GEO tracking sensitivity
+    }
+
+    // Severity influence
+    if (sev >= 6) {
+      scores.RFChain += 10;
+      scores.BUC += 10;
+    }
+    if (sev >= 8) {
+      scores.ACU += 10;
+      scores.BUC += 10;
+      scores.RFChain += 10;
+    }
+
+    // Sort scores
+    const sortedScores = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, score]) => ({ subsystem: name, score }));
+
+    return res.status(200).json({
+      status: "success",
+      subsystemScores: sortedScores,
+      severity: sev,
+      issue
+    });
+  } catch (error) {
+    console.error("Subsystem score error:", error);
+    return res.status(500).json({
+      error: "Failed to calculate subsystem scores"
+    });
+  }
+});
+
+// ===============================
 // LMS Endpoints (Free)
 // ===============================
 app.post("/api/lms/create-course", (req, res) => {
