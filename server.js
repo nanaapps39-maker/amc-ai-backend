@@ -1848,6 +1848,91 @@ app.post("/api/lms/enrol-user", (req, res) => {
 });
 
 // ===============================
+// Stripe Managed Payments Integration
+// ===============================
+
+// Stripe initialization
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Create Checkout Session (Pro Subscription)
+app.post("/api/billing/create-checkout-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        {
+          price: process.env.STRIPE_PRICE_ID, // monthly or annual price ID
+          quantity: 1,
+        },
+      ],
+      managed_payments: {
+        enabled: true,
+      },
+      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
+    });
+
+    return res.status(200).json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.error("Stripe checkout error:", error);
+    return res.status(500).json({
+      error: "Stripe checkout failed",
+      details: error?.message,
+    });
+  }
+});
+
+// Stripe Webhook (subscription activation)
+app.post(
+  "/api/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+      console.error("⚠️ Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object;
+        console.log("✅ Subscription activated:", session.id);
+        break;
+      }
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
+  }
+);
+
+// Validate Pro Access Key (Frontend calls this)
+app.post("/api/validate-pro-key", (req, res) => {
+  const { key } = req.body;
+
+  if (!key || key.trim() === "") {
+    return res.status(400).json({ valid: false, error: "Key is required." });
+  }
+
+  const isValid = key === PRO_ACCESS_KEY;
+
+  return res.status(200).json({
+    valid: isValid,
+    message: isValid
+      ? "Pro Access Key is valid. AMC Academy Tech AI Pro unlocked."
+      : "Invalid Pro Access Key.",
+  });
+});
+
+// ===============================
 // Start Server
 // ===============================
 app.listen(3000, () => {
