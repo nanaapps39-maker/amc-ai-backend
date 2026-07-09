@@ -1,3 +1,4 @@
+const sendEmail = require('./send-email');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -67,6 +68,10 @@ module.exports = function stripeWebhook(app) {
                 saveKeys(keys);
 
                 console.log(`✅ Generated Pro Key for ${email}: ${key}`);
+
+                // ⭐ Send the Pro Key by email
+                sendEmail(email, key);
+
                 break;
             }
 
@@ -137,4 +142,3 @@ module.exports = function stripeWebhook(app) {
         res.json({ received: true });
     });
 };
-
