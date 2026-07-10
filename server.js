@@ -2,6 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 
+// ===============================
+// Stripe Setup
+// ===============================
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+const PRICE_IDS = {
+  monthly: "price_1Tr3C3K4BXOvbkKHoEP0hGTQ",
+  annual:  "price_1Tr3TTK4BXOvbkKHKn01Uo46"
+};
+
 // Keep-alive ping for Render
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
@@ -968,6 +979,38 @@ app.get("/api/vessel/:name/insights", (req, res) => {
   } catch (error) {
     console.error("Vessel insights error:", error);
     return res.status(500).json({ error: "Failed to generate vessel insights" });
+  }
+});   // ← END OF INSIGHTS ROUTE
+
+// ===============================
+// Stripe Subscription Checkout
+// ===============================
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const { plan } = req.body;
+
+    if (!plan || !PRICE_IDS[plan]) {
+      return res.status(400).json({ error: "Invalid plan selected." });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: PRICE_IDS[plan],
+          quantity: 1
+        }
+      ],
+      success_url: "https://www.amcacademy.tech/success",
+      cancel_url: "https://www.amcacademy.tech/cancel"
+    });
+
+    return res.json({ url: session.url });
+
+  } catch (error) {
+    console.error("Stripe Checkout Error:", error);
+    return res.status(500).json({ error: "Stripe session failed." });
   }
 });
 
