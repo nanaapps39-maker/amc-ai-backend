@@ -13,6 +13,15 @@ const PRICE_IDS = {
   annual:  "price_1Tr3TTK4BXOvbkKHKn01Uo46"
 };
 
+// Keep-alive ping for Render
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// ⭐ CREATE APP BEFORE ROUTES
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 // ===============================
 // Stripe Checkout — Monthly Subscription
 // ===============================
@@ -68,14 +77,6 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
     });
   }
 });
-
-// Keep-alive ping for Render
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // ===============================
 // Pro Access Key Configuration
