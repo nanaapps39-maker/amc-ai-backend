@@ -1894,9 +1894,6 @@ app.post("/api/lms/enrol-user", (req, res) => {
 // Stripe Managed Payments Integration
 // ===============================
 
-// Stripe initialization
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
 // Create Checkout Session (Pro Subscription)
 app.post("/api/billing/create-checkout-session", async (req, res) => {
   try {
