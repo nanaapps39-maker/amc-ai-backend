@@ -1895,7 +1895,6 @@ app.post("/api/lms/enrol-user", (req, res) => {
 // ===============================
 
 // Stripe initialization
-const Stripe = require("stripe");
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create Checkout Session (Pro Subscription)
