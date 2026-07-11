@@ -13,6 +13,62 @@ const PRICE_IDS = {
   annual:  "price_1Tr3TTK4BXOvbkKHKn01Uo46"
 };
 
+// ===============================
+// Stripe Checkout — Monthly Subscription
+// ===============================
+app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        {
+          price: PRICE_IDS.monthly,
+          quantity: 1,
+        },
+      ],
+      managed_payments: { enabled: true },
+      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
+    });
+
+    return res.status(200).json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.error("Stripe monthly checkout error:", error);
+    return res.status(500).json({
+      error: "Stripe monthly checkout failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
+// Stripe Checkout — Annual Subscription
+// ===============================
+app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        {
+          price: PRICE_IDS.annual,
+          quantity: 1,
+        },
+      ],
+      managed_payments: { enabled: true },
+      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
+    });
+
+    return res.status(200).json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.error("Stripe annual checkout error:", error);
+    return res.status(500).json({
+      error: "Stripe annual checkout failed",
+      details: error?.message,
+    });
+  }
+});
+
 // Keep-alive ping for Render
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
@@ -1888,38 +1944,6 @@ app.post("/api/lms/create-quiz", (req, res) => {
 app.post("/api/lms/enrol-user", (req, res) => {
   const { userId, courseId } = req.body;
   return res.json({ status: "success", message: "User enrolled", enrolment: { userId, courseId } });
-});
-
-// ===============================
-// Stripe Managed Payments Integration
-// ===============================
-
-// Create Checkout Session (Pro Subscription)
-app.post("/api/billing/create-checkout-session", async (req, res) => {
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_ID, // monthly or annual price ID
-          quantity: 1,
-        },
-      ],
-      managed_payments: {
-        enabled: true,
-      },
-      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
-    });
-
-    return res.status(200).json({ id: session.id, url: session.url });
-  } catch (error) {
-    console.error("Stripe checkout error:", error);
-    return res.status(500).json({
-      error: "Stripe checkout failed",
-      details: error?.message,
-    });
-  }
 });
 
 // Stripe Webhook (subscription activation)
