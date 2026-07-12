@@ -36,8 +36,8 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
         },
       ],
       managed_payments: { enabled: true },
-      success_url: `${process.env.CLIENT_DOMAIN_NEW}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_DOMAIN_NEW}/cancel`,
+      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
@@ -64,8 +64,8 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
         },
       ],
       managed_payments: { enabled: true },
-      success_url: `${process.env.CLIENT_DOMAIN_NEW}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_DOMAIN_NEW}/cancel`,
+      success_url: `${process.env.CLIENT_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_DOMAIN}/cancel`,
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
