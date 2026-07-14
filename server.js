@@ -513,6 +513,94 @@ app.post("/api/satcom/weather-fade", (req, res) => {
 });
 
 // ===============================
+// SATCOM RF Chain Health Mode (Pro)
+// ===============================
+app.post("/api/satcom/rf-health", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const {
+    bucPower_dBW,
+    lnbNoiseFigure_dB,
+    cableLoss_dB,
+    modemLock,
+    acuRfFeedback_dB
+  } = req.body;
+
+  if (
+    bucPower_dBW == null ||
+    lnbNoiseFigure_dB == null ||
+    cableLoss_dB == null ||
+    modemLock == null ||
+    acuRfFeedback_dB == null
+  ) {
+    return res.status(400).json({
+      error: "All fields are required.",
+      requiredFields: [
+        "bucPower_dBW",
+        "lnbNoiseFigure_dB",
+        "cableLoss_dB",
+        "modemLock",
+        "acuRfFeedback_dB"
+      ],
+    });
+  }
+
+  try {
+    // Health scoring model
+    let score = 100;
+
+    // BUC health
+    if (bucPower_dBW < 18) score -= 20;
+    else if (bucPower_dBW < 22) score -= 10;
+
+    // LNB noise figure
+    if (lnbNoiseFigure_dB > 1.2) score -= 15;
+    if (lnbNoiseFigure_dB > 1.5) score -= 25;
+
+    // Cable loss
+    if (cableLoss_dB > 3) score -= 10;
+    if (cableLoss_dB > 5) score -= 20;
+
+    // Modem lock
+    if (!modemLock) score -= 40;
+
+    // ACU RF feedback
+    if (acuRfFeedback_dB < -5) score -= 10;
+    if (acuRfFeedback_dB < -10) score -= 20;
+
+    let status = "Excellent";
+    if (score < 70) status = "Degraded";
+    if (score < 40) status = "Critical";
+
+    return res.status(200).json({
+      status: "success",
+      summary: {
+        rfHealthScore: score,
+        rfStatus: status,
+        bucPower_dBW,
+        lnbNoiseFigure_dB,
+        cableLoss_dB,
+        modemLock,
+        acuRfFeedback_dB
+      },
+      recommendations: {
+        buc: bucPower_dBW < 18 ? "Increase BUC output or check power supply" : "BUC OK",
+        lnb: lnbNoiseFigure_dB > 1.5 ? "Replace LNB (noise figure too high)" : "LNB OK",
+        cable: cableLoss_dB > 5 ? "Inspect/replace RF cable (high loss)" : "Cable OK",
+        modem: modemLock ? "Modem locked" : "Check RX chain, pointing, or configuration",
+        acu: acuRfFeedback_dB < -10 ? "ACU reporting weak RF return" : "ACU RF feedback OK"
+      }
+    });
+  } catch (error) {
+    console.error("RF Chain Health Mode error:", error);
+    return res.status(500).json({
+      error: "RF Chain Health Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
 // SATCOM Alarm Pack Analysis (Pro)
 // ===============================
 app.post("/api/satcom/alarm-log", async (req, res) => {
