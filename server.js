@@ -601,6 +601,82 @@ app.post("/api/satcom/rf-health", (req, res) => {
 });
 
 // ===============================
+// SATCOM Slew Rate vs Vessel Motion Mode (Pro)
+// ===============================
+app.post("/api/satcom/slew-rate", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const {
+    vesselTurnRate_deg_per_sec,
+    antennaSlewRate_deg_per_sec,
+    trackingLoopMargin_deg,
+    stabilizationMode
+  } = req.body;
+
+  if (
+    vesselTurnRate_deg_per_sec == null ||
+    antennaSlewRate_deg_per_sec == null ||
+    trackingLoopMargin_deg == null ||
+    !stabilizationMode
+  ) {
+    return res.status(400).json({
+      error: "All fields are required.",
+      requiredFields: [
+        "vesselTurnRate_deg_per_sec",
+        "antennaSlewRate_deg_per_sec",
+        "trackingLoopMargin_deg",
+        "stabilizationMode"
+      ],
+    });
+  }
+
+  try {
+    // Core calculation
+    const effectiveTrackingCapacity =
+      antennaSlewRate_deg_per_sec + trackingLoopMargin_deg;
+
+    const deficit = vesselTurnRate_deg_per_sec - effectiveTrackingCapacity;
+
+    let status = "Stable";
+    if (deficit > 0) status = "Risk of Unlock";
+    if (deficit > 3) status = "Will Unlock";
+
+    return res.status(200).json({
+      status: "success",
+      summary: {
+        vesselTurnRate_deg_per_sec,
+        antennaSlewRate_deg_per_sec,
+        trackingLoopMargin_deg,
+        stabilizationMode,
+        effectiveTrackingCapacity,
+        deficit: deficit.toFixed(2),
+        trackingStatus: status
+      },
+      recommendations: {
+        vesselMotion:
+          deficit > 0
+            ? "Reduce turn rate or avoid sharp manoeuvres"
+            : "Vessel motion within safe limits",
+        antenna:
+          antennaSlewRate_deg_per_sec < vesselTurnRate_deg_per_sec
+            ? "Increase antenna slew rate or check ACU configuration"
+            : "Antenna slew rate sufficient",
+        stabilization:
+          stabilizationMode === "gyro"
+            ? "Gyro mode optimal for sharp turns"
+            : "Consider switching to gyro mode for high manoeuvrability"
+      }
+    });
+  } catch (error) {
+    console.error("Slew Rate Mode error:", error);
+    return res.status(500).json({
+      error: "Slew Rate Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
 // SATCOM Alarm Pack Analysis (Pro)
 // ===============================
 app.post("/api/satcom/alarm-log", async (req, res) => {
