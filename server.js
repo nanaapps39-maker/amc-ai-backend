@@ -35,7 +35,6 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
           quantity: 1,
         },
       ],
-      managed_payments: { enabled: true },
       success_url: `${process.env.CLIENT_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_DOMAIN}/billing-cancel`,
     });
@@ -63,7 +62,6 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
           quantity: 1,
         },
       ],
-      managed_payments: { enabled: true },
       success_url: `${process.env.CLIENT_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_DOMAIN}/billing-cancel`,
     });
@@ -367,6 +365,81 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
   } catch (error) {
     console.error("Diagnostics error:", error);
     return res.status(500).json({ error: "Diagnostics failed", details: error?.message });
+  }
+});
+
+// ===============================
+// SATCOM Link Budget Mode (Pro)
+// ===============================
+app.post("/api/satcom/link-budget", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const {
+    frequencyGHz,
+    txPower_dBW,
+    txAntennaGain_dBi,
+    rxAntennaGain_dBi,
+    pathLoss_dB,
+    rxSystemNoise_dBm
+  } = req.body;
+
+  // Basic validation
+  if (
+    frequencyGHz == null ||
+    txPower_dBW == null ||
+    txAntennaGain_dBi == null ||
+    rxAntennaGain_dBi == null ||
+    pathLoss_dB == null ||
+    rxSystemNoise_dBm == null
+  ) {
+    return res.status(400).json({
+      error: "All fields are required.",
+      requiredFields: [
+        "frequencyGHz",
+        "txPower_dBW",
+        "txAntennaGain_dBi",
+        "rxAntennaGain_dBi",
+        "pathLoss_dB",
+        "rxSystemNoise_dBm"
+      ],
+    });
+  }
+
+  try {
+    // Simple link budget model
+    const eirp_dBW = txPower_dBW + txAntennaGain_dBi;          // EIRP
+    const receivedPower_dBW = eirp_dBW - pathLoss_dB + rxAntennaGain_dBi;
+    const receivedPower_dBm = receivedPower_dBW + 30;          // dBW → dBm
+
+    const linkMargin_dB = receivedPower_dBm - rxSystemNoise_dBm;
+
+    let status = "Good";
+    if (linkMargin_dB < 3) status = "Fail";
+    else if (linkMargin_dB < 8) status = "Marginal";
+
+    return res.status(200).json({
+      status: "success",
+      summary: {
+        frequencyGHz,
+        eirp_dBW,
+        receivedPower_dBm,
+        linkMargin_dB,
+        linkStatus: status,
+      },
+      detail: {
+        txPower_dBW,
+        txAntennaGain_dBi,
+        rxAntennaGain_dBi,
+        pathLoss_dB,
+        rxSystemNoise_dBm,
+      },
+    });
+  } catch (error) {
+    console.error("Link Budget Mode error:", error);
+    return res.status(500).json({
+      error: "Link Budget Mode failed",
+      details: error?.message,
+    });
   }
 });
 
