@@ -444,6 +444,75 @@ app.post("/api/satcom/link-budget", (req, res) => {
 });
 
 // ===============================
+// SATCOM Weather Fade Predictor Mode (Pro)
+// ===============================
+app.post("/api/satcom/weather-fade", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const {
+    frequencyGHz,
+    rainRate_mm_per_hr,
+    region,
+    linkMargin_dB
+  } = req.body;
+
+  if (
+    frequencyGHz == null ||
+    rainRate_mm_per_hr == null ||
+    !region ||
+    linkMargin_dB == null
+  ) {
+    return res.status(400).json({
+      error: "All fields are required.",
+      requiredFields: [
+        "frequencyGHz",
+        "rainRate_mm_per_hr",
+        "region",
+        "linkMargin_dB"
+      ],
+    });
+  }
+
+  try {
+    // ITU‑R rain fade approximation (simplified)
+    const k = frequencyGHz > 20 ? 0.15 : 0.08; // Ka-band more sensitive
+    const alpha = frequencyGHz > 20 ? 1.1 : 0.9;
+
+    const rainAttenuation_dB = k * Math.pow(rainRate_mm_per_hr, alpha);
+
+    const remainingMargin_dB = linkMargin_dB - rainAttenuation_dB;
+
+    let status = "Good";
+    if (remainingMargin_dB < 3) status = "Fail";
+    else if (remainingMargin_dB < 8) status = "Marginal";
+
+    return res.status(200).json({
+      status: "success",
+      summary: {
+        frequencyGHz,
+        region,
+        rainRate_mm_per_hr,
+        rainAttenuation_dB: rainAttenuation_dB.toFixed(2),
+        remainingMargin_dB: remainingMargin_dB.toFixed(2),
+        linkStatus: status,
+      },
+      detail: {
+        model: "ITU-R rain fade approximation",
+        k,
+        alpha,
+        linkMargin_dB,
+      },
+    });
+  } catch (error) {
+    console.error("Weather Fade Mode error:", error);
+    return res.status(500).json({
+      error: "Weather Fade Mode failed",
+      details: error?.message,
+    });
+  }
+});
+
+// ===============================
 // SATCOM Alarm Pack Analysis (Pro)
 // ===============================
 app.post("/api/satcom/alarm-log", async (req, res) => {
