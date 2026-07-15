@@ -23,8 +23,10 @@ app.use(cors());
 app.use(express.json());
 
 // ===============================
-// IQ Constellation Analyzer
+// IQ Constellation Analyzer (FIXED)
 // ===============================
+
+const KMeans = require("ml-kmeans");
 
 class IQConstellationAnalyzer {
     constructor(modulationOrder = 4) {
@@ -51,29 +53,32 @@ class IQConstellationAnalyzer {
         const normalized = this.normalize(points);
         const data = normalized.map(p => [p.i, p.q]);
 
-        const KMeans = require('ml-kmeans');
+        // FIXED: correct ml-kmeans usage
         const kmeans = KMeans(data, this.modulationOrder);
 
+        // FIXED: centroids are arrays, not objects
         const centers = kmeans.centroids;
 
+        // FIXED: cluster assignment is in kmeans.clusters
         const spreads = centers.map((center, idx) => {
             const clusterPoints = data.filter((_, i) => kmeans.clusters[i] === idx);
             if (!clusterPoints.length) return 0;
-            const dists = clusterPoints.map(p => Math.hypot(p[0]-center[0], p[1]-center[1]));
+            const dists = clusterPoints.map(p => Math.hypot(p[0] - center[0], p[1] - center[1]));
             return dists.reduce((a,b)=>a+b)/dists.length;
         });
 
         const avgSpread = spreads.reduce((a,b)=>a+b)/spreads.length;
 
+        let diagnosis = "";
+        if (avgSpread < 0.2) diagnosis = "Good constellation — tight clusters.";
+        else if (avgSpread < 0.5) diagnosis = "Moderate noise — check SNR or weather fade.";
+        else diagnosis = "High noise — possible interference or mispointing.";
+
         return {
             modulationOrder: this.modulationOrder,
             avgClusterSpread: avgSpread,
             clusterCenters: centers,
-            diagnosis: avgSpread < 0.2
-                ? "Good constellation — tight clusters."
-                : avgSpread < 0.5
-                    ? "Moderate noise — check SNR or weather fade."
-                    : "High noise — possible interference or mispointing."
+            diagnosis
         };
     }
 }
