@@ -52,9 +52,9 @@ class IQConstellationAnalyzer {
         const data = normalized.map(p => [p.i, p.q]);
 
         const KMeans = require('ml-kmeans');
-        const kmeans = new KMeans(data, { k: this.modulationOrder });
+        const kmeans = KMeans(data, this.modulationOrder);
 
-        const centers = kmeans.centroids.map(c => c.centroid);
+        const centers = kmeans.centroids;
 
         const spreads = centers.map((center, idx) => {
             const clusterPoints = data.filter((_, i) => kmeans.clusters[i] === idx);
