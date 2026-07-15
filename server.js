@@ -23,6 +23,62 @@ app.use(cors());
 app.use(express.json());
 
 // ===============================
+// IQ Constellation Analyzer
+// ===============================
+
+class IQConstellationAnalyzer {
+    constructor(modulationOrder = 4) {
+        this.modulationOrder = modulationOrder;
+    }
+
+    normalize(points) {
+        const I = points.map(p => p.i);
+        const Q = points.map(p => p.q);
+
+        const meanI = I.reduce((a,b)=>a+b)/I.length;
+        const meanQ = Q.reduce((a,b)=>a+b)/Q.length;
+
+        const stdI = Math.sqrt(I.map(x => (x-meanI)**2).reduce((a,b)=>a+b)/I.length);
+        const stdQ = Math.sqrt(Q.map(x => (x-meanQ)**2).reduce((a,b)=>a+b)/Q.length);
+
+        return points.map(p => ({
+            i: (p.i - meanI) / (stdI || 1),
+            q: (p.q - meanQ) / (stdQ || 1)
+        }));
+    }
+
+    analyze(points) {
+        const normalized = this.normalize(points);
+        const data = normalized.map(p => [p.i, p.q]);
+
+        const KMeans = require('ml-kmeans');
+        const kmeans = new KMeans(data, { k: this.modulationOrder });
+
+        const centers = kmeans.centroids.map(c => c.centroid);
+
+        const spreads = centers.map((center, idx) => {
+            const clusterPoints = data.filter((_, i) => kmeans.clusters[i] === idx);
+            if (!clusterPoints.length) return 0;
+            const dists = clusterPoints.map(p => Math.hypot(p[0]-center[0], p[1]-center[1]));
+            return dists.reduce((a,b)=>a+b)/dists.length;
+        });
+
+        const avgSpread = spreads.reduce((a,b)=>a+b)/spreads.length;
+
+        return {
+            modulationOrder: this.modulationOrder,
+            avgClusterSpread: avgSpread,
+            clusterCenters: centers,
+            diagnosis: avgSpread < 0.2
+                ? "Good constellation — tight clusters."
+                : avgSpread < 0.5
+                    ? "Moderate noise — check SNR or weather fade."
+                    : "High noise — possible interference or mispointing."
+        };
+    }
+}
+
+// ===============================
 // Stripe Checkout — Monthly Subscription
 // ===============================
 app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
@@ -74,6 +130,27 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
       details: error?.message,
     });
   }
+});
+
+// ===============================
+// IQ Analyzer API Route
+// ===============================
+app.post("/api/iq-analyzer", (req, res) => {
+    try {
+        const { modulationOrder, points } = req.body;
+
+        if (!points || !Array.isArray(points)) {
+            return res.status(400).json({ error: "Missing IQ points array" });
+        }
+
+        const analyzer = new IQConstellationAnalyzer(modulationOrder || 4);
+        const result = analyzer.analyze(points);
+
+        res.json(result);
+    } catch (err) {
+        console.error("IQ Analyzer error:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 // ===============================
