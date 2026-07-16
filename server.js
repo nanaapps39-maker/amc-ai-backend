@@ -3,6 +3,11 @@ const cors = require("cors");
 const Groq = require("groq-sdk");
 
 // ===============================
+// 🌍 GLOBAL WORLD CLOCK (UTC)
+// ===============================
+const worldClock = () => new Date().toISOString();
+
+// ===============================
 // Stripe Setup
 // ===============================
 const Stripe = require("stripe");
