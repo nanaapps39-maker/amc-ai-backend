@@ -111,6 +111,38 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// ===============================
+// SYSTEM HEALTH CHECK (Pro)
+// ===============================
+app.get("/api/system-health", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const statusReport = {
+      system: "AMC Academy Tech AI",
+      backend: "ONLINE",
+      worldClockUTC: worldClock(),
+      engines: {
+        translator: "Ready",
+        diagnostics: "Ready",
+        orbit: "Ready",
+        storage: fs.existsSync(storageFile) ? "OK" : "Missing",
+        attachments: fs.existsSync(attachmentsFile) ? "OK" : "Missing",
+      },
+      proMode: req.userIsPro ? "Enabled" : "Disabled",
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(200).json(statusReport);
+  } catch (error) {
+    console.error("System Health Check error:", error);
+    return res.status(500).json({
+      error: "System Health Check failed",
+      details: error?.message,
+    });
+  }
+});
+
 // Keep Render awake
 setInterval(() => {
   fetch("https://amc-ai-backend-1.onrender.com/health")
