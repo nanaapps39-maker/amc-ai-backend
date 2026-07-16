@@ -2308,6 +2308,17 @@ app.post("/api/validate-pro-key", (req, res) => {
 });
 
 // ===============================
+// Test World Clock (UTC)
+// ===============================
+app.get("/api/test-world-clock", (req, res) => {
+  const timestamp = worldClock();
+  res.json({
+    status: "ok",
+    utc_time: timestamp
+  });
+});
+
+// ===============================
 // Start Server
 // ===============================
 app.listen(3000, () => {
