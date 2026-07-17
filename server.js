@@ -14,18 +14,9 @@ const Stripe = require("stripe");
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICE_IDS = {
-  monthly: "price_1Tr3C3K4BXOvbkKHoEP0hGTQ",
-  annual:  "price_1Tr3TTK4BXOvbkKHKn01Uo46"
+  monthly: process.env.STRIPE_PRICE_ID_MONTHLY,
+  annual: process.env.STRIPE_PRICE_ID_ANNUAL
 };
-
-// Keep-alive ping for Render
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
-// ⭐ CREATE APP BEFORE ROUTES
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // ===============================
 // Stripe Checkout — Monthly Subscription
@@ -40,8 +31,8 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.CLIENT_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_DOMAIN}/billing-cancel`,
+      success_url: `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`,
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
@@ -67,8 +58,8 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.CLIENT_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_DOMAIN}/billing-cancel`,
+      success_url: `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`,
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
@@ -239,7 +230,7 @@ OUTPUT STRUCTURE:
    - RF chain
    - ACU tracking loop
    - IMU/Gyro feed
-   - Stabilization loop
+   - Stabilisation loop
    - Heading input
    - Antenna slew rate
 4. Root cause hypotheses (with confidence levels)
