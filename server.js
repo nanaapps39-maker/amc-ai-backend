@@ -18,6 +18,11 @@ const PRICE_IDS = {
   annual: process.env.STRIPE_PRICE_ID_ANNUAL
 };
 
+// ⭐ CREATE APP BEFORE ROUTES
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 // ===============================
 // Stripe Checkout — Monthly Subscription
 // ===============================
