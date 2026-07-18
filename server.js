@@ -128,6 +128,35 @@ function requireProAccess(res) {
 }
 
 // ===============================
+// PRO KEY GENERATOR (Admin)
+// ===============================
+const { generateProKey } = require("./pro-key-generator");
+
+app.post("/api/pro/generate", (req, res) => {
+  const { type, seats, email } = req.body;
+
+  try {
+    const record = generateProKey(type, seats, email);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Pro Access Key generated",
+      key: record.key,
+      type: record.type,
+      seats: record.seats,
+      email: record.email,
+      created_at: record.created_at
+    });
+  } catch (error) {
+    console.error("Pro key generation error:", error);
+    return res.status(500).json({
+      error: "Failed to generate Pro Access Key",
+      details: error?.message
+    });
+  }
+});
+
+// ===============================
 // Health + Root
 // ===============================
 app.get("/", (req, res) => {
