@@ -1,42 +1,22 @@
-// send-email.js
-const sgMail = require('@sendgrid/mail');
+const nodemailer = require('nodemailer');
 
-// Load SendGrid API key from environment variables
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+module.exports = async function sendEmail({ to, subject, html }) {
+    const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
 
-/**
- * Sends the Pro Access Key to the learner's email.
- *
- * @param {string} to - The learner's email address
- * @param {string} key - The generated Pro Access Key
- */
-async function sendEmail(to, key) {
-    const msg = {
+    await transporter.sendMail({
+        from: "AMC Academy Tech Support <support@amcacademy.tech>",
         to,
-        from: 'support@amcacademy.tech', // Your verified sender email
-        subject: 'Your AMC Academy Tech Pro Access Key',
-        text: `
-Hello,
+        subject,
+        html
+    });
 
-Thank you for subscribing to AMC Academy Tech AI.
-
-Your Pro Access Key is:
-
-${key}
-
-Enter this key in the AMC AI bubble to unlock Pro Mode.
-
-Regards,
-AMC Academy Tech
-        `,
-    };
-
-    try {
-        await sgMail.send(msg);
-        console.log(`📧 Email sent to ${to} with Pro Key: ${key}`);
-    } catch (error) {
-        console.error('❌ Email sending failed:', error);
-    }
-}
-
-module.exports = sendEmail;
+    console.log(`📨 Email sent to ${to}`);
+};

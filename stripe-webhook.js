@@ -69,8 +69,30 @@ module.exports = function stripeWebhook(app) {
 
                 console.log(`✅ Generated Pro Key for ${email}: ${key}`);
 
-                // ⭐ Send the Pro Key by email
-                sendEmail(email, key);
+                // ⭐ Automatic email delivery (AMC Academy Tech AI branded)
+                try {
+                    await sendEmail({
+                        to: email,
+                        subject: "Your AMC Academy Tech AI Pro Access Key",
+                        html: `
+                            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                                <h2 style="color:#0057ff;">AMC Academy Tech AI — Pro Access Activated</h2>
+                                <p>Dear Customer,</p>
+                                <p>Thank you for subscribing to <strong>AMC Academy Tech AI Pro</strong>.</p>
+                                <p>Your Pro Access Key is:</p>
+                                <h3 style="color:#0057ff; font-size: 24px;">${key}</h3>
+                                <p>Enter this key inside AMC Academy Tech AI to unlock all Pro features.</p>
+                                <p>If you need help, reply to this email and our support team will assist you.</p>
+                                <br>
+                                <p>Regards,<br><strong>AMC Academy Tech Support</strong><br>support@amcacademy.tech</p>
+                            </div>
+                        `
+                    });
+
+                    console.log(`📧 Pro Key emailed to ${email}`);
+                } catch (err) {
+                    console.error("❌ Email sending failed:", err);
+                }
 
                 break;
             }
