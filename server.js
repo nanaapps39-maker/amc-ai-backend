@@ -2368,7 +2368,6 @@ app.post(
 // ===============================
 // Validate Pro Access Key (Frontend calls this)
 // ===============================
-const { validateProKey } = require("./validate-key");
 const PRO_ACCESS_KEY = "AMC-PRO-2024";
 
 app.post("/api/validate-pro-key", (req, res) => {
