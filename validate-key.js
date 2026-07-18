@@ -1,38 +1,31 @@
-const fs = require('fs');
+const fs = require("fs");
 
-module.exports = function validateKey(req, res) {
-    const { key } = req.body;
+function validateProKey(key) {
+  if (!key || key.trim() === "") {
+    return null;
+  }
 
-    // ⭐ Improvement: handle missing or empty key
-    if (!key || key.trim() === "") {
-        return res.status(400).json({
-            valid: false,
-            error: "Key is required."
-        });
-    }
+  let keys = [];
+  try {
+    keys = JSON.parse(fs.readFileSync("./pro-keys.json", "utf8"));
+  } catch (err) {
+    return null;
+  }
 
-    // Load stored keys
-    let keys = [];
-    try {
-        keys = JSON.parse(fs.readFileSync('./pro-keys.json', 'utf8'));
-    } catch (err) {
-        // If file missing or corrupted, fail safely
-        return res.json({ valid: false });
-    }
+  const match = keys.find(k => k.key === key);
 
-    // Find matching key
-    const match = keys.find(k => k.key === key);
+  if (!match || !match.active) {
+    return null;
+  }
 
-    // Validate active subscription
-    if (!match || !match.active) {
-        return res.json({ valid: false });
-    }
+  return {
+    email: match.email,
+    created_at: match.created_at,
+    status: "active",
+    type: match.type || "customer",
+    seats: match.seats || 1
+  };
+}
 
-    // Success response
-    res.json({
-        valid: true,
-        email: match.email,
-        created_at: match.created_at
-    });
-};
+module.exports = { validateProKey };
 
