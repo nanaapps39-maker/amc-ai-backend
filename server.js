@@ -28,6 +28,12 @@ app.use(express.json());
 // ===============================
 app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
   try {
+
+    // ⭐ DEBUG LOGS (ADD THESE)
+    console.log("DEBUG MONTHLY SUCCESS URL =", `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`);
+    console.log("DEBUG MONTHLY CANCEL URL =", `${process.env.FRONTEND_DOMAIN}/billing-cancel`);
+    console.log("DEBUG MONTHLY PRICE ID =", PRICE_IDS.monthly);
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
@@ -55,6 +61,12 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
 // ===============================
 app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
   try {
+
+    // ⭐ DEBUG LOGS (ADD THESE)
+    console.log("DEBUG ANNUAL SUCCESS URL =", `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`);
+    console.log("DEBUG ANNUAL CANCEL URL =", `${process.env.FRONTEND_DOMAIN}/billing-cancel`);
+    console.log("DEBUG ANNUAL PRICE ID =", PRICE_IDS.annual);
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
