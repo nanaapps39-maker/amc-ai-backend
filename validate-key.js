@@ -1,4 +1,7 @@
 const fs = require("fs");
+const path = require("path");
+
+const KEY_FILE = path.join(__dirname, "pro-keys.json");
 
 function validateProKey(key) {
   if (!key || key.trim() === "") {
@@ -7,7 +10,7 @@ function validateProKey(key) {
 
   let keys = [];
   try {
-    keys = JSON.parse(fs.readFileSync("./pro-keys.json", "utf8"));
+    keys = JSON.parse(fs.readFileSync(KEY_FILE, "utf8"));
   } catch (err) {
     return null;
   }

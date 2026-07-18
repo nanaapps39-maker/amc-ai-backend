@@ -1,7 +1,8 @@
 const fs = require("fs");
-const crypto = require("crypto");
+const path = require("path");
 
-const KEY_FILE = "./pro-keys.json";
+// Persistent file inside repo
+const KEY_FILE = path.join(__dirname, "pro-keys.json");
 
 // Ensure file exists
 if (!fs.existsSync(KEY_FILE)) {
@@ -9,7 +10,7 @@ if (!fs.existsSync(KEY_FILE)) {
 }
 
 function generateProKey(type = "customer", seats = 1, email = null) {
-  const key = "AMC-" + crypto.randomBytes(6).toString("hex").toUpperCase();
+  const key = "AMC-" + Math.random().toString(16).substring(2, 14).toUpperCase();
 
   const record = {
     key,
