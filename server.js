@@ -128,6 +128,36 @@ function requireProAccess(res) {
 }
 
 // ===============================
+// PRO KEY VALIDATION ROUTE (NEW)
+// ===============================
+app.post("/api/pro/validate", (req, res) => {
+  try {
+    const { key } = req.body;
+
+    const fs = require("fs");
+    const raw = fs.readFileSync("./pro-keys.json", "utf8");
+    const keys = JSON.parse(raw);
+
+    const match = keys.find(k => k.key === key);
+
+    if (!match) {
+      return res.json({ status: "invalid" });
+    }
+
+    return res.json({
+      status: "active",
+      type: match.type,
+      seats: match.seats,
+      email: match.email
+    });
+
+  } catch (err) {
+    console.error("PRO validation error:", err);
+    return res.json({ status: "error" });
+  }
+});
+
+// ===============================
 // PRO KEY GENERATOR (Admin)
 // ===============================
 const { generateProKey } = require("./pro-key-generator");
