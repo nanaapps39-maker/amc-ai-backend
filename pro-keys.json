@@ -14,5 +14,13 @@
     "email": "admin@amcacademy.tech",
     "active": true,
     "created_at": "2026-07-19T19:05:00Z"
+  },
+  {
+    "key": "AMC-6854AE8DDA3E",
+    "type": "customer",
+    "seats": 1,
+    "email": "test@example.com",
+    "active": true,
+    "created_at": "2026-07-19T19:53:55.430Z"
   }
 ]

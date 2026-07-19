@@ -2429,7 +2429,12 @@ app.post(
 // ===============================
 
 app.post("/api/validate-pro-key", (req, res) => {
-  const { key } = req.body;
+  // ⭐ Accept key from BOTH body and header
+  const key =
+    req.body.key ||
+    req.headers["x-access-key"] ||
+    req.headers["authorization"] ||
+    req.headers["x-pro-key"];
 
   if (!key || key.trim() === "") {
     return res.status(400).json({ valid: false, error: "Key is required." });
@@ -2444,7 +2449,7 @@ app.post("/api/validate-pro-key", (req, res) => {
     });
   }
 
-  // ⭐ Customer keys (Stripe-generated)
+  // ⭐ Customer keys (Stripe-generated + JSON keys)
   const keyRecord = validateProKey(key);
 
   if (keyRecord && keyRecord.status === "active") {

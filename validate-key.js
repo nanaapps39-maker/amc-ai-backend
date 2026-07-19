@@ -3,7 +3,14 @@ const path = require("path");
 
 const KEY_FILE = path.join(__dirname, "pro-keys.json");
 
-function validateProKey(key) {
+function validateProKey(req) {
+  // ⭐ Accept key from BOTH body and header
+  const key =
+    req.body?.key ||
+    req.headers["x-access-key"] ||
+    req.headers["x-pro-key"] || // optional fallback
+    req.headers["authorization"]; // optional fallback
+
   if (!key || key.trim() === "") {
     return null;
   }
@@ -31,5 +38,6 @@ function validateProKey(key) {
 }
 
 module.exports = { validateProKey };
+
 
 
