@@ -136,8 +136,6 @@ app.use((req, res, next) => {
 app.post("/api/pro/validate", (req, res) => {
   try {
     const { key } = req.body;
-
-    const fs = require("fs");
     const raw = fs.readFileSync("./pro-keys.json", "utf8");
     const keys = JSON.parse(raw);
 
