@@ -90,10 +90,10 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
 });
 
 // ===============================
-// Pro Access Key Configuration
+// Pro Access Key Configuration (UPDATED)
 // ===============================
 const PRO_ACCESS_KEY = "AMC-PRO-2024"; // Founder master key
-const { validateProKey } = require("./validate-key");
+const fs = require("fs");
 
 app.use((req, res, next) => {
   const accessKey = req.headers["x-access-key"];
@@ -105,27 +105,30 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // ⭐ Customer keys (Stripe-generated)
-  const keyRecord = validateProKey(accessKey);
+  // ⭐ Load JSON file
+  try {
+    const raw = fs.readFileSync("./pro-keys.json", "utf8");
+    const keys = JSON.parse(raw);
 
-  if (keyRecord && keyRecord.status === "active") {
-    req.userIsPro = true;
-    req.isMasterKey = false;
-  } else {
+    // ⭐ Find matching key
+    const match = keys.find(k => k.key === accessKey);
+
+    if (match) {
+      req.userIsPro = true;
+      req.isMasterKey = match.type === "master";
+    } else {
+      req.userIsPro = false;
+      req.isMasterKey = false;
+    }
+
+  } catch (err) {
+    console.error("Middleware PRO key error:", err);
     req.userIsPro = false;
     req.isMasterKey = false;
   }
 
   next();
 });
-
-function requireProAccess(res) {
-  return res.status(403).json({
-    error: "AMC Academy Tech AI Pro access required.",
-    message:
-      "This feature is available only in AMC Academy Tech AI Pro. Enter your Pro Access Key to unlock diagnostics, alarm analysis, orbit mode, and full SATCOM intelligence.",
-  });
-}
 
 // ===============================
 // PRO KEY VALIDATION ROUTE (NEW)
