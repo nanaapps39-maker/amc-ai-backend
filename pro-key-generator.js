@@ -29,3 +29,12 @@ function generateProKey(type = "customer", seats = 1, email = null) {
 }
 
 module.exports = { generateProKey };
+
+// TEST RUNNER (only runs when executing this file directly)
+if (require.main === module) {
+  const { generateProKey } = require("./pro-key-generator");
+
+  const record = generateProKey("customer", 1, "test@example.com");
+  console.log("Generated PRO Key:", record.key);
+  console.log("Saved record:", record);
+}
