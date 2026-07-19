@@ -1,0 +1,12 @@
+{
+  "id": "evt_test_checkout",
+  "object": "event",
+  "type": "checkout.session.completed",
+  "data": {
+    "object": {
+      "customer_details": {
+        "email": "testbuyer@amcacademy.tech"
+      }
+    }
+  }
+}
