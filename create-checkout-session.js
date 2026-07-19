@@ -24,8 +24,10 @@ module.exports = async function createCheckoutSession(req, res) {
             managed_payments: {
                 enabled: true
             },
-            success_url: `${YOUR_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${YOUR_DOMAIN}/pricing`
+
+            // ⭐ Corrected URLs (Option A)
+            success_url: `${YOUR_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${YOUR_DOMAIN}/cancel`
         });
 
         res.json({ url: session.url });
