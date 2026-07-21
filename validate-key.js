@@ -4,40 +4,37 @@ const path = require("path");
 const KEY_FILE = path.join(__dirname, "pro-keys.json");
 
 function validateProKey(req) {
-  // ⭐ Accept key from BOTH body and header
   const key =
     req.body?.key ||
     req.headers["x-access-key"] ||
-    req.headers["x-pro-key"] || // optional fallback
-    req.headers["authorization"]; // optional fallback
+    req.headers["x-pro-key"] ||
+    req.headers["authorization"];
 
   if (!key || key.trim() === "") {
-    return null;
+    return { status: "inactive" };
   }
 
   let keys = [];
   try {
     keys = JSON.parse(fs.readFileSync(KEY_FILE, "utf8"));
   } catch (err) {
-    return null;
+    return { status: "inactive" };
   }
 
   const match = keys.find(k => k.key === key);
 
   if (!match || !match.active) {
-    return null;
+    return { status: "inactive" };
   }
 
   return {
-    email: match.email,
-    created_at: match.created_at,
     status: "active",
-    type: match.type || "customer",
-    seats: match.seats || 1
+    email: match.email,
+    type: match.type,
+    seats: match.seats,
+    created_at: match.created_at
   };
 }
 
 module.exports = { validateProKey };
-
-
 

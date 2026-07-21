@@ -2,6 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 
+// ⭐ ADD THIS FUNCTION RIGHT HERE
+function requireProAccess(res) {
+  return res.status(200).json({
+    status: "inactive",
+    message: "Pro Mode required"
+  });
+}
+
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
 // ===============================
@@ -106,28 +114,38 @@ app.use((req, res, next) => {
   }
 
   // ⭐ Load JSON file
-  try {
-    const raw = fs.readFileSync("./pro-keys.json", "utf8");
-    const keys = JSON.parse(raw);
+try {
+  const raw = fs.readFileSync("./pro-keys.json", "utf8");
+  const keys = JSON.parse(raw);
 
-    // ⭐ Find matching key
-    const match = keys.find(k => k.key === accessKey);
-
-    if (match) {
-      req.userIsPro = true;
-      req.isMasterKey = match.type === "master";
-    } else {
-      req.userIsPro = false;
-      req.isMasterKey = false;
-    }
-
-  } catch (err) {
-    console.error("Middleware PRO key error:", err);
+  // ⭐ If no key provided → Free Mode
+  if (!accessKey || accessKey.trim() === "") {
     req.userIsPro = false;
     req.isMasterKey = false;
+    return next();
   }
 
-  next();
+  // ⭐ Find matching key
+  const match = keys.find(k => k.key === accessKey);
+
+  // ⭐ If key not found → Free Mode
+  if (!match) {
+    req.userIsPro = false;
+    req.isMasterKey = false;
+    return next();
+  }
+
+  // ⭐ Valid key → Pro Mode
+  req.userIsPro = true;
+  req.isMasterKey = match.type === "master";
+
+} catch (err) {
+  console.error("Middleware PRO key error:", err);
+  req.userIsPro = false;
+  req.isMasterKey = false;
+}
+
+next();
 });
 
 // ===============================

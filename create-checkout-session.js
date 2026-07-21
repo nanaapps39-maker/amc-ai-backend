@@ -25,9 +25,9 @@ module.exports = async function createCheckoutSession(req, res) {
                 enabled: true
             },
 
-            // ⭐ Corrected URLs (Option A)
-            success_url: `${YOUR_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${YOUR_DOMAIN}/cancel`
+            // ⭐ Corrected URLs (FINAL)
+            success_url: `${YOUR_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${YOUR_DOMAIN}/billing-cancel`,
         });
 
         res.json({ url: session.url });
@@ -37,3 +37,4 @@ module.exports = async function createCheckoutSession(req, res) {
         res.status(500).json({ error: "Failed to create checkout session" });
     }
 };
+
