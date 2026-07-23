@@ -98,6 +98,40 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
 });
 
 // ===============================
+// Stripe Webhook — Subscriber Tracking
+// ===============================
+const bodyParser = require("body-parser");
+const { handleStripeEvent } = require("./stripe-subscriber-handler");
+
+app.post(
+  "/api/stripe/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  (req, res) => {
+    const sig = req.headers["stripe-signature"];
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error("Stripe webhook signature error:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      handleStripeEvent(event);
+      return res.status(200).json({ received: true });
+    } catch (error) {
+      console.error("Stripe webhook handler error:", error);
+      return res.status(500).json({ error: "Webhook handler failed" });
+    }
+  }
+);
+
+// ===============================
 // Pro Access Key Configuration (UPDATED)
 // ===============================
 const PRO_ACCESS_KEY = "AMC-PRO-2024"; // Founder master key
@@ -201,6 +235,24 @@ app.post("/api/pro/generate", (req, res) => {
     return res.status(500).json({
       error: "Failed to generate Pro Access Key",
       details: error?.message
+    });
+  }
+});
+
+// ===============================
+// Subscribers List (Admin)
+// ===============================
+app.get("/api/subscribers", (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const subscribers = loadSubscribers();
+    return res.status(200).json({ subscribers });
+  } catch (error) {
+    console.error("Subscribers list error:", error);
+    return res.status(500).json({
+      error: "Failed to load subscribers",
+      details: error?.message,
     });
   }
 });

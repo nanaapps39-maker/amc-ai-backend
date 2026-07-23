@@ -5,7 +5,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 module.exports = function stripeWebhook(app) {
-    app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+    app.post('/api/stripe/pro-key-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
         const sig = req.headers['stripe-signature'];
 
         let event;
