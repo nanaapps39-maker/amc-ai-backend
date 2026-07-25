@@ -5,7 +5,8 @@
     "seats": 1,
     "email": "test@example.com",
     "active": true,
-    "created_at": "2026-07-19T16:30:45.664Z"
+    "created_at": "2026-07-19T16:30:45.664Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
   },
   {
     "key": "AMC-PRO-2024",
@@ -21,7 +22,8 @@
     "seats": 1,
     "email": "test@example.com",
     "active": true,
-    "created_at": "2026-07-19T19:53:55.430Z"
+    "created_at": "2026-07-19T19:53:55.430Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
   },
   {
     "key": "AMC-6F5400BE9223",
@@ -29,7 +31,8 @@
     "seats": 1,
     "email": "test@example.com",
     "active": true,
-    "created_at": "2026-07-19T21:23:52.886Z"
+    "created_at": "2026-07-19T21:23:52.886Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
   },
   {
     "key": "AMC-AA97923EE2F4",
@@ -37,7 +40,8 @@
     "seats": 1,
     "email": "test-user@amcacademy.tech",
     "active": true,
-    "created_at": "2026-07-24T01:29:00Z"
+    "created_at": "2026-07-24T01:29:00Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
   },
   {
     "key": "AMC-PRO-44A54389",
@@ -45,6 +49,16 @@
     "seats": 1,
     "email": "test@example.com",
     "active": true,
-    "created_at": "2026-07-25T16:27:33.085Z"
+    "created_at": "2026-07-25T16:27:33.085Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
+  },
+  {
+    "key": "AMC-PRO-4A2385E3",
+    "type": "customer",
+    "seats": 1,
+    "email": "test@example.com",
+    "active": true,
+    "created_at": "2026-07-25T18:38:28.632Z",
+    "expiry_at": "2027-12-31T23:59:59Z"
   }
 ]

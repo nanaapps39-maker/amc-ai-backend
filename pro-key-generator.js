@@ -2,50 +2,38 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-// Persistent file inside repo
-const KEY_FILE = path.join(__dirname, "pro-keys.json");
-
-// Ensure file exists
-if (!fs.existsSync(KEY_FILE)) {
-  fs.writeFileSync(KEY_FILE, JSON.stringify([]));
+// Load keys from environment (Render-safe)
+function loadKeys() {
+    try {
+        return JSON.parse(process.env.PRO_KEYS_JSON || "[]");
+    } catch (err) {
+        console.error("❌ Failed to parse PRO_KEYS_JSON:", err);
+        return [];
+    }
 }
 
-/**
- * Generate an enterprise-grade Pro Key
- * type: "customer" | "admin" | "corporate"
- * seats: number of allowed seats/devices
- * email: owner email (optional for admin/corporate)
- */
-function generateProKey(type = "customer", seats = 1, email = null) {
-  // Crypto-secure 4-byte hex, same style as webhook
-  const raw = crypto.randomBytes(4).toString("hex").toUpperCase();
-  const key = `AMC-PRO-${raw}`;
+// Save updated keys to local file (temporary sync)
+function saveKeys(keys) {
+    const filePath = path.join(__dirname, "pro-keys.json");
+    fs.writeFileSync(filePath, JSON.stringify(keys, null, 2));
+    console.log("⚠️ Saved locally. Remember to update PRO_KEYS_JSON in Render.");
+}
 
-  const record = {
-    key,
-    type,
-    seats,
-    email,
+// Generate key
+const newKey = `AMC-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
+
+const keys = loadKeys();
+
+keys.push({
+    key: newKey,
+    type: "customer",
+    seats: 1,
+    email: "manual-generator@amcacademy.tech",
     active: true,
     created_at: new Date().toISOString(),
-    // Ready for future expansion:
-    // expiry_at: null,
-    // notes: null,
-    // issued_by: "system" | "admin",
-  };
+    expiry_at: "2027-12-31T23:59:59Z"
+});
 
-  const existing = JSON.parse(fs.readFileSync(KEY_FILE, "utf8"));
-  existing.push(record);
-  fs.writeFileSync(KEY_FILE, JSON.stringify(existing, null, 2));
+saveKeys(keys);
 
-  return record;
-}
-
-module.exports = { generateProKey };
-
-// TEST RUNNER (only runs when executing this file directly)
-if (require.main === module) {
-  const record = generateProKey("customer", 1, "test@example.com");
-  console.log("Generated PRO Key:", record.key);
-  console.log("Saved record:", record);
-}
+console.log(`✅ Generated new Pro Key: ${newKey}`);

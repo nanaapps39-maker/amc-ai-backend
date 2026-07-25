@@ -21,19 +21,25 @@ module.exports = function stripeWebhook(app) {
         }
 
         // ===============================
-        // ⭐ File existence protection
+        // ⭐ Load keys from environment
         // ===============================
-        const KEY_FILE = path.join(__dirname, "pro-keys.json");
+        const loadKeys = () => {
+            try {
+                return JSON.parse(process.env.PRO_KEYS_JSON || "[]");
+            } catch (err) {
+                console.error("❌ Failed to parse PRO_KEYS_JSON:", err);
+                return [];
+            }
+        };
 
-        if (!fs.existsSync(KEY_FILE)) {
-            fs.writeFileSync(KEY_FILE, JSON.stringify([]));
-        }
-
-        const loadKeys = () =>
-            JSON.parse(fs.readFileSync(KEY_FILE, 'utf8'));
-
-        const saveKeys = (keys) =>
-            fs.writeFileSync(KEY_FILE, JSON.stringify(keys, null, 2));
+        // ===============================
+        // ⭐ Save updated keys to local file (temporary sync)
+        // ===============================
+        const saveKeys = (keys) => {
+            const filePath = path.join(__dirname, "pro-keys.json");
+            fs.writeFileSync(filePath, JSON.stringify(keys, null, 2));
+            console.log("⚠️ PRO_KEYS_JSON updated locally — remember to sync to Render.");
+        };
 
         switch (event.type) {
 
@@ -57,10 +63,8 @@ module.exports = function stripeWebhook(app) {
                 // Generate Pro Access Key
                 const key = `AMC-PRO-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
-                // ===============================
-                // ⭐ Determine expiry (monthly or annual)
-                // ===============================
-                let expiryDays = 30; // default monthly
+                // Determine expiry (monthly or annual)
+                let expiryDays = 30;
 
                 const priceId =
                     session.metadata?.price_id ||
@@ -80,13 +84,12 @@ module.exports = function stripeWebhook(app) {
                     active: true,
                     expiry_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString()
                 });
+
                 saveKeys(keys);
 
                 console.log(`✅ Generated Pro Key for ${email}: ${key} (Expiry: ${expiryDays} days)`);
 
-                // ===============================
                 // Email delivery
-                // ===============================
                 try {
                     await sendEmail({
                         to: email,
@@ -129,7 +132,6 @@ module.exports = function stripeWebhook(app) {
                 if (user) {
                     user.active = true;
 
-                    // Determine renewal period
                     let renewalDays = 30;
                     const priceId = invoice.lines.data[0].price.id;
 
