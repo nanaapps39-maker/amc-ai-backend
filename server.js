@@ -184,15 +184,19 @@ next();
 });
 
 // ===============================
-// PRO KEY VALIDATION ROUTE (NEW)
+// PRO KEY VALIDATION ROUTE (FIXED)
 // ===============================
 app.post("/api/pro/validate", (req, res) => {
   try {
     const { key } = req.body;
-    const raw = fs.readFileSync("./pro-keys.json", "utf8");
+
+    // Use the SAME path as generator + webhook
+    const KEY_FILE = path.join(__dirname, "pro-keys.json");
+    const raw = fs.readFileSync(KEY_FILE, "utf8");
     const keys = JSON.parse(raw);
 
-    const match = keys.find(k => k.key === key);
+    // Must check both key match + active flag
+    const match = keys.find(k => k.key === key && k.active === true);
 
     if (!match) {
       return res.json({ status: "invalid" });
