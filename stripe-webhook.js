@@ -3,6 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const crypto = require('crypto');
+const path = require('path');
 
 module.exports = function stripeWebhook(app) {
     app.post('/api/stripe/pro-key-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
@@ -22,13 +23,12 @@ module.exports = function stripeWebhook(app) {
         // ===============================
         // ⭐ File existence protection
         // ===============================
-        const KEY_FILE = './pro-keys.json';
+        const KEY_FILE = path.join(__dirname, "pro-keys.json");
 
         if (!fs.existsSync(KEY_FILE)) {
             fs.writeFileSync(KEY_FILE, JSON.stringify([]));
         }
 
-        // Helper: load key store
         const loadKeys = () =>
             JSON.parse(fs.readFileSync(KEY_FILE, 'utf8'));
 
@@ -38,12 +38,11 @@ module.exports = function stripeWebhook(app) {
         switch (event.type) {
 
             // ===============================
-            // Subscription Created / Checkout Completed
+            // Checkout Completed → Generate Key
             // ===============================
             case 'checkout.session.completed': {
                 const session = event.data.object;
 
-                // Robust email extraction for Managed Payments
                 const email =
                     session.customer_details?.email ||
                     session.customer_email ||
@@ -58,18 +57,36 @@ module.exports = function stripeWebhook(app) {
                 // Generate Pro Access Key
                 const key = `AMC-PRO-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
+                // ===============================
+                // ⭐ Determine expiry (monthly or annual)
+                // ===============================
+                let expiryDays = 30; // default monthly
+
+                const priceId =
+                    session.metadata?.price_id ||
+                    session.display_items?.[0]?.price?.id ||
+                    session.line_items?.[0]?.price?.id ||
+                    null;
+
+                if (priceId === process.env.STRIPE_ANNUAL_PRICE_ID) {
+                    expiryDays = 365;
+                }
+
                 const keys = loadKeys();
                 keys.push({
                     email,
                     key,
                     created_at: new Date().toISOString(),
-                    active: true
+                    active: true,
+                    expiry_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString()
                 });
                 saveKeys(keys);
 
-                console.log(`✅ Generated Pro Key for ${email}: ${key}`);
+                console.log(`✅ Generated Pro Key for ${email}: ${key} (Expiry: ${expiryDays} days)`);
 
-                // ⭐ Automatic email delivery (AMC Academy Tech AI branded)
+                // ===============================
+                // Email delivery
+                // ===============================
                 try {
                     await sendEmail({
                         to: email,
@@ -81,8 +98,8 @@ module.exports = function stripeWebhook(app) {
                                 <p>Thank you for subscribing to <strong>AMC Academy Tech AI Pro</strong>.</p>
                                 <p>Your Pro Access Key is:</p>
                                 <h3 style="color:#0057ff; font-size: 24px;">${key}</h3>
+                                <p>This key is valid for <strong>${expiryDays} days</strong> and will auto-renew with your subscription.</p>
                                 <p>Enter this key inside AMC Academy Tech AI to unlock all Pro features.</p>
-                                <p>If you need help, reply to this email and our support team will assist you.</p>
                                 <br>
                                 <p>Regards,<br><strong>AMC Academy Tech Support</strong><br>support@amcacademy.tech</p>
                             </div>
@@ -111,8 +128,19 @@ module.exports = function stripeWebhook(app) {
 
                 if (user) {
                     user.active = true;
+
+                    // Determine renewal period
+                    let renewalDays = 30;
+                    const priceId = invoice.lines.data[0].price.id;
+
+                    if (priceId === process.env.STRIPE_ANNUAL_PRICE_ID) {
+                        renewalDays = 365;
+                    }
+
+                    user.expiry_at = new Date(Date.now() + renewalDays * 24 * 60 * 60 * 1000).toISOString();
+
                     saveKeys(keys);
-                    console.log(`🔄 Subscription renewed for ${email}`);
+                    console.log(`🔄 Subscription renewed for ${email} — expiry extended by ${renewalDays} days`);
                 }
                 break;
             }
@@ -132,7 +160,7 @@ module.exports = function stripeWebhook(app) {
                 if (user) {
                     user.active = false;
                     saveKeys(keys);
-                    console.log(`⚠️ Subscription payment failed for ${email}`);
+                    console.log(`⚠️ Subscription payment failed for ${email} — key deactivated`);
                 }
                 break;
             }
@@ -143,7 +171,6 @@ module.exports = function stripeWebhook(app) {
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object;
 
-                // Must fetch customer to get email
                 const customer = await stripe.customers.retrieve(subscription.customer);
                 const email = customer.email;
 
@@ -155,7 +182,7 @@ module.exports = function stripeWebhook(app) {
                 if (user) {
                     user.active = false;
                     saveKeys(keys);
-                    console.log(`❌ Subscription cancelled for ${email}`);
+                    console.log(`❌ Subscription cancelled for ${email} — key deactivated`);
                 }
                 break;
             }
@@ -164,3 +191,4 @@ module.exports = function stripeWebhook(app) {
         res.json({ received: true });
     });
 };
+
