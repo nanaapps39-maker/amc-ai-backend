@@ -2503,16 +2503,6 @@ app.post(
 // Validate Pro Access Key (Frontend calls this)
 // ===============================
 
-const fs = require("fs");
-const path = require("path");
-
-// ⭐ Load keys from JSON file
-function loadKeys() {
-  const filePath = path.join(__dirname, "pro-keys.json");
-  const raw = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(raw); // MUST be an array
-}
-
 app.post("/api/validate-pro-key", (req, res) => {
   try {
     // ⭐ Accept key from BOTH body and header
@@ -2539,9 +2529,19 @@ app.post("/api/validate-pro-key", (req, res) => {
     }
 
     // ===============================
-    // Load key store (array)
+    // Load key store (array from environment)
     // ===============================
-    const keys = JSON.parse(process.env.PRO_KEYS_JSON);
+    let keys = [];
+    try {
+      keys = JSON.parse(process.env.PRO_KEYS_JSON || "[]");
+    } catch (err) {
+      console.error("❌ Failed to parse PRO_KEYS_JSON:", err);
+      return res.status(500).json({
+        valid: false,
+        error: "key_store_error"
+      });
+    }
+
     const match = keys.find(k => k.key === key);
 
     if (!match) {
