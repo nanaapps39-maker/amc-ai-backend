@@ -2515,14 +2515,65 @@ app.post("/api/validate-pro-key", (req, res) => {
     return res.status(400).json({ valid: false, error: "Key is required." });
   }
 
-  // ⭐ Founder master key (always valid)
+  // ===============================
+  // ⭐ Founder master key (env-based)
+  // ===============================
   if (key === PRO_ACCESS_KEY) {
     return res.status(200).json({
       valid: true,
       message: "Master Key valid. Full AMC Academy Tech AI Pro unlocked.",
-      type: "master"
+      type: "master",
+      admin: true
     });
   }
+
+  // ===============================
+  // Load key store
+  // ===============================
+  const keys = loadKeys();
+  const match = keys.find(k => k.key === key);
+
+  if (!match) {
+    return res.status(200).json({ valid: false, message: "Invalid Pro Access Key." });
+  }
+
+  // ===============================
+  // ⭐ JSON-based admin key (never expires)
+  // ===============================
+  if (match.type === "master") {
+    return res.status(200).json({
+      valid: true,
+      message: "Admin Key valid. Full AMC Academy Tech AI Pro unlocked.",
+      type: "master",
+      admin: true
+    });
+  }
+
+  // ===============================
+  // ⭐ Customer key validation (expiry + active)
+  // ===============================
+  if (
+    match.active === true &&
+    match.expiry_at &&
+    new Date(match.expiry_at) > new Date()
+  ) {
+    return res.status(200).json({
+      valid: true,
+      message: "Pro Access Key is valid. AMC Academy Tech AI Pro unlocked.",
+      type: match.type,
+      seats: match.seats,
+      email: match.email
+    });
+  }
+
+  // ===============================
+  // ❌ Invalid or expired
+  // ===============================
+  return res.status(200).json({
+    valid: false,
+    message: "Invalid or expired Pro Access Key."
+  });
+});
 
   // ⭐ Customer keys (Stripe-generated + JSON keys)
   const keyRecord = validateProKey(key);
