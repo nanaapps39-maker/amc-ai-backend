@@ -2575,26 +2575,6 @@ app.post("/api/validate-pro-key", (req, res) => {
   });
 });
 
-  // ⭐ Customer keys (Stripe-generated + JSON keys)
-  const keyRecord = validateProKey(key);
-
-  if (keyRecord && keyRecord.status === "active") {
-    return res.status(200).json({
-      valid: true,
-      message: "Pro Access Key is valid. AMC Academy Tech AI Pro unlocked.",
-      type: keyRecord.type,
-      seats: keyRecord.seats,
-      email: keyRecord.email
-    });
-  }
-
-  // ❌ Invalid key
-  return res.status(200).json({
-    valid: false,
-    message: "Invalid Pro Access Key."
-  });
-});
-
 // ===============================
 // Test World Clock (UTC)
 // ===============================
