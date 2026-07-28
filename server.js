@@ -305,13 +305,6 @@ app.get("/api/system-health", (req, res) => {
   }
 });
 
-// Keep Render awake
-setInterval(() => {
-  fetch("https://amc-ai-backend-1.onrender.com/health")
-    .then(() => console.log("Keep-alive ping sent"))
-    .catch(() => console.log("Keep-alive failed"));
-}, 5 * 60 * 1000);
-
 // ===============================
 // WORLD‑CLASS SYSTEM PROMPTS (Upgraded)
 // ===============================
