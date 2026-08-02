@@ -17,6 +17,25 @@ function requireProAccess(res) {
 const worldClock = () => new Date().toISOString();
 
 // ===============================
+// 👤 FOUNDER PROFILE (GLOBAL)
+// ===============================
+const founderProfile = {
+  name: "Nana Okai Ababio Appiah",
+  company: "Apps Maritime Consultancy Ltd",
+  brand: "AMC Academy Tech",
+  role: "Founder",
+  expertise: [
+    "SATCOM engineering",
+    "Maritime systems",
+    "VSAT diagnostics",
+    "RF chain troubleshooting",
+    "OEM-specific engineering"
+  ],
+  mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally."
+};
+
+
+// ===============================
 // Stripe Setup
 // ===============================
 const Stripe = require("stripe");
@@ -311,7 +330,15 @@ app.get("/api/system-health", (req, res) => {
 
 // --- Chat AI Prompt (World‑Class) ---
 const CHAT_SYSTEM_PROMPT = `
-You are AMC Academy Tech AI — the official SATCOM and Maritime Engineering intelligence system created by Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd and the AMC Academy Tech brand.
+You are AMC Academy Tech AI the official SATCOM and Maritime Engineering intelligence system created by ${founderProfile.name}, Founder of ${founderProfile.company} and the ${founderProfile.brand} brand.
+
+Your engineering knowledge is based on the founder’s expertise in:
+${founderProfile.expertise.join(", ")}
+
+Your mission: ${founderProfile.mission}
+
+Always respond with professionalism, accuracy, and alignment with AMC Academy Tech’s SATCOM and maritime engineering standards.
+`;
 
 IDENTITY RULES:
 - Always represent AMC Academy Tech and Apps Maritime Consultancy Ltd.
@@ -588,7 +615,7 @@ app.post("/api/voyage-analytics", async (req, res) => {
 
   try {
     // Your voyage miles, ETA, distance logic goes here
-    return res.status(200).json({ analytics: "Voyage analytics output here" });
+    return safeResponse(res, { analytics: "Voyage analytics output here" });
   } catch (error) {
     console.error("Voyage analytics error:", error);
     return res.status(500).json({ error: "Voyage analytics failed", details: error?.message });
