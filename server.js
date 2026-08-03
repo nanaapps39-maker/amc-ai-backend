@@ -639,19 +639,34 @@ Translation Behaviour Requirements:
 For all SATCOM engineering contexts:
 - “aligned” MUST translate to “ayɛ pɛ” in Twi.
 - “The antenna is aligned” MUST translate to “Antɛna no ayɛ pɛ.”
-- Never use fallback verbs such as “hwɛ ahyɛ” for alignment in technical contexts.
+- Never use fallback verbs such as “hwɛ ahyɛ” or “asan” for alignment in technical contexts.
+- Override any dictionary or fallback translation with “ayɛ pɛ” when alignment is requested.
+
+⭐ Ga SATCOM ENGINEERING RULE (NEW)
+For all SATCOM engineering contexts:
+- “locked” MUST translate to “lɛ mli” in Ga.
+- “The satellite is locked” MUST translate to “Satelaiti no lɛ mli.”
+- Never use fallback verbs such as “tsɔɔ” or “kɛ he” for lock in technical contexts.
+- Override any dictionary or fallback translation with “lɛ mli” when lock state is requested.
+
+⭐ Fante SATCOM ENGINEERING RULE (NEW)
+For all SATCOM engineering contexts:
+- “stable” MUST translate to “pintinn” in Fante.
+- “The VSAT link is stable” MUST translate to “VSAT mbɔdo no yɛ pintinn.”
+- Never use fallback verbs such as “gyina hɔ” or “da hɔ” for stability in technical contexts.
+- Override any dictionary or fallback translation with “pintinn” when stability is requested.
 
 Examples of correct behaviour:
 - “Translate to Ewe: The VSAT link is stable.” → “VSAT ɖokui ɖo dzi.”
 - “Translate to Twi: The antenna is aligned.” → “Antɛna no ayɛ pɛ.”
 - “Translate to Ga: The satellite is locked.” → “Satelaiti no lɛ mli.”
+- “Translate to Fante: The VSAT link is stable.” → “VSAT mbɔdo no yɛ pintinn.”
 - “Translate to Dagbani: The network is down.” → “Netsɔ la pam.”
 
 If the user requests a Ghanaian language not listed, respond: “This Ghanaian language is not yet supported. Please choose from Ewe, Twi, Fante, Ga, Dagbani, Gonja, Dagaare, Kasem, Mampruli, or Nanumba.”
 
 Always prioritise clarity, natural phrasing, and technical accuracy.
 `;
-
 
 // ===============================
 // AMC Academy Tech AI — Chat Mode
