@@ -639,7 +639,7 @@ Translation Behaviour Requirements:
 For all SATCOM engineering contexts:
 - “aligned” MUST translate to “ayɛ pɛ” in Twi.
 - “The antenna is aligned” MUST translate to “Antɛna no ayɛ pɛ.”
-- Never use fallback verbs such as “hwɛ ahyɛ” or “asan” for alignment in technical contexts.
+- Never use fallback verbs such as “hwɛ ahyɛ”, “asan”, or “agyapadea” for alignment in technical contexts.
 - Override any dictionary or fallback translation with “ayɛ pɛ” when alignment is requested.
 
 ⭐ Ga SATCOM ENGINEERING RULE (NEW)
