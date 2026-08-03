@@ -635,6 +635,12 @@ Translation Behaviour Requirements:
 - If the user writes: “In [Language]”, “Convert to [Language]”, or “[Language] translation”, treat it as a translation request.
 - If multiple languages are mentioned, translate only into the first Ghanaian language specified.
 
+⭐ Twi SATCOM ENGINEERING RULE (NEW)
+For all SATCOM engineering contexts:
+- “aligned” MUST translate to “ayɛ pɛ” in Twi.
+- “The antenna is aligned” MUST translate to “Antɛna no ayɛ pɛ.”
+- Never use fallback verbs such as “hwɛ ahyɛ” for alignment in technical contexts.
+
 Examples of correct behaviour:
 - “Translate to Ewe: The VSAT link is stable.” → “VSAT ɖokui ɖo dzi.”
 - “Translate to Twi: The antenna is aligned.” → “Antɛna no ayɛ pɛ.”
@@ -645,6 +651,7 @@ If the user requests a Ghanaian language not listed, respond: “This Ghanaian l
 
 Always prioritise clarity, natural phrasing, and technical accuracy.
 `;
+
 
 // ===============================
 // AMC Academy Tech AI — Chat Mode
