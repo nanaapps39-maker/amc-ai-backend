@@ -1,3 +1,5 @@
+require("dotenv").config();   // ⭐ MUST BE LINE 1
+
 // force rebuild
 const express = require("express");
 const cors = require("cors");
@@ -10,6 +12,15 @@ function requireProAccess(res) {
     message: "Pro Mode required"
   });
 }
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// 🌍 Health Check Endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
@@ -45,11 +56,6 @@ const PRICE_IDS = {
   monthly: process.env.STRIPE_PRICE_ID_MONTHLY,
   annual: process.env.STRIPE_PRICE_ID_ANNUAL
 };
-
-// ⭐ CREATE APP BEFORE ROUTES
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // ===============================
 // Stripe Checkout — Monthly Subscription

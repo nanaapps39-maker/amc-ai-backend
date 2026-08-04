@@ -1,11 +1,11 @@
 [
   {
-    "key": "AMC-85F99A5389CA",
+    "key": "AMC-EDEA1ABEDAF0",
     "type": "customer",
     "seats": 1,
     "email": "manual-generator@amcacademy.tech",
     "active": true,
-    "created_at": "2026-08-02T15:04:42.793Z",
+    "created_at": "2026-08-04T19:14:56.783Z",
     "expiry_at": "2027-12-31T23:59:59Z"
   }
 ]
