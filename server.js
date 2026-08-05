@@ -1,6 +1,5 @@
 require("dotenv").config();   // ⭐ MUST BE LINE 1
 
-// force rebuild
 const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
