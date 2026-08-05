@@ -1204,7 +1204,6 @@ app.post("/api/orbit/analyse", async (req, res) => {
       ],
     });
 
-    // ⭐ IMPORTANT: Frontend expects "reply", not "orbit"
     return res.status(200).json({
       reply: completion.choices[0].message.content
     });
