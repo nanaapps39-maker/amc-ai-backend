@@ -19,21 +19,3 @@ function saveKeys(keys) {
     console.log("⚠️ Saved locally. Remember to update PRO_KEYS_JSON in Render.");
 }
 
-// Generate key
-const newKey = `AMC-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
-
-const keys = loadKeys();
-
-keys.push({
-    key: newKey,
-    type: "customer",
-    seats: 1,
-    email: "manual-generator@amcacademy.tech",
-    active: true,
-    created_at: new Date().toISOString(),
-    expiry_at: "2027-12-31T23:59:59Z"
-});
-
-saveKeys(keys);
-
-console.log(`✅ Generated new Pro Key: ${newKey}`);
