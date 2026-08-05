@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 
-// ⭐ ADD THIS FUNCTION RIGHT HERE
+// ⭐ PRO ACCESS RESPONSE
 function requireProAccess(res) {
   return res.status(200).json({
     status: "inactive",
@@ -15,7 +15,22 @@ function requireProAccess(res) {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
+
+// ===============================
+// PRO MODE MIDDLEWARE (FINAL)
+// ===============================
+app.use((req, res, next) => {
+  const key = req.headers["x-access-key"];
+
+  if (key === "AMC-PRO-2024") {
+    req.userIsPro = true;
+  } else {
+    req.userIsPro = false;
+  }
+
+  next();
+});
 
 // 🌍 Health Check Endpoint
 app.get("/api/health", (req, res) => {
@@ -44,7 +59,6 @@ const founderProfile = {
   ],
   mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally."
 };
-
 
 // ===============================
 // Stripe Setup
