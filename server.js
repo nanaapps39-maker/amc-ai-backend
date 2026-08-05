@@ -1184,9 +1184,9 @@ app.post("/api/satcom/alarm-log", async (req, res) => {
 });
 
 // ===============================
-// Orbit Mode (Pro)
+// Orbit Mode (Pro) — FIXED ROUTE + FIXED RESPONSE FIELD
 // ===============================
-app.post("/api/orbit", async (req, res) => {
+app.post("/api/orbit/analyse", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
   const { query } = req.body;
@@ -1204,10 +1204,17 @@ app.post("/api/orbit", async (req, res) => {
       ],
     });
 
-    return res.status(200).json({ orbit: completion.choices[0].message.content });
+    // ⭐ IMPORTANT: Frontend expects "reply", not "orbit"
+    return res.status(200).json({
+      reply: completion.choices[0].message.content
+    });
+
   } catch (error) {
     console.error("Orbit error:", error);
-    return res.status(500).json({ error: "Orbit Mode failed", details: error?.message });
+    return res.status(500).json({
+      error: "Orbit Mode failed",
+      details: error?.message
+    });
   }
 });
 
