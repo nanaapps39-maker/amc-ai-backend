@@ -2455,6 +2455,54 @@ app.post("/api/diagnostics/analyse", (req, res) => {
     ];
 
     // ===============================
+    // ⭐ ADD REPLY FIELD FOR FRONTEND
+    // ===============================
+
+    const replyText = `
+Summary
+${issue}
+
+Key Points
+- Likely root cause: ${topCause.subsystem}
+- Severity score: ${severityScore}
+
+Engineering Detail
+Subsystem scoring:
+${sortedSubsystems.map(s => `${s.subsystem}: ${s.score}`).join("\n")}
+
+Recommendations
+${recommendations.map(r => `- ${r}`).join("\n")}
+
+Confidence Level: High
+    `;
+
+    // ===============================
+    // FINAL RESPONSE
+    // ===============================
+
+    return res.status(200).json({
+      status: "success",
+      reply: replyText,
+      diagnostics: {
+        issue,
+        region,
+        orbitClass,
+        severity: severityScore,
+        subsystemScores: sortedSubsystems,
+        likelyRootCause: topCause,
+        recommendations
+      }
+    });
+
+  } catch (error) {
+    console.error("Diagnostics analysis error:", error);
+    return res.status(500).json({
+      error: "Failed to perform diagnostics analysis"
+    });
+  }
+});
+
+    // ===============================
     // RETURN FULL 8‑PHASE DIAGNOSTICS OUTPUT
     // ===============================
 
