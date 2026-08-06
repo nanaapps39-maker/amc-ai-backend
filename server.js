@@ -2502,61 +2502,6 @@ Confidence Level: High
   }
 });
 
-    // ===============================
-    // RETURN FULL 8‑PHASE DIAGNOSTICS OUTPUT
-    // ===============================
-
-    const replyText = `
-PHASE 1 — Issue Summary
-${issue}
-
-PHASE 2 — Subsystem Probability Scores
-${sortedSubsystems.map(s => `${s.subsystem}: ${s.score}`).join("\n")}
-
-PHASE 3 — Severity
-${severityScore}
-
-PHASE 4 — Likely Root Cause
-${topCause.subsystem} (${topCause.score})
-
-PHASE 5 — Recommendations
-${recommendations.map(r => "- " + r).join("\n")}
-
-PHASE 6 — Region Influence
-${region || "AUTO"}
-
-PHASE 7 — Orbit Class Influence
-${orbitClass || "AUTO"}
-
-PHASE 8 — Additional Data Required
-- ACU logs
-- Modem event logs
-- RF chain sweep
-- BUC telemetry
-    `;
-
-    return res.status(200).json({
-      status: "success",
-      reply: replyText,
-      diagnostics: {
-        issue,
-        region,
-        orbitClass,
-        severity: severityScore,
-        subsystemScores: sortedSubsystems,
-        likelyRootCause: topCause,
-        recommendations
-      }
-    });
-
-  } catch (error) {
-    console.error("Diagnostics analysis error:", error);
-    return res.status(500).json({
-      error: "Failed to perform diagnostics analysis"
-    });
-  }
-});
-
 // ===============================
 // SATCOM Diagnostics Engine — Phase 9 Module 2
 // Fix Likelihood Prediction (Pro)
