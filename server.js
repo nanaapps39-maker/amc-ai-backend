@@ -4,27 +4,26 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 
-// ⭐ PRO ACCESS RESPONSE
-function requireProAccess(res) {
-  return res.status(200).json({
-    status: "inactive",
-    message: "Pro Mode required"
-  });
-}
-
 const app = express();
 app.use(cors());
 app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
 
 // ===============================
-// PRO MODE MIDDLEWARE (FINAL)
+// PRO MODE MIDDLEWARE (UPDATED)
 // ===============================
 app.use((req, res, next) => {
   const key = req.headers["x-access-key"];
 
+  // Allow master Pro key
   if (key === "AMC-PRO-2024") {
     req.userIsPro = true;
-  } else {
+  }
+  // Allow customer keys (prefix AMC-CC)
+  else if (key && key.startsWith("AMC-CC")) {
+    req.userIsPro = true;
+  }
+  // Block everything else
+  else {
     req.userIsPro = false;
   }
 
@@ -35,6 +34,7 @@ app.use((req, res, next) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
