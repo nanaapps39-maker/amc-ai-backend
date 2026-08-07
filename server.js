@@ -1,3 +1,9 @@
+require("dotenv").config();   // ⭐ MUST BE LINE 1
+
+const express = require("express");
+const cors = require("cors");
+const Groq = require("groq-sdk");
+
 const app = express();
 
 app.use(cors({
@@ -7,6 +13,14 @@ app.use(cors({
 }));
 
 app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
+
+// ⭐ PRO ACCESS RESPONSE
+function requireProAccess(res) {
+  return res.status(200).json({
+    status: "inactive",
+    message: "Pro Mode required"
+  });
+}
 
 // ===============================
 // PRO MODE MIDDLEWARE (UPDATED)
