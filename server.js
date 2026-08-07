@@ -117,10 +117,14 @@ const PRICE_IDS = {
 // ===============================
 app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
   try {
-
-    // ⭐ DEBUG LOGS (ADD THESE)
-    console.log("DEBUG MONTHLY SUCCESS URL =", `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`);
-    console.log("DEBUG MONTHLY CANCEL URL =", `${process.env.FRONTEND_DOMAIN}/billing-cancel`);
+    console.log(
+      "DEBUG MONTHLY SUCCESS URL =",
+      `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`
+    );
+    console.log(
+      "DEBUG MONTHLY CANCEL URL =",
+      `${process.env.FRONTEND_DOMAIN}/billing-cancel`
+    );
     console.log("DEBUG MONTHLY PRICE ID =", PRICE_IDS.monthly);
 
     const session = await stripe.checkout.sessions.create({
@@ -128,11 +132,11 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
       line_items: [
         {
           price: PRICE_IDS.monthly,
-          quantity: 1,
-        },
+          quantity: 1
+        }
       ],
       success_url: `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`,
+      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
@@ -140,7 +144,7 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
     console.error("Stripe monthly checkout error:", error);
     return res.status(500).json({
       error: "Stripe monthly checkout failed",
-      details: error?.message,
+      details: error?.message
     });
   }
 });
@@ -150,10 +154,14 @@ app.post("/api/billing/create-checkout-session-monthly", async (req, res) => {
 // ===============================
 app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
   try {
-
-    // ⭐ DEBUG LOGS (ADD THESE)
-    console.log("DEBUG ANNUAL SUCCESS URL =", `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`);
-    console.log("DEBUG ANNUAL CANCEL URL =", `${process.env.FRONTEND_DOMAIN}/billing-cancel`);
+    console.log(
+      "DEBUG ANNUAL SUCCESS URL =",
+      `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`
+    );
+    console.log(
+      "DEBUG ANNUAL CANCEL URL =",
+      `${process.env.FRONTEND_DOMAIN}/billing-cancel`
+    );
     console.log("DEBUG ANNUAL PRICE ID =", PRICE_IDS.annual);
 
     const session = await stripe.checkout.sessions.create({
@@ -161,11 +169,11 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
       line_items: [
         {
           price: PRICE_IDS.annual,
-          quantity: 1,
-        },
+          quantity: 1
+        }
       ],
       success_url: `${process.env.FRONTEND_DOMAIN}/billing-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`,
+      cancel_url: `${process.env.FRONTEND_DOMAIN}/billing-cancel`
     });
 
     return res.status(200).json({ id: session.id, url: session.url });
@@ -173,16 +181,10 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
     console.error("Stripe annual checkout error:", error);
     return res.status(500).json({
       error: "Stripe annual checkout failed",
-      details: error?.message,
+      details: error?.message
     });
   }
 });
-
-// ===============================
-// Stripe Setup (ESM)
-// ===============================
-import Stripe from "stripe";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ===============================
 // Stripe Webhook — Subscriber Tracking (ESM)
