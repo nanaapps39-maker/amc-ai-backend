@@ -1,5 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// ESM-safe __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const subscribersFile = path.join(__dirname, "subscribers.json");
 
@@ -78,7 +83,7 @@ export function handleStripeEvent(event) {
     upsertSubscriber(record);
   }
 
-  // Handle checkout completion (to capture email + plan)
+  // Handle checkout completion
   if (type === "checkout.session.completed") {
     const record = {
       subscriptionId: data.subscription,
@@ -93,4 +98,5 @@ export function handleStripeEvent(event) {
 }
 
 export { loadSubscribers };
+
 
