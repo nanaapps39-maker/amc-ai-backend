@@ -102,10 +102,10 @@ const founderProfile = {
 };
 
 // ===============================
-// Stripe Setup
+// Stripe Setup (ESM)
 // ===============================
-const Stripe = require("stripe");
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICE_IDS = {
   monthly: process.env.STRIPE_PRICE_ID_MONTHLY,
