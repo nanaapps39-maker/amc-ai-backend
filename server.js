@@ -1323,12 +1323,13 @@ if (!fs.existsSync(attachmentsFile)) {
   fs.writeFileSync(attachmentsFile, JSON.stringify([]));
 }
 
-app.post("/api/attachments/upload", async (req, res) => {
+app.post("/api/attachment", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
-  const { content, filename } = req.body;
-  if (!content)
-    return res.status(400).json({ error: "Field 'content' is required." });
+  const { fileName, fileContent, vessel } = req.body;
+
+  if (!fileContent)
+    return res.status(400).json({ error: "Field 'fileContent' is required." });
 
   try {
     const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
@@ -1336,26 +1337,29 @@ app.post("/api/attachments/upload", async (req, res) => {
     const entry = {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
-      filename: filename || "attachment.txt",
-      content,
+      filename: fileName || "attachment.txt",
+      vessel: vessel || "Unknown Vessel",
+      content: fileContent
     };
 
     existing.push(entry);
     fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
 
     return res.status(200).json({
-      status: "success",
+      status: "ok",
       message: "Attachment stored successfully",
-      id: entry.id,
+      id: entry.id
     });
+
   } catch (error) {
     console.error("Attachment Mode error:", error);
     return res.status(500).json({
       error: "Attachment Mode failed",
-      details: error?.message,
+      details: error?.message
     });
   }
 });
+
 
 // ===============================
 // Retrieval Mode (Pro)
