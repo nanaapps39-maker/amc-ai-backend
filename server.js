@@ -1,11 +1,11 @@
-require("dotenv").config();   // ⭐ MUST BE LINE 1
-
-const express = require("express");
-const cors = require("cors");
-const Groq = require("groq-sdk");
-
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: "https://amcacademy.tech",   // allow your frontend domain
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-access-key"]
+}));
+
 app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
 
 // ===============================
