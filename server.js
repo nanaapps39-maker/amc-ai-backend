@@ -49,6 +49,33 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// ===============================
+// CHAT ENDPOINT (NEW REQUIRED)
+// ===============================
+app.post("/api/chat", async (req, res) => {
+  try {
+    const userMessage = req.body.message || "";
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const completion = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
+      messages: [
+        { role: "system", content: "You are AMC Academy Tech AI." },
+        { role: "user", content: userMessage }
+      ]
+    });
+
+    const reply = completion.choices[0].message.content;
+
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("CHAT ERROR:", err);
+    res.status(500).json({ error: "Chat backend failure" });
+  }
+});
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
