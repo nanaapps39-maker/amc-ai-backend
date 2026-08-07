@@ -752,30 +752,29 @@ Always prioritise clarity, natural phrasing, and technical accuracy.
 `;
 
 // ===============================
-// AMC Academy Tech AI — Chat Mode
+// CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
-app.post("/api/amc-ai", async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const { message } = req.body;
-  if (!message || message.trim() === "")
-    return res.status(400).json({ error: "Message is required" });
-
+app.post("/api/chat", async (req, res) => {
   try {
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const userMessage = req.body.message || "";
 
-    const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const completion = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
       messages: [
-        { role: "system", content: CHAT_SYSTEM_PROMPT },
-        { role: "user", content: message },
-      ],
+        { role: "system", content: "You are AMC Academy Tech AI." },
+        { role: "user", content: userMessage }
+      ]
     });
 
-    return res.status(200).json({ reply: completion.choices[0].message.content });
-  } catch (error) {
-    console.error("Chat AI error:", error);
-    return res.status(500).json({ error: "AI server error", details: error?.message });
+    const reply = completion.choices[0].message.content;
+
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("CHAT ERROR:", err);
+    res.status(500).json({ error: "Chat backend failure" });
   }
 });
 
