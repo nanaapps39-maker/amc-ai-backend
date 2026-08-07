@@ -179,10 +179,16 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
 });
 
 // ===============================
-// Stripe Webhook — Subscriber Tracking
+// Stripe Setup (ESM)
 // ===============================
-const bodyParser = require("body-parser");
-const { handleStripeEvent } = require("./stripe-subscriber-handler");
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// ===============================
+// Stripe Webhook — Subscriber Tracking (ESM)
+// ===============================
+import bodyParser from "body-parser";
+import { handleStripeEvent } from "./stripe-subscriber-handler.js";
 
 app.post(
   "/api/stripe/webhook",
