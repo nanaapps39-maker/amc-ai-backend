@@ -782,8 +782,9 @@ app.post("/api/amc-ai", async (req, res) => {
 // ===============================
 // Translator Mode (Free)
 // ===============================
-app.post("/api/translate", async (req, res) => {
+app.post("/api/translator", async (req, res) => {
   const { text, targetLanguage } = req.body;
+
   if (!text || !targetLanguage)
     return res.status(400).json({ error: "Both 'text' and 'targetLanguage' are required." });
 
@@ -798,10 +799,16 @@ app.post("/api/translate", async (req, res) => {
       ],
     });
 
-    return res.status(200).json({ translated: completion.choices[0].message.content });
+    return res.status(200).json({
+      reply: completion.choices[0].message.content
+    });
+
   } catch (error) {
     console.error("Translator error:", error);
-    return res.status(500).json({ error: "Translation failed", details: error?.message });
+    return res.status(500).json({
+      error: "Translation failed",
+      details: error?.message
+    });
   }
 });
 
