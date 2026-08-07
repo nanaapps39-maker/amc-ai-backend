@@ -2958,6 +2958,8 @@ app.get("/api/test-world-clock", (req, res) => {
 // ===============================
 // Start Server
 // ===============================
-app.listen(3000, () => {
-  console.log("AMC AI backend running on port 3000");
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`AMC AI backend running on port ${PORT}`);
 });
+
