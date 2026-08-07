@@ -1,13 +1,14 @@
-require("dotenv").config();   // ⭐ MUST BE LINE 1
+import dotenv from "dotenv";
+dotenv.config();   // ⭐ MUST BE LINE 1
 
-const express = require("express");
-const cors = require("cors");
-const Groq = require("groq-sdk");
+import express from "express";
+import cors from "cors";
+import Groq from "groq-sdk";
 
 const app = express();
 
 app.use(cors({
-  origin: "https://amcacademy.tech",   // allow your frontend domain
+  origin: "https://amcacademy.tech",
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "x-access-key"]
 }));
@@ -761,7 +762,7 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",   // ⭐ VALID MODEL
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
         { role: "user", content: userMessage }
@@ -774,7 +775,7 @@ app.post("/api/chat", async (req, res) => {
 
   } catch (err) {
     console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Chat backend failure" });
+    res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
 
