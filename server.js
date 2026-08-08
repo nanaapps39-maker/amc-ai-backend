@@ -223,8 +223,9 @@ app.post(
 // ===============================
 // Pro Access Key Configuration (UPDATED)
 // ===============================
+import fs from "fs";
+
 const PRO_ACCESS_KEY = "AMC-PRO-2024"; // Founder master key
-const fs = require("fs");
 
 app.use((req, res, next) => {
   const accessKey = req.headers["x-access-key"];
@@ -236,40 +237,40 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // ⭐ Load JSON file
-try {
-  const raw = fs.readFileSync("./pro-keys.json", "utf8");
-  const keys = JSON.parse(raw);
+  try {
+    // ⭐ Load JSON file (ESM-safe)
+    const raw = fs.readFileSync("./pro-keys.json", "utf8");
+    const keys = JSON.parse(raw);
 
-  // ⭐ If no key provided → Free Mode
-  if (!accessKey || accessKey.trim() === "") {
+    // ⭐ If no key provided → Free Mode
+    if (!accessKey || accessKey.trim() === "") {
+      req.userIsPro = false;
+      req.isMasterKey = false;
+      return next();
+    }
+
+    // ⭐ Find matching key
+    const match = keys.find((k) => k.key === accessKey);
+
+    // ⭐ If key not found → Free Mode
+    if (!match) {
+      req.userIsPro = false;
+      req.isMasterKey = false;
+      return next();
+    }
+
+    // ⭐ Valid key → Pro Mode
+    req.userIsPro = true;
+    req.isMasterKey = match.type === "master";
+  } catch (err) {
+    console.error("Middleware PRO key error:", err);
     req.userIsPro = false;
     req.isMasterKey = false;
-    return next();
   }
 
-  // ⭐ Find matching key
-  const match = keys.find(k => k.key === accessKey);
-
-  // ⭐ If key not found → Free Mode
-  if (!match) {
-    req.userIsPro = false;
-    req.isMasterKey = false;
-    return next();
-  }
-
-  // ⭐ Valid key → Pro Mode
-  req.userIsPro = true;
-  req.isMasterKey = match.type === "master";
-
-} catch (err) {
-  console.error("Middleware PRO key error:", err);
-  req.userIsPro = false;
-  req.isMasterKey = false;
-}
-
-next();
+  next();
 });
+
 
 // ===============================
 // PRO KEY VALIDATION ROUTE (FIXED)
@@ -306,7 +307,7 @@ app.post("/api/pro/validate", (req, res) => {
 // ===============================
 // PRO KEY GENERATOR (Admin)
 // ===============================
-const { generateProKey } = require("./pro-key-generator");
+import { generateProKey } from "./pro-key-generator.js";
 
 app.post("/api/pro/generate", (req, res) => {
   const { type, seats, email } = req.body;
@@ -331,6 +332,7 @@ app.post("/api/pro/generate", (req, res) => {
     });
   }
 });
+
 
 // ===============================
 // Subscribers List (Admin)
@@ -1272,10 +1274,17 @@ app.post("/api/orbit/analyse", async (req, res) => {
   }
 });
 
+
 // ===============================
 // Storage Mode (Pro)
 // ===============================
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// ESM-safe __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure storage folder exists
 const storageFolder = path.join(__dirname, "storage");
@@ -1321,6 +1330,7 @@ app.post("/api/storage/save", async (req, res) => {
     });
   }
 });
+
 
 // ===============================
 // Attachment Mode (Pro)
