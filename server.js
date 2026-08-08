@@ -57,17 +57,17 @@ app.post("/api/chat", async (req, res) => {
     console.log("GROQ KEY:", process.env.GROQ_API_KEY);
 
     const userMessage = req.body.message || "";
-
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-    model: "llama3.1-8b",   // ⭐ CORRECT MODEL — VERIFIED SUPPORTED IN 2026
-    stream: false,
-    messages: [
-    { role: "system", content: "You are AMC Academy Tech AI." },
-    { role: "user", content: userMessage }
-    ]
+      model: "llama3.1-8b",   // TEMPORARY — until we confirm actual model list
+      stream: false,
+      messages: [
+        { role: "system", content: "You are AMC Academy Tech AI." },
+        { role: "user", content: userMessage }
+      ]
     });
+
     console.log("GROQ RAW RESPONSE:", completion);
 
     const reply =
@@ -82,6 +82,43 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
+
+// ===============================
+// ⭐ MODEL DISCOVERY ROUTE
+// ===============================
+app.get("/api/models", async (req, res) => {
+  try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const models = await groq.models.list();
+    res.json(models);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ===============================
+// Test World Clock (UTC)
+// ===============================
+app.get("/api/test-world-clock", (req, res) => {
+  const timestamp = worldClock();
+  res.json({
+    status: "ok",
+    utc_time: timestamp
+  });
+});
+
+
+// ===============================
+// Start Server — ONLY ONE
+// ===============================
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`AMC AI backend running on port ${PORT}`);
+});
+
+
 
 
 // ===============================
