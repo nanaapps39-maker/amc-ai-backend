@@ -59,7 +59,7 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.chat.completions.createChatCompletion({
+    const completion = await groq.chat.completions.create({
       model: "llama3-8b-8192",
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
@@ -81,7 +81,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
-
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
