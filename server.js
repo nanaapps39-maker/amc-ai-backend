@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();   // ⭐ MUST BE LINE 1
+
 
 import express from "express";
 import cors from "cors";
