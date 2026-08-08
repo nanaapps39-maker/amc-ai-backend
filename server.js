@@ -779,7 +779,12 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
-    const reply = completion.choices[0].message.content;
+    console.log("GROQ RAW RESPONSE:", completion);
+
+    const reply =
+      completion.choices[0].message?.content ||
+      completion.choices[0].message ||
+      "⚠️ No reply returned from Groq";
 
     res.json({ reply });
 
@@ -788,6 +793,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 // ===============================
 // Translator Mode (Free)
