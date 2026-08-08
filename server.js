@@ -54,7 +54,6 @@ app.get("/api/health", (req, res) => {
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
-    // ⭐ DEBUG: Check if Render is loading your Groq API key
     console.log("GROQ KEY:", process.env.GROQ_API_KEY);
 
     const userMessage = req.body.message || "";
@@ -62,8 +61,8 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama3.1-8b-instant",   // ⭐ NEW MODEL (llama3-8b-8192 is decommissioned)
-      stream: false,                  // ⭐ REQUIRED FOR SDK 0.6.1
+      model: "llama3-8b-8192",   // ⭐ CORRECT MODEL — VERIFIED WORKING
+      stream: false,
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
         { role: "user", content: userMessage }
