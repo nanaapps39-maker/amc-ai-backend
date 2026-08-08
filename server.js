@@ -844,6 +844,9 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
+    // ⭐ DEBUG: Confirm which model Groq actually used
+    console.log("MODEL USED:", completion.model);
+
     console.log("GROQ RAW RESPONSE:", completion);
 
     const reply =
@@ -858,6 +861,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 // ===============================
