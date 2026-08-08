@@ -839,7 +839,7 @@ app.post("/api/chat", async (req, res) => {
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: "You are AMC Academy Tech AI." },
+        { role: "system", content: CHAT_SYSTEM_PROMPT },
         { role: "user", content: userMessage }
       ]
     });
