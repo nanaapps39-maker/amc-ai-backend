@@ -51,7 +51,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // ===============================
-// CHAT ENGINE — FINAL WORKING VERSION FOR GROQ SDK 0.6.1
+// CHAT ENGINE — FINAL FIX FOR GROQ SDK 0.6.1
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
@@ -61,6 +61,7 @@ app.post("/api/chat", async (req, res) => {
 
     const completion = await groq.chat.completions.create({
       model: "llama3-8b-8192",
+      stream: false,   // ⭐ REQUIRED FOR SDK 0.6.1
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
         { role: "user", content: userMessage }
@@ -81,6 +82,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
