@@ -51,7 +51,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // ===============================
-// CHAT ENDPOINT (NEW REQUIRED)
+// CHAT ENGINE — MAIN AI RESPONSE ROUTE (WORKING VERSION)
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
@@ -59,21 +59,28 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+    // ⭐ Correct method for groq-sdk ^0.6.0
+    const completion = await groq.chat.completions.createChatCompletion({
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
         { role: "user", content: userMessage }
       ]
     });
 
-    const reply = completion.choices[0].message.content;
+    console.log("GROQ RAW RESPONSE:", completion);
+
+    // ⭐ Safe extraction (prevents 500 errors)
+    const reply =
+      completion.choices[0].message?.content ||
+      completion.choices[0].message ||
+      "⚠️ No reply returned from Groq";
 
     res.json({ reply });
 
   } catch (err) {
     console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Chat backend failure" });
+    res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
 
