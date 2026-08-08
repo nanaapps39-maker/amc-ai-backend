@@ -55,6 +55,9 @@ app.get("/api/health", (req, res) => {
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
+    // ⭐ DEBUG: Check if Render is loading your Groq API key
+    console.log("GROQ KEY:", process.env.GROQ_API_KEY);
+
     const userMessage = req.body.message || "";
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
