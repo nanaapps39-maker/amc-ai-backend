@@ -51,7 +51,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // ===============================
-// CHAT ENGINE — MAIN AI RESPONSE ROUTE (WORKING VERSION)
+// CHAT ENGINE — FINAL WORKING VERSION FOR GROQ SDK 0.6.1
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
@@ -59,9 +59,8 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ Correct method for groq-sdk ^0.6.0
     const completion = await groq.chat.completions.createChatCompletion({
-      model: "llama-3.1-8b-instant",
+      model: "llama3-8b-8192",
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
         { role: "user", content: userMessage }
@@ -70,7 +69,6 @@ app.post("/api/chat", async (req, res) => {
 
     console.log("GROQ RAW RESPONSE:", completion);
 
-    // ⭐ Safe extraction (prevents 500 errors)
     const reply =
       completion.choices[0].message?.content ||
       completion.choices[0].message ||
