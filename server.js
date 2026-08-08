@@ -60,7 +60,7 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama3.1-8b",   // TEMPORARY — until we confirm actual model list
+      model: "llama3.1-8b",   // TEMPORARY — until we see actual model list
       stream: false,
       messages: [
         { role: "system", content: "You are AMC Academy Tech AI." },
@@ -85,7 +85,7 @@ app.post("/api/chat", async (req, res) => {
 
 
 // ===============================
-// ⭐ MODEL DISCOVERY ROUTE
+// MODEL DISCOVERY ROUTE
 // ===============================
 app.get("/api/models", async (req, res) => {
   try {
@@ -3022,11 +3022,4 @@ app.get("/api/test-world-clock", (req, res) => {
   });
 });
 
-// ===============================
-// Start Server
-// ===============================
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`AMC AI backend running on port ${PORT}`);
-});
 
