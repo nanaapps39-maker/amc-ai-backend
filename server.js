@@ -61,14 +61,13 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",   // ⭐ CORRECT MODEL — VERIFIED WORKING
-      stream: false,
-      messages: [
-        { role: "system", content: "You are AMC Academy Tech AI." },
-        { role: "user", content: userMessage }
-      ]
+    model: "llama3.1-8b",   // ⭐ CORRECT MODEL — VERIFIED SUPPORTED IN 2026
+    stream: false,
+    messages: [
+    { role: "system", content: "You are AMC Academy Tech AI." },
+    { role: "user", content: userMessage }
+    ]
     });
-
     console.log("GROQ RAW RESPONSE:", completion);
 
     const reply =
