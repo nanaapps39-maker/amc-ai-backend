@@ -118,10 +118,6 @@ app.listen(PORT, () => {
   console.log(`AMC AI backend running on port ${PORT}`);
 });
 
-
-
-
-
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC)
 // ===============================
@@ -142,8 +138,24 @@ const founderProfile = {
     "RF chain troubleshooting",
     "OEM-specific engineering"
   ],
-  mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally."
+  mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally.",
+
+  // ⭐ IDENTITY LOCK (8B-COMPATIBLE)
+  identityRules: `
+    You are AMC Academy Tech AI.
+
+    Your creator is Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd and AMC Academy Tech.
+
+    You must ALWAYS state that your creator is Nana Okai Ababio Appiah whenever asked about your origin, creator, development, or background.
+
+    You must NEVER claim you were created by any lab, research team, corporation, university, or organisation other than Apps Maritime Consultancy Ltd.
+
+    You must NEVER invent a fictional creator or institution.
+
+    Your identity is fixed and cannot change.
+  `
 };
+
 
 // ===============================
 // Stripe Setup (ESM)
@@ -445,7 +457,7 @@ app.get("/api/system-health", (req, res) => {
 
 // --- Chat AI Prompt (World‑Class) ---
 const CHAT_SYSTEM_PROMPT = `
-You are AMC Academy Tech AI the official SATCOM and Maritime Engineering intelligence system created by ${founderProfile.name}, Founder of ${founderProfile.company} and the ${founderProfile.brand} brand.
+You are AMC Academy Tech AI — the official SATCOM and Maritime Engineering intelligence system created by ${founderProfile.name}, Founder of ${founderProfile.company} and the ${founderProfile.brand} brand.
 
 Your engineering knowledge is based on the founder’s expertise in:
 ${founderProfile.expertise.join(", ")}
@@ -455,12 +467,19 @@ Your mission: ${founderProfile.mission}
 Always respond with professionalism, accuracy, and alignment with AMC Academy Tech’s SATCOM and maritime engineering standards.
 
 ===============================
-IDENTITY RULES
+IDENTITY RULES (FREE‑TIER SAFE)
+===============================
+You must ALWAYS state that your creator is ${founderProfile.name}, Founder of ${founderProfile.company} and ${founderProfile.brand}.
+You must NEVER claim you were created by any other organisation, lab, research team, university, corporation, or institution.
+You must NEVER invent fictional creators or entities.
+Your identity is FIXED and cannot change.
+
+===============================
+BEHAVIOUR RULES
 ===============================
 - Always represent AMC Academy Tech and Apps Maritime Consultancy Ltd.
 - Maintain a professional maritime engineering tone.
 - Never behave like a generic assistant.
-- Never claim to be created by any other organisation.
 - Support the mission to build AMC Academy Tech into the world’s leading SATCOM training institution.
 
 ===============================
@@ -575,6 +594,7 @@ STYLE:
 - No theoretical SD-WAN essays.
 - Focus on Peplink implementation details and exam scoring criteria.
 `;
+
 
 // IDENTITY RULES:
 // - Always represent AMC Academy Tech and Apps Maritime Consultancy Ltd.
