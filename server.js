@@ -1,4 +1,4 @@
-
+// HARD REBUILD — August 9, 2026 — v2
 
 import express from "express";
 import cors from "cors";
@@ -50,30 +50,29 @@ app.get("/api/health", (req, res) => {
 });
 
 // ===============================
-// CHAT ENGINE — FINAL FIX FOR GROQ SDK 0.6.1
+// CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
-    console.log("GROQ KEY:", process.env.GROQ_API_KEY);
-
     const userMessage = req.body.message || "";
+
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",   // ⭐ CORRECT MODEL — VERIFIED FROM /api/models
-      stream: false,
-      messages: [
-        { role: "system", content: "You are AMC Academy Tech AI." },
-        { role: "user", content: userMessage }
+    const completion = await groq.responses.create({
+      model: "llama-3.1-8b-instant",
+      input: [
+        {
+          role: "system",
+          content: CHAT_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: userMessage
+        }
       ]
     });
 
-    console.log("GROQ RAW RESPONSE:", completion);
-
-    const reply =
-      completion.choices[0].message?.content ||
-      completion.choices[0].message ||
-      "⚠️ No reply returned from Groq";
+    const reply = completion.output_text || "⚠️ No reply returned from Groq";
 
     res.json({ reply });
 
