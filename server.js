@@ -837,14 +837,14 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-70b-text",
+      model: "llama-3.1-8b-text",
       messages: [
         { role: "system", content: CHAT_SYSTEM_PROMPT },
         { role: "user", content: userMessage }
       ]
     });
 
-    // ⭐ DEBUG: Confirm which model Groq actually used
+    // Debug: Confirm model actually used
     console.log("MODEL USED:", completion.model);
 
     console.log("GROQ RAW RESPONSE:", completion);
