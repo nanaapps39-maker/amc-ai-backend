@@ -772,23 +772,23 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.chat.completions.create({
-      model: "mixtral-8x7b-32768",   // ⭐ FIXED: Stops Meta fallback permanently
-      messages: [
-        { role: "system", content: CHAT_SYSTEM_PROMPT },
-        { role: "user", content: userMessage }
+    // ⭐ CORRECTED: Use Groq Responses API (NOT chat.completions)
+    const completion = await groq.responses.create({
+      model: "llama-3.1-8b-instant",
+      input: [
+        {
+          role: "system",
+          content: CHAT_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: userMessage
+        }
       ]
     });
 
-    // Debug: Confirm model actually used
-    console.log("MODEL USED:", completion.model);
-
-    console.log("GROQ RAW RESPONSE:", completion);
-
-    const reply =
-      completion.choices[0].message?.content ||
-      completion.choices[0].message ||
-      "⚠️ No reply returned from Groq";
+    // ⭐ CORRECTED: Groq Responses API returns output_text
+    const reply = completion.output_text || "⚠️ No reply returned from Groq";
 
     res.json({ reply });
 
