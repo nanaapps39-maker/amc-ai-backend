@@ -60,10 +60,6 @@ app.post("/api/chat", async (req, res) => {
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
-      temperature: 0,
-      top_p: 1,
-      max_tokens: 1024,
-      stop: null,
       messages: [
         {
           role: "system",
@@ -90,7 +86,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
-
 
 
 // ===============================
