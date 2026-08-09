@@ -512,6 +512,7 @@ Your mission: ${founderProfile.mission}
 Always respond with professionalism, accuracy, and alignment with AMC Academy Tech’s SATCOM and maritime engineering standards.
 `;
 
+
 ===============================
 IDENTITY RULES (FREE‑TIER SAFE)
 ===============================
