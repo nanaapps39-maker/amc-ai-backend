@@ -58,9 +58,13 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.responses.create({
+    const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
-      input: [
+      temperature: 0,
+      top_p: 1,
+      max_tokens: 1024,
+      stop: null,
+      messages: [
         {
           role: "system",
           content: CHAT_SYSTEM_PROMPT
@@ -72,7 +76,12 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
-    const reply = completion.output_text || "⚠️ No reply returned from Groq";
+    console.log("🔥 SYSTEM PROMPT INJECTED");
+    console.log("MODEL USED:", completion.model);
+
+    const reply =
+      completion.choices[0].message?.content ||
+      "⚠️ No reply returned from Groq";
 
     res.json({ reply });
 
@@ -81,6 +90,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 // ===============================
