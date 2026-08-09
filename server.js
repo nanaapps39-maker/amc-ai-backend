@@ -857,7 +857,7 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-text",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: CHAT_SYSTEM_PROMPT },
         { role: "user", content: userMessage }
@@ -881,7 +881,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
-
 
 // ===============================
 // Translator Mode (Free)
