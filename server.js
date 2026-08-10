@@ -1047,7 +1047,7 @@ app.post("/api/chat", async (req, res) => {
 // ===============================
 // Translator Mode (Free)
 // ===============================
-app.post("/api/translator", async (req, res) => {
+app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage } = req.body;
 
   if (!text || !targetLanguage)
@@ -1065,7 +1065,7 @@ app.post("/api/translator", async (req, res) => {
     });
 
     return res.status(200).json({
-      reply: completion.choices[0].message.content
+      translated: completion.choices[0].message.content
     });
 
   } catch (error) {
@@ -1076,6 +1076,7 @@ app.post("/api/translator", async (req, res) => {
     });
   }
 });
+
 
 // ===============================
 // SATCOM Diagnostics (Pro)
