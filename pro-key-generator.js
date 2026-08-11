@@ -46,3 +46,10 @@ export function generateProKey(type = "customer", seats = 1, email = null) {
   return record;
 }
 
+// Run generator when executed directly
+if (process.argv[1] === __filename) {
+  const record = generateProKey("customer", 1, "manual-generator@amcacademy.tech");
+  console.log("✅ Generated PRO Key:", record.key);
+  console.log("Saved record:", record);
+}
+
