@@ -21,6 +21,15 @@
     "active": true,
     "created_at": "2026-08-08T22:30:00Z",
     "expiry_at": "2026-09-07T22:30:00Z"
+  },
+  {
+    "key": "AMC-PRO-DANIEL-9472-ABX1-2026",
+    "type": "customer",
+    "seats": 1,
+    "email": "daniel@example.com",
+    "active": true,
+    "created_at": "2026-08-11T20:33:00Z",
+    "expiry_at": "2026-09-10T23:59:59Z"
   }
 ]
 
