@@ -39,4 +39,7 @@ function calculateVoyage(lat1, lon1, lat2, lon2, speedKnots, departureTimeUTC) {
   };
 }
 
-module.exports = { calculateVoyage };
+// ⭐ REQUIRED FOR ESM IMPORT IN server.js
+export { calculateVoyage };
+
+
