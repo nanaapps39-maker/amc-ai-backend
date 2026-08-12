@@ -4,6 +4,9 @@ import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
 
+// ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
+import { calculateVoyage } from "./voyageEngine.js";
+
 const app = express();
 
 app.use(cors({
@@ -48,6 +51,7 @@ app.use((req, res, next) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
 
 // ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
@@ -1148,6 +1152,56 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
     return res.status(500).json({ error: "Diagnostics failed", details: error?.message });
   }
 });
+
+// ===============================
+// Voyage Distance & ETA (Core)
+// ===============================
+app.post("/api/voyage", (req, res) => {
+  const {
+    lat1, lon1,
+    lat2, lon2,
+    speedKnots,
+    departureTimeUTC
+  } = req.body;
+
+  if (
+    lat1 === undefined || lon1 === undefined ||
+    lat2 === undefined || lon2 === undefined ||
+    !speedKnots || !departureTimeUTC
+  ) {
+    return res.status(400).json({
+      error: "Missing required fields.",
+      requiredFields: [
+        "lat1", "lon1",
+        "lat2", "lon2",
+        "speedKnots",
+        "departureTimeUTC"
+      ]
+    });
+  }
+
+  try {
+    const result = calculateVoyage(
+      lat1, lon1,
+      lat2, lon2,
+      speedKnots,
+      departureTimeUTC
+    );
+
+    return res.status(200).json({
+      status: "success",
+      voyage: result
+    });
+
+  } catch (error) {
+    console.error("Voyage calculation error:", error);
+    return res.status(500).json({
+      error: "Voyage calculation failed",
+      details: error?.message
+    });
+  }
+});
+
 
 // ===============================
 // Voyage Analytics (Pro)
