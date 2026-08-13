@@ -63,7 +63,7 @@ app.post("/api/chat", async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -90,6 +90,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 // ===============================
@@ -1028,9 +1029,9 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ CORRECTED: Use Groq Responses API (NOT chat.completions)
+    // ⭐ UPDATED: Use GPT‑OSS‑20B (replacement for Llama 3.1 8B Instant)
     const completion = await groq.responses.create({
-      model: "llama-3.1-8b-instant",
+      model: "gpt-oss-20b",
       input: [
         {
           role: "system",
@@ -1043,7 +1044,7 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
-    // ⭐ CORRECTED: Groq Responses API returns output_text
+    // ⭐ CORRECT: Groq Responses API returns output_text
     const reply = completion.output_text || "⚠️ No reply returned from Groq";
 
     res.json({ reply });
@@ -1053,6 +1054,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 // ===============================
