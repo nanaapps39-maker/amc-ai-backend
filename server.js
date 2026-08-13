@@ -62,8 +62,9 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+    // ⭐ UPDATED: Correct model ID with namespace
     const completion = await groq.chat.completions.create({
-      model: "gpt-oss-20b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -90,6 +91,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 
@@ -1029,9 +1031,9 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ UPDATED: Use GPT‑OSS‑20B (replacement for Llama 3.1 8B Instant)
+    // ⭐ UPDATED: Correct model ID with namespace
     const completion = await groq.responses.create({
-      model: "gpt-oss-20b",
+      model: "openai/gpt-oss-20b",
       input: [
         {
           role: "system",
@@ -1054,6 +1056,7 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 
 
