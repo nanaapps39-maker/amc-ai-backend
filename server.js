@@ -352,7 +352,6 @@ app.post(
 // ===============================
 // Pro Access Key Configuration (UPDATED)
 // ===============================
-import fs from "fs";
 
 const PRO_ACCESS_KEY = "AMC-PRO-2024"; // Founder master key
 
