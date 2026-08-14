@@ -160,7 +160,7 @@ const founderProfile = {
   ],
   mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally.",
 
-  // ⭐ IDENTITY LOCK — NUCLEAR OVERRIDE (LLaMA‑3.1‑8B SAFE)
+  // ⭐ IDENTITY LOCK — NUCLEAR OVERRIDE (MODEL‑AGNOSTIC — DO NOT MODIFY)
   identityRules: `
     IDENTITY LOCK — DO NOT BREAK:
 
@@ -936,42 +936,43 @@ app.post("/api/chat", async (req, res) => {
 
 
 // ===============================
-// TRANSLATOR ENGINE — LANGUAGE MODE
+// TRANSLATOR ENGINE — GPT‑OSS‑20B (SAFE FOR AUG 2026+)
 // ===============================
 app.post("/api/translate", async (req, res) => {
   try {
     const text = req.body.text || "";
-    const targetLanguage = req.body.language || "twi";
+    const sourceLanguage = req.body.sourceLanguage || "English";
+    const targetLanguage = req.body.targetLanguage || "Akan";
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await groq.responses.create({
+    const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-20b",
-      input: [
-        {
-          role: "system",
-          content: `TargetLanguage: ${targetLanguage}`
-        },
+      messages: [
         {
           role: "system",
           content: TRANSLATOR_SYSTEM_PROMPT
         },
         {
           role: "user",
-          content: text
+          content: `Translate from ${sourceLanguage} to ${targetLanguage}: ${text}`
         }
       ]
     });
 
-    const reply = completion.output_text || "⚠️ No translation returned from Groq";
+    const translatedText = completion.choices[0].message.content;
 
-    res.json({ reply });
+    res.json({ translatedText });
 
   } catch (err) {
     console.error("TRANSLATOR ERROR:", err);
-    res.status(500).json({ error: "Translator backend failure", details: err.message });
+    res.status(500).json({
+      error: "Translator backend failure",
+      details: err.message
+    });
   }
 });
+
 
 
 // --- Translator Prompt (World‑Class + Africa Language Pack) ---
@@ -1173,22 +1174,34 @@ app.post("/api/translate", async (req, res) => {
       }
     }
 
-    // ============================================
-    // DEFAULT TRANSLATION FLOW (Groq)
-    // ============================================
+
+// ============================================
+// DEFAULT TRANSLATION FLOW (Groq — FIXED)
+// ============================================
+app.post("/api/translate", async (req, res) => {
+  try {
+    const text = req.body.text || "";
+    const sourceLanguage = req.body.sourceLanguage || "English";
+    const targetLanguage = req.body.targetLanguage || "Akan";  // Africa Language Pack default
 
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-20b",
       messages: [
-        { role: "system", content: TRANSLATOR_SYSTEM_PROMPT },
-        { role: "user", content: `Translate into ${targetLanguage}: ${text}` },
-      ],
+        {
+          role: "system",
+          content: TRANSLATOR_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: `Translate from ${sourceLanguage} to ${targetLanguage}: ${text}`
+        }
+      ]
     });
 
     return res.status(200).json({
-      translated: completion.choices[0].message.content
+      translatedText: completion.choices[0].message.content
     });
 
   } catch (error) {
@@ -1202,7 +1215,7 @@ app.post("/api/translate", async (req, res) => {
 
 
 // ===============================
-// SATCOM Diagnostics (Pro)
+// SATCOM Diagnostics (Pro) — FULL ENGINE MODE
 // ===============================
 app.post("/api/satcom/diagnostics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -1217,17 +1230,62 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
     const completion = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
-        { role: "user", content: `Run SATCOM diagnostics for: ${query}` },
-      ],
+        {
+          role: "system",
+          content: DIAGNOSTICS_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: `
+You are AMC Academy Tech AI — run FULL SATCOM DIAGNOSTICS ENGINE MODE.
+
+Analyse the following SATCOM issue:
+
+"${query}"
+
+Return your output STRICTLY in the following JSON structure:
+
+{
+  "analysis": "Technical breakdown of the issue",
+  "rootCauseScores": {
+    "hardware": "percentage",
+    "rfChain": "percentage",
+    "antenna": "percentage",
+    "modem": "percentage",
+    "network": "percentage",
+    "configuration": "percentage",
+    "environmental": "percentage"
+  },
+  "recommendedFix": "Step-by-step fix path",
+  "riskAssessment": "Operational impact if unfixed",
+  "finalSummary": "Concise maritime/SATCOM engineer summary"
+}
+
+Ensure:
+- Percentages total ~100%
+- Explanations are SATCOM-accurate
+- Maritime context is included where relevant
+- No extra text outside the JSON
+        `
+        }
+      ]
     });
 
-    return res.status(200).json({ diagnostics: completion.choices[0].message.content });
+    const output = completion.choices[0].message.content;
+
+    return res.status(200).json({
+      diagnostics: JSON.parse(output)
+    });
+
   } catch (error) {
     console.error("Diagnostics error:", error);
-    return res.status(500).json({ error: "Diagnostics failed", details: error?.message });
+    return res.status(500).json({
+      error: "Diagnostics failed",
+      details: error?.message
+    });
   }
 });
+
 
 // ===============================
 // Voyage Distance & ETA (Core)
@@ -1642,7 +1700,7 @@ app.post("/api/satcom/slew-rate", (req, res) => {
 });
 
 // ===============================
-// SATCOM Alarm Pack Analysis (Pro)
+// SATCOM Alarm Pack Analysis (Pro) — FULL ENGINE MODE
 // ===============================
 app.post("/api/satcom/alarm-log", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -1657,108 +1715,78 @@ app.post("/api/satcom/alarm-log", async (req, res) => {
     const completion = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: ALARM_SYSTEM_PROMPT },
-        { role: "user", content: `Analyse the following SATCOM alarm log:\n\n${fileContent}` },
-      ],
+        {
+          role: "system",
+          content: ALARM_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: `
+You are AMC Academy Tech AI — run FULL SATCOM ALARM PACK ANALYSIS ENGINE MODE.
+
+Analyse the following SATCOM alarm log:
+
+"${fileContent}"
+
+Return your output STRICTLY in the following JSON structure:
+
+{
+  "summary": "2–3 sentence overview of the alarm pack",
+  "affectedSubsystems": [
+    "RF Chain",
+    "BUC",
+    "LNB",
+    "Modem",
+    "ACU",
+    "IMU",
+    "Power Supply",
+    "Network",
+    "NMS"
+  ],
+  "severity": {
+    "critical": [],
+    "major": [],
+    "minor": []
+  },
+  "rootCauseHypotheses": [
+    "Hypothesis 1",
+    "Hypothesis 2",
+    "Hypothesis 3"
+  ],
+  "recommendedActions": [
+    "Step 1",
+    "Step 2",
+    "Step 3"
+  ],
+  "escalationGuidance": "When to escalate to NOC or manufacturer",
+  "additionalInfoRequired": "What extra data is needed for deeper analysis"
+}
+
+Rules:
+- Only include subsystems that appear relevant.
+- Severity lists must contain alarm names or alarm categories.
+- No text outside the JSON.
+- No markdown.
+- No commentary.
+        `
+        }
+      ]
     });
 
-    return res.status(200).json({ analysis: completion.choices[0].message.content });
-  } catch (error) {
-    console.error("Alarm analysis error:", error);
-    return res.status(500).json({ error: "Alarm analysis failed", details: error?.message });
-  }
-});
-
-// ===============================
-// Orbit Mode (Pro) — FIXED ROUTE + FIXED RESPONSE FIELD
-// ===============================
-app.post("/api/orbit/analyse", async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const { query } = req.body;
-  if (!query || query.trim() === "")
-    return res.status(400).json({ error: "Field 'query' is required." });
-
-  try {
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: ORBIT_SYSTEM_PROMPT },
-        { role: "user", content: `Analyse orbit behaviour for: ${query}` },
-      ],
-    });
+    const output = completion.choices[0].message.content;
 
     return res.status(200).json({
-      reply: completion.choices[0].message.content
+      analysis: JSON.parse(output)
     });
 
   } catch (error) {
-    console.error("Orbit error:", error);
+    console.error("Alarm analysis error:", error);
     return res.status(500).json({
-      error: "Orbit Mode failed",
+      error: "Alarm analysis failed",
       details: error?.message
     });
   }
 });
-
-
-// ===============================
-// Storage Mode (Pro)
-// ===============================
-import path from "path";
-import { fileURLToPath } from "url";
-
-// ESM-safe __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Ensure storage folder exists
-const storageFolder = path.join(__dirname, "storage");
-if (!fs.existsSync(storageFolder)) {
-  fs.mkdirSync(storageFolder);
-}
-
-// Ensure storage.json exists
-const storageFile = path.join(storageFolder, "storage.json");
-if (!fs.existsSync(storageFile)) {
-  fs.writeFileSync(storageFile, JSON.stringify([]));
-}
-
-app.post("/api/storage/save", async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const { data } = req.body;
-  if (!data)
-    return res.status(400).json({ error: "Field 'data' is required." });
-
-  try {
-    const existing = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-
-    const entry = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      data,
-    };
-
-    existing.push(entry);
-    fs.writeFileSync(storageFile, JSON.stringify(existing, null, 2));
-
-    return res.status(200).json({
-      status: "success",
-      message: "Data stored successfully",
-      id: entry.id,
-    });
-  } catch (error) {
-    console.error("Storage Mode error:", error);
-    return res.status(500).json({
-      error: "Storage Mode failed",
-      details: error?.message,
-    });
-  }
-});
-
 
 // ===============================
 // Attachment Mode (Pro)
@@ -1813,203 +1841,6 @@ app.post("/api/attachment", async (req, res) => {
   }
 });
 
-
-// ===============================
-// Retrieval Mode (Pro)
-// ===============================
-
-// Retrieve all stored SATCOM cases
-app.get("/api/storage/list", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const data = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-    return res.status(200).json({ status: "success", items: data });
-  } catch (error) {
-    console.error("Storage list error:", error);
-    return res.status(500).json({ error: "Failed to list storage items" });
-  }
-});
-
-// Retrieve a single SATCOM case by ID
-app.get("/api/storage/get/:id", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const data = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-    const item = data.find((x) => x.id === req.params.id);
-
-    if (!item)
-      return res.status(404).json({ error: "Storage item not found" });
-
-    return res.status(200).json({ status: "success", item });
-  } catch (error) {
-    console.error("Storage get error:", error);
-    return res.status(500).json({ error: "Failed to retrieve storage item" });
-  }
-});
-
-// List all attachments
-app.get("/api/attachments/list", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const data = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
-    return res.status(200).json({ status: "success", items: data });
-  } catch (error) {
-    console.error("Attachment list error:", error);
-    return res.status(500).json({ error: "Failed to list attachments" });
-  }
-});
-
-// Retrieve a single attachment by ID
-app.get("/api/attachments/get/:id", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const data = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
-    const item = data.find((x) => x.id === req.params.id);
-
-    if (!item)
-      return res.status(404).json({ error: "Attachment not found" });
-
-    return res.status(200).json({ status: "success", item });
-  } catch (error) {
-    console.error("Attachment get error:", error);
-    return res.status(500).json({ error: "Failed to retrieve attachment" });
-  }
-});
-
-// ===============================
-// Search Mode (Pro)
-// ===============================
-
-app.post("/api/search", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const { query } = req.body;
-  if (!query || query.trim() === "")
-    return res.status(400).json({ error: "Field 'query' is required." });
-
-  try {
-    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
-
-    const q = query.toLowerCase();
-
-    // Search storage items
-    const storageMatches = storageData.filter((item) =>
-      JSON.stringify(item.data).toLowerCase().includes(q)
-    );
-
-    // Search attachments
-    const attachmentMatches = attachmentData.filter((item) =>
-      item.content.toLowerCase().includes(q)
-    );
-
-    return res.status(200).json({
-      status: "success",
-      query,
-      storageMatches,
-      attachmentMatches,
-      totalMatches: storageMatches.length + attachmentMatches.length,
-    });
-  } catch (error) {
-    console.error("Search Mode error:", error);
-    return res.status(500).json({
-      error: "Search Mode failed",
-      details: error?.message,
-    });
-  }
-});
-
-// ===============================
-// SATCOM Case History Mode (Pro)
-// ===============================
-
-app.get("/api/history/vessel/:name", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const vesselName = req.params.name;
-  if (!vesselName || vesselName.trim() === "")
-    return res.status(400).json({ error: "Vessel name is required." });
-
-  try {
-    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-    const nameLower = vesselName.toLowerCase();
-
-    const cases = storageData.filter((item) => {
-      const v =
-        item.data &&
-        typeof item.data.vessel === "string" &&
-        item.data.vessel.toLowerCase();
-      return v && v === nameLower;
-    });
-
-    // Sort by timestamp ascending
-    cases.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-    return res.status(200).json({
-      status: "success",
-      vessel: vesselName,
-      cases,
-      totalCases: cases.length,
-    });
-  } catch (error) {
-    console.error("Vessel history error:", error);
-    return res.status(500).json({ error: "Failed to build vessel history" });
-  }
-});
-
-app.get("/api/history/vessel/:name/full", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const vesselName = req.params.name;
-  if (!vesselName || vesselName.trim() === "")
-    return res.status(400).json({ error: "Vessel name is required." });
-
-  try {
-    const storageData = JSON.parse(fs.readFileSync(storageFile, "utf8"));
-    const attachmentData = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
-    const nameLower = vesselName.toLowerCase();
-
-    const cases = storageData.filter((item) => {
-      const v =
-        item.data &&
-        typeof item.data.vessel === "string" &&
-        item.data.vessel.toLowerCase();
-      return v && v === nameLower;
-    });
-
-    const attachments = attachmentData.filter((item) => {
-      const v =
-        item.vessel &&
-        typeof item.vessel === "string" &&
-        item.vessel.toLowerCase();
-      return v && v === nameLower;
-    });
-
-    // Sort both by timestamp ascending
-    cases.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    attachments.sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-    );
-
-    return res.status(200).json({
-      status: "success",
-      vessel: vesselName,
-      cases,
-      attachments,
-      totalCases: cases.length,
-      totalAttachments: attachments.length,
-    });
-  } catch (error) {
-    console.error("Full vessel history error:", error);
-    return res
-      .status(500)
-      .json({ error: "Failed to build full vessel history" });
-  }
-});
 
 // ===============================
 // Vessel Intelligence Mode — Module 1
