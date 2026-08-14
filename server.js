@@ -3,6 +3,7 @@
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
+import path from "path";   // ⭐ REQUIRED FOR ATTACHMENT MODE
 
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
