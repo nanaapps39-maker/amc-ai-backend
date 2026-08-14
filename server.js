@@ -1133,7 +1133,7 @@ Always prioritise clarity, natural phrasing, and technical accuracy.
 `;
 
 // ===============================
-// Translator Mode (Free)
+// Translator Mode (Pro)
 // ===============================
 app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage } = req.body;
@@ -1173,6 +1173,40 @@ app.post("/api/translate", async (req, res) => {
         });
       }
     }
+
+    // ============================================
+    // GROQ TRANSLATION ENGINE
+    // ============================================
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const completion = await groq.chat.completions.create({
+      model: "openai/gpt-oss-20b",
+      messages: [
+        {
+          role: "system",
+          content: TRANSLATOR_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: `Translate into ${targetLanguage}: ${text}`
+        }
+      ]
+    });
+
+    return res.status(200).json({
+      translated: completion.choices[0].message.content
+    });
+
+  } catch (err) {
+    console.error("TRANSLATOR ERROR:", err);
+    return res.status(500).json({
+      error: "Translation failed",
+      details: err.message
+    });
+  }
+});
+
 
 
 // ============================================
@@ -3232,5 +3266,4 @@ app.get("/api/test-world-clock", (req, res) => {
     utc_time: timestamp
   });
 });
-
 
