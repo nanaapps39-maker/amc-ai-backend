@@ -161,6 +161,7 @@ const founderProfile = {
 };
 
 
+
   // ⭐ IDENTITY LOCK — NUCLEAR OVERRIDE (LLaMA‑3.1‑8B SAFE)
   identityRules: `
     IDENTITY LOCK — DO NOT BREAK:
