@@ -3,12 +3,19 @@
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
-import path from "path";   // ⭐ REQUIRED FOR ATTACHMENT MODE
+import fs from "fs";               // ⭐ REQUIRED FOR ATTACHMENT MODE
+import path from "path";           // ⭐ REQUIRED FOR ATTACHMENT MODE
+import { fileURLToPath } from "url";  // ⭐ REQUIRED FOR ESM __dirname
 
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
+// ⭐ ESM-SAFE __dirname + __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
@@ -1822,6 +1829,12 @@ Rules:
     });
   }
 });
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ===============================
 // Attachment Mode (Pro)
