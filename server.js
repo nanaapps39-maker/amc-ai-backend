@@ -900,16 +900,6 @@ Always respond as AMC Academy Tech AI — Alarm Pack Analysis Mode.
 `;
 
 // ===============================
-// CHAT SYSTEM PROMPT (GLOBAL)
-// ===============================
-const CHAT_SYSTEM_PROMPT = `
-You are AMC Academy Tech AI — Chat Mode.
-Provide clear, accurate SATCOM and maritime engineering responses.
-Maintain professional tone and technical precision.
-`;
-
-
-// ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
 app.post("/api/chat", async (req, res) => {
