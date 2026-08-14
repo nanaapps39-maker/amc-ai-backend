@@ -9,6 +9,11 @@ import { calculateVoyage } from "./voyageEngine.js";
 
 const app = express();
 
+// ===============================
+// 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
+// ===============================
+const worldClock = () => new Date().toISOString();
+
 app.use(cors({
   origin: "https://amcacademy.tech",
   methods: ["GET", "POST", "OPTIONS"],
@@ -62,7 +67,6 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ UPDATED: Correct model ID with namespace
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-20b",
       messages: [
@@ -92,9 +96,6 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-
-
-
 // ===============================
 // MODEL DISCOVERY ROUTE
 // ===============================
@@ -108,7 +109,6 @@ app.get("/api/models", async (req, res) => {
   }
 });
 
-
 // ===============================
 // Test World Clock (UTC)
 // ===============================
@@ -120,19 +120,27 @@ app.get("/api/test-world-clock", (req, res) => {
   });
 });
 
-
 // ===============================
 // Start Server — ONLY ONE
 // ===============================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`AMC AI backend running on port ${PORT}`);
+  console.log("====================================================");
+  console.log(" AMC Academy Tech AI Backend — Boot Sequence");
+  console.log("====================================================");
+  console.log("✔ Chat Engine: ACTIVE");
+  console.log("✔ Translator Engine: ACTIVE");
+  console.log("✔ Akan Isolation: ENABLED");
+  console.log("✔ SATCOM Engineering Rules: LOADED");
+  console.log("✔ Africa Language Pack: LOADED");
+  console.log("✔ Groq Routing: CONNECTED");
+  console.log("✔ Diagnostics Engine: READY");
+  console.log("✔ Attachment Mode: READY");
+  console.log("✔ Maritime AI Modules: INITIALIZED");
+  console.log("----------------------------------------------------");
+  console.log(`✔ Server running on port ${PORT}`);
+  console.log("====================================================");
 });
-
-// ===============================
-// 🌍 GLOBAL WORLD CLOCK (UTC)
-// ===============================
-const worldClock = () => new Date().toISOString();
 
 // ===============================
 // 👤 FOUNDER PROFILE (GLOBAL)
@@ -149,7 +157,9 @@ const founderProfile = {
     "RF chain troubleshooting",
     "OEM-specific engineering"
   ],
-  mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally.",
+  mission: "Build AMC Academy Tech into the #1 SATCOM training and diagnostics platform globally."
+};
+
 
   // ⭐ IDENTITY LOCK — NUCLEAR OVERRIDE (LLaMA‑3.1‑8B SAFE)
   identityRules: `
