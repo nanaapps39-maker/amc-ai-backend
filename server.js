@@ -888,6 +888,82 @@ Clear, concise, operationally useful.
 Always respond as AMC Academy Tech AI — Alarm Pack Analysis Mode.
 `;
 
+
+// ===============================
+// CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
+// ===============================
+app.post("/api/chat", async (req, res) => {
+  try {
+    const userMessage = req.body.message || "";
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    // ⭐ UPDATED: Correct model ID with namespace
+    const completion = await groq.responses.create({
+      model: "openai/gpt-oss-20b",
+      input: [
+        {
+          role: "system",
+          content: CHAT_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: userMessage
+        }
+      ]
+    });
+
+    // ⭐ CORRECT: Groq Responses API returns output_text
+    const reply = completion.output_text || "⚠️ No reply returned from Groq";
+
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("CHAT ERROR:", err);
+    res.status(500).json({ error: "Chat backend failure", details: err.message });
+  }
+});
+
+
+// ===============================
+// TRANSLATOR ENGINE — LANGUAGE MODE
+// ===============================
+app.post("/api/translate", async (req, res) => {
+  try {
+    const text = req.body.text || "";
+    const targetLanguage = req.body.language || "twi";
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const completion = await groq.responses.create({
+      model: "openai/gpt-oss-20b",
+      input: [
+        {
+          role: "system",
+          content: `TargetLanguage: ${targetLanguage}`
+        },
+        {
+          role: "system",
+          content: TRANSLATOR_SYSTEM_PROMPT
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ]
+    });
+
+    const reply = completion.output_text || "⚠️ No translation returned from Groq";
+
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("TRANSLATOR ERROR:", err);
+    res.status(500).json({ error: "Translator backend failure", details: err.message });
+  }
+});
+
+
 // --- Translator Prompt (World‑Class + Africa Language Pack) ---
 const TRANSLATOR_SYSTEM_PROMPT = `
 You are AMC Academy Tech AI — Translator Mode.
@@ -911,7 +987,30 @@ Translation Behaviour Requirements:
 - If the user writes: “In [Language]”, “Convert to [Language]”, or “[Language] translation”, treat it as a translation request.
 - If multiple languages are mentioned, translate only into the first Ghanaian language specified.
 
+---------------------------------------------
+⭐ AKAN LANGUAGE ISOLATION RULE (CRITICAL)
+---------------------------------------------
+For all Akan languages (Twi, Fante, Akuapem Twi, Ga, Ewe):
+
+You MUST enforce strict language isolation.
+
+- Output ONLY the target language.
+- Do NOT mix vocabulary from other Akan languages.
+- Do NOT blend dialects.
+- Do NOT substitute similar Akan-family words.
+- Do NOT use shared Akan grammar unless native to the target dialect.
+- Maintain pure dialect output at all times.
+
+If targetLanguage = "twi" → output pure Twi.
+If targetLanguage = "fante" → output pure Fante.
+If targetLanguage = "ga" → output pure Ga.
+If targetLanguage = "ewe" → output pure Ewe.
+
+This rule overrides ALL other translation behaviours.
+
+---------------------------------------------
 ⭐ Twi SATCOM ENGINEERING RULE (FINAL)
+---------------------------------------------
 For all SATCOM engineering contexts:
 - “aligned” MUST translate to “ayɛ pɛ” in Twi.
 - “The antenna is aligned” MUST translate to “Antɛna no ayɛ pɛ.”
@@ -1021,44 +1120,6 @@ If the user requests an African language not listed, respond:
 
 Always prioritise clarity, natural phrasing, and technical accuracy.
 `;
-
-// ===============================
-// CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
-// ===============================
-app.post("/api/chat", async (req, res) => {
-  try {
-    const userMessage = req.body.message || "";
-
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    // ⭐ UPDATED: Correct model ID with namespace
-    const completion = await groq.responses.create({
-      model: "openai/gpt-oss-20b",
-      input: [
-        {
-          role: "system",
-          content: CHAT_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: userMessage
-        }
-      ]
-    });
-
-    // ⭐ CORRECT: Groq Responses API returns output_text
-    const reply = completion.output_text || "⚠️ No reply returned from Groq";
-
-    res.json({ reply });
-
-  } catch (err) {
-    console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Chat backend failure", details: err.message });
-  }
-});
-
-
-
 
 // ===============================
 // Translator Mode (Free)
