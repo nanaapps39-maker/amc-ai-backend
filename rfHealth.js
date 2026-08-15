@@ -1,16 +1,16 @@
-// satcom/rfHealth.js
-// AMC Academy Tech AI — RF Chain Health & Diagnostics Engine
+// rfHealth.js
+// AMC Academy Tech AI — Unified RF Chain Health & Diagnostics Engine
 
-export function calculateRfHealth({
+export default function calculateRfHealth({
   antennaGain_dBi,
   cableLoss_dB,
   bucPower_dBW,
   lnbNoiseTemp_K
 }) {
-  // Antenna health score
+  // Antenna health
   const antennaHealth = antennaGain_dBi >= 38 ? "Healthy" : "Underperforming";
 
-  // Cable loss impact
+  // Cable loss
   const cableHealth = cableLoss_dB <= 3 ? "Good" : "High Loss";
 
   // BUC performance
@@ -19,7 +19,6 @@ export function calculateRfHealth({
   // LNB noise temperature
   const noiseHealth = lnbNoiseTemp_K <= 120 ? "Good" : "High Noise";
 
-  // Overall RF chain score
   const scoreMap = {
     Healthy: 3,
     Good: 3,
@@ -41,10 +40,17 @@ export function calculateRfHealth({
   if (totalScore <= 5) rfStatus = "Critical";
 
   return {
+    antennaGain_dBi,
+    cableLoss_dB,
+    bucPower_dBW,
+    lnbNoiseTemp_K,
     antennaHealth,
     cableHealth,
     bucHealth,
     noiseHealth,
-    rfStatus
+    totalScore,
+    rfStatus,
+    model: "AMC RF Health heuristic"
   };
 }
+
