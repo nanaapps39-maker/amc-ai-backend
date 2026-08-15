@@ -1,5 +1,5 @@
-// cargoEngine.js (Pro Mode)
-module.exports = function runCargoAnalytics(cargo) {
+// cargoEngine.js (ESM)
+export default function runCargoAnalytics(cargo) {
   const { weight, type } = cargo;
 
   const density = type === "TEU" ? 2.5 : 1.8;
@@ -19,4 +19,5 @@ module.exports = function runCargoAnalytics(cargo) {
     },
     notes: "Pro Mode cargo analytics generated successfully."
   };
-};
+}
+

@@ -1475,7 +1475,7 @@ app.post("/api/traffic-monitoring", async (req, res) => {
 // ===============================
 // Cargo Analytics (Pro)
 // ===============================
-const runCargoAnalytics = require("./cargoEngine");
+import runCargoAnalytics from "./cargoEngine.js";
 
 app.post("/api/cargo-analytics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -1502,6 +1502,7 @@ app.post("/api/cargo-analytics", async (req, res) => {
     });
   }
 });
+
 
 
 // ===============================
