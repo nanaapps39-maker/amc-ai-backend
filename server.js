@@ -1613,7 +1613,7 @@ app.post("/api/satcom/link-budget", (req, res) => {
 // ===============================
 // SATCOM Weather Fade Predictor Mode (Pro)
 // ===============================
-import calculateWeatherFade from "./satcom/weatherFade.js";
+import calculateWeatherFade from "./weatherFade.js";
 
 app.post("/api/satcom/weather-fade", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
