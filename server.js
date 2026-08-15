@@ -1538,6 +1538,8 @@ app.post("/api/tonnage-analytics", async (req, res) => {
 // ===============================
 // SATCOM Link Budget Mode (Pro)
 // ===============================
+import calculateLinkBudget from "./linkBudget.js";
+
 app.post("/api/satcom/link-budget", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
@@ -1550,7 +1552,6 @@ app.post("/api/satcom/link-budget", (req, res) => {
     rxSystemNoise_dBm
   } = req.body;
 
-  // Basic validation
   if (
     frequencyGHz == null ||
     txPower_dBW == null ||
@@ -1568,47 +1569,37 @@ app.post("/api/satcom/link-budget", (req, res) => {
         "rxAntennaGain_dBi",
         "pathLoss_dB",
         "rxSystemNoise_dBm"
-      ],
+      ]
     });
   }
 
   try {
-    // Simple link budget model
-    const eirp_dBW = txPower_dBW + txAntennaGain_dBi;          // EIRP
-    const receivedPower_dBW = eirp_dBW - pathLoss_dB + rxAntennaGain_dBi;
-    const receivedPower_dBm = receivedPower_dBW + 30;          // dBW → dBm
-
-    const linkMargin_dB = receivedPower_dBm - rxSystemNoise_dBm;
-
-    let status = "Good";
-    if (linkMargin_dB < 3) status = "Fail";
-    else if (linkMargin_dB < 8) status = "Marginal";
+    const result = calculateLinkBudget({
+      frequencyGHz,
+      txPower_dBW,
+      txAntennaGain_dBi,
+      rxAntennaGain_dBi,
+      pathLoss_dB,
+      rxSystemNoise_dBm
+    });
 
     return res.status(200).json({
       status: "success",
       summary: {
-        frequencyGHz,
-        eirp_dBW,
-        receivedPower_dBm,
-        linkMargin_dB,
-        linkStatus: status,
+        linkStatus: result.linkStatus,
+        linkMargin_dB: result.linkMargin_dB
       },
-      detail: {
-        txPower_dBW,
-        txAntennaGain_dBi,
-        rxAntennaGain_dBi,
-        pathLoss_dB,
-        rxSystemNoise_dBm,
-      },
+      detail: result
     });
   } catch (error) {
     console.error("Link Budget Mode error:", error);
     return res.status(500).json({
       error: "Link Budget Mode failed",
-      details: error?.message,
+      details: error?.message
     });
   }
 });
+
 
 // ===============================
 // SATCOM Weather Fade Predictor Mode (Pro)
