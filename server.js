@@ -1429,13 +1429,19 @@ app.post("/api/voyage-analytics", async (req, res) => {
   if (!data) return res.status(400).json({ error: "Voyage data is required." });
 
   try {
-    // Your voyage miles, ETA, distance logic goes here
-    return safeResponse(res, { analytics: "Voyage analytics output here" });
+    // Placeholder analytics response (route now stable)
+    return res.status(200).json({
+      analytics: "Voyage analytics output here"
+    });
   } catch (error) {
     console.error("Voyage analytics error:", error);
-    return res.status(500).json({ error: "Voyage analytics failed", details: error?.message });
+    return res.status(500).json({
+      error: "Voyage analytics failed",
+      details: error?.message
+    });
   }
 });
+
 
 // ===============================
 // Cargo & Tonnage Analytics (Pro)
