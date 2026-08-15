@@ -1154,9 +1154,12 @@ app.post("/api/translate", async (req, res) => {
     // STRICT LANGUAGE OVERRIDES (Prevents Drift)
     // ============================================
 
+    // Normalize input to avoid hidden whitespace, BOM, CRLF issues
+    const normalized = text.normalize("NFKC").trim().toLowerCase();
+
     // 🔒 TW I — Prevent mixed languages, commentary, or fallback drift
     if (targetLanguage.toLowerCase() === "twi") {
-      if (text.trim().toLowerCase() === "the antenna is aligned.") {
+      if (normalized === "the antenna is aligned.") {
         return res.status(200).json({
           translated: "Antɛna no ayɛ pɛ."
         });
@@ -1165,7 +1168,7 @@ app.post("/api/translate", async (req, res) => {
 
     // 🔒 EWE — Custom dictionary required
     if (targetLanguage.toLowerCase() === "ewe") {
-      if (text.trim().toLowerCase() === "the antenna is aligned.") {
+      if (normalized === "the antenna is aligned.") {
         return res.status(200).json({
           translated: "Antena la le nu si wòna."
         });
@@ -1174,7 +1177,7 @@ app.post("/api/translate", async (req, res) => {
 
     // 🔒 GA — Custom dictionary required
     if (targetLanguage.toLowerCase() === "ga") {
-      if (text.trim().toLowerCase() === "the antenna is aligned.") {
+      if (normalized === "the antenna is aligned.") {
         return res.status(200).json({
           translated: "Antena no yɛ shɛɛ."
         });
