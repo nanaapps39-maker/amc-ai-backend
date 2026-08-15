@@ -1265,6 +1265,20 @@ app.post("/api/translate", async (req, res) => {
 // ===============================
 // SATCOM Diagnostics (Pro) — FULL ENGINE MODE
 // ===============================
+
+// Safe JSON extractor
+function extractJson(text) {
+  try {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start === -1 || end === -1) throw new Error("No JSON found");
+    return JSON.parse(text.substring(start, end + 1));
+  } catch (err) {
+    console.error("JSON extraction error:", err);
+    throw new Error("Invalid JSON returned by model.");
+  }
+}
+
 app.post("/api/satcom/diagnostics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
@@ -1278,10 +1292,7 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
     const completion = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        {
-          role: "system",
-          content: DIAGNOSTICS_SYSTEM_PROMPT
-        },
+        { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
         {
           role: "user",
           content: `
@@ -1309,11 +1320,7 @@ Return your output STRICTLY in the following JSON structure:
   "finalSummary": "Concise maritime/SATCOM engineer summary"
 }
 
-Ensure:
-- Percentages total ~100%
-- Explanations are SATCOM-accurate
-- Maritime context is included where relevant
-- No extra text outside the JSON
+No extra text outside the JSON.
         `
         }
       ]
@@ -1322,7 +1329,7 @@ Ensure:
     const output = completion.choices[0].message.content;
 
     return res.status(200).json({
-      diagnostics: JSON.parse(output)
+      diagnostics: extractJson(output)
     });
 
   } catch (error) {
@@ -1333,6 +1340,7 @@ Ensure:
     });
   }
 });
+
 
 
 // ===============================
