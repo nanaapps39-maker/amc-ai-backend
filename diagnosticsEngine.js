@@ -26,7 +26,15 @@ Return ONLY valid JSON. No commentary, no markdown, no extra text.
 `;
 
 export default async function runDiagnosticsEngine(query) {
-  const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const client = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+
+    // ⭐ FORCE NEW REGION — bypass FRA fallback
+    baseURL: "https://api.groq.com/openai/v1",
+    defaultHeaders: {
+      "x-groq-region": "us"
+    }
+  });
 
   const completion = await client.chat.completions.create({
     model: "openai/gpt-oss-20b",
@@ -68,3 +76,4 @@ No extra text outside the JSON.
   const raw = completion.choices[0].message.content;
   return extractJson(raw);
 }
+
