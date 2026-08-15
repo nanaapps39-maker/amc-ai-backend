@@ -1316,7 +1316,7 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "gpt-oss-120b",
       messages: [
         { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
         {
@@ -1824,7 +1824,7 @@ app.post("/api/satcom/alarm-log", async (req, res) => {
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "gpt-oss-120b",
       messages: [
         {
           role: "system",
