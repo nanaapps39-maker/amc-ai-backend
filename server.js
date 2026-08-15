@@ -1444,40 +1444,63 @@ app.post("/api/voyage-analytics", async (req, res) => {
 
 
 // ===============================
-// Cargo & Tonnage Analytics (Pro)
-// ===============================
-app.post("/api/cargo-analytics", async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  const { cargo } = req.body;
-  if (!cargo) return res.status(400).json({ error: "Cargo data is required." });
-
-  try {
-    // Your tonnage, density, cargo weight logic goes here
-    return res.status(200).json({ analytics: "Cargo analytics output here" });
-  } catch (error) {
-    console.error("Cargo analytics error:", error);
-    return res.status(500).json({ error: "Cargo analytics failed", details: error?.message });
-  }
-});
-
-// ===============================
 // Traffic Monitoring (Pro)
 // ===============================
 app.post("/api/traffic-monitoring", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
   const { ais } = req.body;
-  if (!ais) return res.status(400).json({ error: "AIS data is required." });
+  if (!ais) {
+    return res.status(400).json({
+      error: "AIS data is required.",
+      requiredFields: ["ais"]
+    });
+  }
 
   try {
-    // Your AIS density, port congestion, offshore traffic logic goes here
-    return res.status(200).json({ analytics: "Traffic monitoring output here" });
+    // Placeholder analytics response (route now stable)
+    return res.status(200).json({
+      analytics: "Traffic monitoring output here"
+    });
   } catch (error) {
     console.error("Traffic monitoring error:", error);
-    return res.status(500).json({ error: "Traffic monitoring failed", details: error?.message });
+    return res.status(500).json({
+      error: "Traffic monitoring failed",
+      details: error?.message
+    });
   }
 });
+
+
+// ===============================
+// Cargo & Tonnage Analytics (Pro)
+// ===============================
+app.post("/api/cargo-analytics", async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { cargo } = req.body;
+  if (!cargo) {
+    return res.status(400).json({
+      error: "Cargo data is required.",
+      requiredFields: ["cargo"]
+    });
+  }
+
+  try {
+    // Placeholder analytics response (route now stable)
+    return res.status(200).json({
+      analytics: "Cargo analytics output here"
+    });
+  } catch (error) {
+    console.error("Cargo analytics error:", error);
+    return res.status(500).json({
+      error: "Cargo analytics failed",
+      details: error?.message
+    });
+  }
+});
+
+
 
 // ===============================
 // SATCOM Link Budget Mode (Pro)
