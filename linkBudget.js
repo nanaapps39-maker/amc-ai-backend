@@ -1,65 +1,48 @@
-// ===============================
-// SATCOM Link Budget Mode (Pro)
-// ===============================
-import calculateLinkBudget from "./linkBudget.js";
+// linkBudget.js
+// AMC Academy Tech AI — Unified SATCOM Link Budget Engine (ESM)
 
-app.post("/api/satcom/link-budget", (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
+export default function calculateLinkBudget({
+  frequencyGHz,
+  txPower_dBW,
+  txAntennaGain_dBi,
+  rxAntennaGain_dBi,
+  pathLoss_dB,
+  rxSystemNoise_dBm
+}) {
+  // EIRP (dBW)
+  const eirp_dBW = txPower_dBW + txAntennaGain_dBi;
 
-  const {
+  // Received power (dBm)
+  const receivedPower_dBm =
+    eirp_dBW - pathLoss_dB + rxAntennaGain_dBi + 30;
+
+  // Carrier-to-noise ratio (C/N)
+  const cn_dB = receivedPower_dBm - rxSystemNoise_dBm;
+
+  // Required C/N threshold
+  const requiredCn_dB = 10;
+
+  // Link margin
+  const linkMargin_dB = cn_dB - requiredCn_dB;
+
+  // Link status
+  let linkStatus = "Good";
+  if (linkMargin_dB < 3) linkStatus = "Marginal";
+  if (linkMargin_dB < 0) linkStatus = "Fail";
+
+  return {
     frequencyGHz,
     txPower_dBW,
     txAntennaGain_dBi,
     rxAntennaGain_dBi,
     pathLoss_dB,
-    rxSystemNoise_dBm
-  } = req.body;
-
-  if (
-    frequencyGHz == null ||
-    txPower_dBW == null ||
-    txAntennaGain_dBi == null ||
-    rxAntennaGain_dBi == null ||
-    pathLoss_dB == null ||
-    rxSystemNoise_dBm == null
-  ) {
-    return res.status(400).json({
-      error: "All fields are required.",
-      requiredFields: [
-        "frequencyGHz",
-        "txPower_dBW",
-        "txAntennaGain_dBi",
-        "rxAntennaGain_dBi",
-        "pathLoss_dB",
-        "rxSystemNoise_dBm"
-      ]
-    });
-  }
-
-  try {
-    const result = calculateLinkBudget({
-      frequencyGHz,
-      txPower_dBW,
-      txAntennaGain_dBi,
-      rxAntennaGain_dBi,
-      pathLoss_dB,
-      rxSystemNoise_dBm
-    });
-
-    return res.status(200).json({
-      status: "success",
-      summary: {
-        linkStatus: result.linkStatus,
-        linkMargin_dB: result.linkMargin_dB
-      },
-      detail: result
-    });
-  } catch (error) {
-    console.error("Link Budget Mode error:", error);
-    return res.status(500).json({
-      error: "Link Budget Mode failed",
-      details: error?.message
-    });
-  }
-});
+    rxSystemNoise_dBm,
+    eirp_dBW: Number(eirp_dBW.toFixed(2)),
+    receivedPower_dBm: Number(receivedPower_dBm.toFixed(2)),
+    cn_dB: Number(cn_dB.toFixed(2)),
+    linkMargin_dB: Number(linkMargin_dB.toFixed(2)),
+    linkStatus,
+    model: "Unified SATCOM Link Budget Engine"
+  };
+}
 
