@@ -1503,6 +1503,36 @@ app.post("/api/cargo-analytics", async (req, res) => {
   }
 });
 
+// ===============================
+// Tonnage Analytics (Pro)
+// ===============================
+import runTonnageAnalytics from "./tonnageEngine.js";
+
+app.post("/api/tonnage-analytics", async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  const { tonnage } = req.body;
+  if (!tonnage) {
+    return res.status(400).json({
+      error: "Tonnage data is required.",
+      requiredFields: ["tonnage"]
+    });
+  }
+
+  try {
+    const result = runTonnageAnalytics(tonnage);
+    return res.status(200).json({
+      status: "success",
+      analytics: result
+    });
+  } catch (error) {
+    console.error("Tonnage analytics error:", error);
+    return res.status(500).json({
+      error: "Tonnage analytics failed",
+      details: error?.message
+    });
+  }
+});
 
 
 // ===============================
