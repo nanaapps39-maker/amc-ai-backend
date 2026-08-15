@@ -1473,8 +1473,10 @@ app.post("/api/traffic-monitoring", async (req, res) => {
 
 
 // ===============================
-// Cargo & Tonnage Analytics (Pro)
+// Cargo Analytics (Pro)
 // ===============================
+const runCargoAnalytics = require("./cargoEngine");
+
 app.post("/api/cargo-analytics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
@@ -1487,9 +1489,10 @@ app.post("/api/cargo-analytics", async (req, res) => {
   }
 
   try {
-    // Placeholder analytics response (route now stable)
+    const result = runCargoAnalytics(cargo);
     return res.status(200).json({
-      analytics: "Cargo analytics output here"
+      status: "success",
+      analytics: result
     });
   } catch (error) {
     console.error("Cargo analytics error:", error);
@@ -1499,7 +1502,6 @@ app.post("/api/cargo-analytics", async (req, res) => {
     });
   }
 });
-
 
 
 // ===============================
