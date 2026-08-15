@@ -29,11 +29,8 @@ export default async function runDiagnosticsEngine(query) {
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 
-    // ⭐ FORCE NEW REGION — bypass FRA fallback
-    baseURL: "https://api.groq.com/openai/v1",
-    defaultHeaders: {
-      "x-groq-region": "us"
-    }
+    // ⭐ HARD REGION OVERRIDE — FRA cannot intercept this
+    baseURL: "https://api.us.groq.com/openai/v1"
   });
 
   const completion = await client.chat.completions.create({
