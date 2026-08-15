@@ -1613,6 +1613,8 @@ app.post("/api/satcom/link-budget", (req, res) => {
 // ===============================
 // SATCOM Weather Fade Predictor Mode (Pro)
 // ===============================
+import calculateWeatherFade from "./satcom/weatherFade.js";
+
 app.post("/api/satcom/weather-fade", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
@@ -1641,17 +1643,13 @@ app.post("/api/satcom/weather-fade", (req, res) => {
   }
 
   try {
-    // ITU‑R rain fade approximation (simplified)
-    const k = frequencyGHz > 20 ? 0.15 : 0.08; // Ka-band more sensitive
-    const alpha = frequencyGHz > 20 ? 1.1 : 0.9;
-
-    const rainAttenuation_dB = k * Math.pow(rainRate_mm_per_hr, alpha);
-
-    const remainingMargin_dB = linkMargin_dB - rainAttenuation_dB;
-
-    let status = "Good";
-    if (remainingMargin_dB < 3) status = "Fail";
-    else if (remainingMargin_dB < 8) status = "Marginal";
+    // Unified ITU‑R Weather Fade Engine
+    const result = calculateWeatherFade({
+      frequencyGHz,
+      rainRate_mm_per_hr,
+      region,
+      linkMargin_dB
+    });
 
     return res.status(200).json({
       status: "success",
@@ -1659,17 +1657,18 @@ app.post("/api/satcom/weather-fade", (req, res) => {
         frequencyGHz,
         region,
         rainRate_mm_per_hr,
-        rainAttenuation_dB: rainAttenuation_dB.toFixed(2),
-        remainingMargin_dB: remainingMargin_dB.toFixed(2),
-        linkStatus: status,
+        rainAttenuation_dB: result.rainAttenuation_dB,
+        remainingMargin_dB: result.remainingMargin_dB,
+        linkStatus: result.linkStatus,
       },
       detail: {
-        model: "ITU-R rain fade approximation",
-        k,
-        alpha,
+        model: result.model,
+        k: frequencyGHz > 20 ? 0.15 : 0.08,
+        alpha: frequencyGHz > 20 ? 1.1 : 0.9,
         linkMargin_dB,
       },
     });
+
   } catch (error) {
     console.error("Weather Fade Mode error:", error);
     return res.status(500).json({
@@ -1678,6 +1677,7 @@ app.post("/api/satcom/weather-fade", (req, res) => {
     });
   }
 });
+
 
 // ===============================
 // SATCOM RF Chain Health Mode (Pro)
