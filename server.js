@@ -1287,77 +1287,22 @@ Rules:
 If you cannot produce valid JSON, return: {}
 `;
 
-
 // ===============================
-// SATCOM Diagnostics (Pro) — FULL ENGINE MODE
+// SATCOM Diagnostics (Pro) — Unified Engine
 // ===============================
-
-// Safe JSON extractor
-function extractJson(text) {
-  try {
-    const start = text.indexOf("{");
-    const end = text.lastIndexOf("}");
-    if (start === -1 || end === -1) throw new Error("No JSON found");
-    return JSON.parse(text.substring(start, end + 1));
-  } catch (err) {
-    console.error("JSON extraction error:", err);
-    throw new Error("Invalid JSON returned by model.");
-  }
-}
+import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
 app.post("/api/satcom/diagnostics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
   const { query } = req.body;
-  if (!query || query.trim() === "")
+  if (!query || query.trim() === "") {
     return res.status(400).json({ error: "Field 'query' is required." });
+  }
 
   try {
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await client.chat.completions.create({
-      model: "gpt-oss-120b",
-      messages: [
-        { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `
-You are AMC Academy Tech AI — run FULL SATCOM DIAGNOSTICS ENGINE MODE.
-
-Analyse the following SATCOM issue:
-
-"${query}"
-
-Return your output STRICTLY in the following JSON structure:
-
-{
-  "analysis": "Technical breakdown of the issue",
-  "rootCauseScores": {
-    "hardware": "percentage",
-    "rfChain": "percentage",
-    "antenna": "percentage",
-    "modem": "percentage",
-    "network": "percentage",
-    "configuration": "percentage",
-    "environmental": "percentage"
-  },
-  "recommendedFix": "Step-by-step fix path",
-  "riskAssessment": "Operational impact if unfixed",
-  "finalSummary": "Concise maritime/SATCOM engineer summary"
-}
-
-No extra text outside the JSON.
-        `
-        }
-      ]
-    });
-
-    const output = completion.choices[0].message.content;
-
-    return res.status(200).json({
-      diagnostics: extractJson(output)
-    });
-
+    const diagnostics = await runDiagnosticsEngine(query);
+    return res.status(200).json({ diagnostics });
   } catch (error) {
     console.error("Diagnostics error:", error);
     return res.status(500).json({
@@ -1818,7 +1763,7 @@ app.post("/api/satcom/alarm-log", async (req, res) => {
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const completion = await client.chat.completions.create({
-      model: "gpt-oss-120b",
+      model: "gpt-oss-20b",
       messages: [
         {
           role: "system",

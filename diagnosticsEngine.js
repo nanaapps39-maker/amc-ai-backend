@@ -3,15 +3,28 @@
 
 import Groq from "groq-sdk";
 
-// Safe JSON extractor
+// Ultra‑Robust JSON Extractor — AMC Academy Tech AI
 function extractJson(text) {
   try {
-    const start = text.indexOf("{");
-    const end = text.lastIndexOf("}");
-    if (start === -1 || end === -1) {
+    // 1. Find ALL possible JSON blocks using a safe regex
+    const matches = text.match(/\{[\s\S]*?\}/g);
+
+    if (!matches || matches.length === 0) {
       throw new Error("No JSON object found in model output.");
     }
-    return JSON.parse(text.substring(start, end + 1));
+
+    // 2. Try each match until one parses successfully
+    for (const block of matches) {
+      try {
+        return JSON.parse(block);
+      } catch (err) {
+        // Try next block
+      }
+    }
+
+    // 3. If none of the blocks parsed correctly
+    throw new Error("Model returned JSON-like text, but none were valid JSON.");
+
   } catch (err) {
     console.error("Diagnostics JSON extraction error:", err);
     throw new Error("Invalid JSON returned by model.");
@@ -29,12 +42,12 @@ export default async function runDiagnosticsEngine(query) {
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 
-    // ⭐ FINAL HARD OVERRIDE — bypass Cloudflare FRA completely
-    baseURL: "https://us.api.groq.com/openai/v1"
+    // Correct region override
+    baseURL: "https://api.us.groq.com/openai/v1"
   });
 
   const completion = await client.chat.completions.create({
-    model: "llama3-70b-8192",
+    model: "openai/gpt-oss-20b",
     messages: [
       { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
       {
