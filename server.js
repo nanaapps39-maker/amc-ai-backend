@@ -1864,7 +1864,6 @@ if (!fs.existsSync(attachmentsFolder)) {
 }
 
 // Ensure attachments.json exists
-const attachmentsFile = path.join(attachmentsFolder, "attachments.json");
 if (!fs.existsSync(attachmentsFile)) {
   fs.writeFileSync(attachmentsFile, JSON.stringify([]));
 }
