@@ -40,13 +40,15 @@ Return ONLY valid JSON. No commentary, no markdown, no extra text.
 export default async function runDiagnosticsEngine(query) {
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY
-    // Let the SDK use its default, correct base URL
-    // or explicitly:
-    // baseURL: "https://api.groq.com/openai/v1"
+    // SDK will automatically use correct Groq endpoint
   });
 
   const completion = await client.chat.completions.create({
     model: "openai/gpt-oss-20b",
+
+    // ⭐ FORCE VALID JSON OUTPUT — prevents malformed responses
+    response_format: { type: "json_object" },
+
     messages: [
       { role: "system", content: DIAGNOSTICS_SYSTEM_PROMPT },
       {
