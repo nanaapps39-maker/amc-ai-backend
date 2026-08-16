@@ -7,6 +7,13 @@ import fs from "fs";               // ⭐ REQUIRED FOR ATTACHMENT MODE
 import path from "path";           // ⭐ REQUIRED FOR ATTACHMENT MODE
 import { fileURLToPath } from "url";  // ⭐ REQUIRED FOR ESM __dirname
 
+// ===============================
+// GLOBAL STORAGE FILE PATHS (CRITICAL)
+// ===============================
+const storageFile = path.join(__dirname, "storage.json");
+const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
+
+
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
@@ -15,6 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
