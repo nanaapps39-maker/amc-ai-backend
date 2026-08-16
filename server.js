@@ -1,11 +1,18 @@
-// HARD REBUILD — August 9, 2026 — v2
+// HARD REBUILD — August 16, 2026 — v17
+// AMC Academy Tech AI Backend — Stable ES Module Build
 
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
-import fs from "fs";               // ⭐ REQUIRED FOR ATTACHMENT MODE
-import path from "path";           // ⭐ REQUIRED FOR ATTACHMENT MODE
-import { fileURLToPath } from "url";  // ⭐ REQUIRED FOR ESM __dirname
+import fs from "fs";               
+import path from "path";           
+import { fileURLToPath } from "url";  
+
+// ===============================
+// ESM-SAFE __dirname (CRITICAL)
+// ===============================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ===============================
 // GLOBAL STORAGE FILE PATHS (CRITICAL)
