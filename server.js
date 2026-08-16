@@ -24,10 +24,6 @@ const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
-// ⭐ ESM-SAFE __dirname + __filename
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 
 
