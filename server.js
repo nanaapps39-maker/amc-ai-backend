@@ -16,17 +16,24 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
 // ===============================
 const worldClock = () => new Date().toISOString();
 
-app.use(cors({
-  origin: "https://amcacademy.tech",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "x-access-key"]
-}));
+app.use(
+  cors({
+    origin: [
+      "https://amcacademy.tech",
+      "https://www.amcacademy.tech",
+      "https://amcacademy.tech:443",
+      "https://www.amcacademy.tech:443"
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-access-key"],
+    credentials: true
+  })
+);
 
 app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
 
