@@ -24,7 +24,6 @@ function extractJson(text) {
 
     // 3. If none of the blocks parsed correctly
     throw new Error("Model returned JSON-like text, but none were valid JSON.");
-
   } catch (err) {
     console.error("Diagnostics JSON extraction error:", err);
     throw new Error("Invalid JSON returned by model.");
@@ -40,10 +39,10 @@ Return ONLY valid JSON. No commentary, no markdown, no extra text.
 
 export default async function runDiagnosticsEngine(query) {
   const client = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-
-    // Correct region override
-    baseURL: "https://api.us.groq.com/openai/v1"
+    apiKey: process.env.GROQ_API_KEY
+    // Let the SDK use its default, correct base URL
+    // or explicitly:
+    // baseURL: "https://api.groq.com/openai/v1"
   });
 
   const completion = await client.chat.completions.create({
@@ -86,3 +85,4 @@ No extra text outside the JSON.
   const raw = completion.choices[0].message.content;
   return extractJson(raw);
 }
+
