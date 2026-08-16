@@ -1,29 +1,23 @@
 // diagnosticsEngine.js
-// Unified SATCOM Diagnostics Engine — AMC Academy Tech AI
-
 import Groq from "groq-sdk";
 
 // Ultra‑Robust JSON Extractor — AMC Academy Tech AI
 function extractJson(text) {
   try {
-    // 1. Find ALL possible JSON blocks using a safe regex
-    const matches = text.match(/\{[\s\S]*?\}/g);
+    // Remove markdown fences
+    text = text.replace(/```json/gi, "").replace(/```/g, "");
 
-    if (!matches || matches.length === 0) {
+    // Extract first valid JSON block
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace === -1) {
       throw new Error("No JSON object found in model output.");
     }
 
-    // 2. Try each match until one parses successfully
-    for (const block of matches) {
-      try {
-        return JSON.parse(block);
-      } catch (err) {
-        // Try next block
-      }
-    }
+    const jsonText = text.substring(firstBrace, lastBrace + 1);
 
-    // 3. If none of the blocks parsed correctly
-    throw new Error("Model returned JSON-like text, but none were valid JSON.");
+    return JSON.parse(jsonText);
   } catch (err) {
     console.error("Diagnostics JSON extraction error:", err);
     throw new Error("Invalid JSON returned by model.");
@@ -34,19 +28,26 @@ function extractJson(text) {
 const DIAGNOSTICS_SYSTEM_PROMPT = `
 You are AMC Academy Tech AI — a professional SATCOM diagnostics engine.
 
-Return ONLY valid JSON. No commentary, no markdown, no extra text.
+You MUST return ONLY valid JSON.
+Never return markdown.
+Never return code fences.
+Never return commentary.
+Never return explanations.
+Never return text before or after the JSON.
+Never return single quotes.
+Never return trailing commas.
+Never return unescaped characters.
+
+If you cannot produce valid JSON, return {}.
 `;
 
 export default async function runDiagnosticsEngine(query) {
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY
-    // SDK will automatically use correct Groq endpoint
   });
 
   const completion = await client.chat.completions.create({
     model: "openai/gpt-oss-20b",
-
-    // ⭐ FORCE VALID JSON OUTPUT — prevents malformed responses
     response_format: { type: "json_object" },
 
     messages: [
@@ -60,26 +61,31 @@ Analyse the following SATCOM issue:
 
 "${query}"
 
-Return your output STRICTLY in the following JSON structure:
+You MUST return ONLY valid JSON.
+Follow EXACTLY this structure:
 
 {
-  "analysis": "Technical breakdown of the issue",
+  "analysis": "",
   "rootCauseScores": {
-    "hardware": "percentage",
-    "rfChain": "percentage",
-    "antenna": "percentage",
-    "modem": "percentage",
-    "network": "percentage",
-    "configuration": "percentage",
-    "environmental": "percentage"
+    "hardware": "",
+    "rfChain": "",
+    "antenna": "",
+    "modem": "",
+    "network": "",
+    "configuration": "",
+    "environmental": ""
   },
-  "recommendedFix": "Step-by-step fix path",
-  "riskAssessment": "Operational impact if unfixed",
-  "finalSummary": "Concise maritime/SATCOM engineer summary"
+  "recommendedFix": "",
+  "riskAssessment": "",
+  "finalSummary": ""
 }
 
-No extra text outside the JSON.
-        `
+Do NOT include any text before or after the JSON.
+Do NOT include markdown.
+Do NOT include code fences.
+Do NOT include comments.
+Do NOT include explanations.
+`
       }
     ]
   });
@@ -87,4 +93,3 @@ No extra text outside the JSON.
   const raw = completion.choices[0].message.content;
   return extractJson(raw);
 }
-
