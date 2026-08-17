@@ -4,10 +4,52 @@
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
-import fs from "fs";               
-import path from "path";           
-import { fileURLToPath } from "url";  
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
+
+// ===============================================
+// GLOBAL DEFENSIVE GROQ REPLY EXTRACTORS (QA SAFE)
+// ===============================================
+
+// For chat.completions API
+export function extractGroqReplyChat(response) {
+  if (!response || typeof response !== "object") {
+    return { ok: false, error: "Groq returned no response object." };
+  }
+
+  const choices = response.choices;
+  if (!Array.isArray(choices) || choices.length === 0) {
+    return { ok: false, error: "Groq returned no choices." };
+  }
+
+  const message = choices[0]?.message;
+  if (!message || typeof message !== "object") {
+    return { ok: false, error: "Groq returned an invalid message object." };
+  }
+
+  const content = message.content;
+  if (!content || typeof content !== "string" || content.trim() === "") {
+    return { ok: false, error: "Groq returned empty content." };
+  }
+
+  return { ok: true, content: content.trim() };
+}
+
+// For responses API
+export function extractGroqReplyResponses(response) {
+  if (!response || typeof response !== "object") {
+    return { ok: false, error: "Groq returned no response object." };
+  }
+
+  const content = response.output_text;
+  if (!content || typeof content !== "string" || content.trim() === "") {
+    return { ok: false, error: "Groq returned empty output_text." };
+  }
+
+  return { ok: true, content: content.trim() };
+}
 
 // ===============================
 // ESM-SAFE __dirname (CRITICAL)
@@ -113,17 +155,45 @@ app.post("/api/chat", async (req, res) => {
     console.log("🔥 SYSTEM PROMPT INJECTED");
     console.log("MODEL USED:", completion.model);
 
-    const reply =
-      completion.choices[0].message?.content ||
-      "⚠️ No reply returned from Groq";
+    // ⭐ DEFENSIVE REPLY EXTRACTION (chat.completions API)
+    function extractGroqReplyChat(response) {
+      if (!response || typeof response !== "object") {
+        return { ok: false, error: "Groq returned no response object." };
+      }
 
-    res.json({ reply });
+      const choices = response.choices;
+      if (!Array.isArray(choices) || choices.length === 0) {
+        return { ok: false, error: "Groq returned no choices." };
+      }
+
+      const message = choices[0]?.message;
+      if (!message || typeof message !== "object") {
+        return { ok: false, error: "Groq returned an invalid message object." };
+      }
+
+      const content = message.content;
+      if (!content || typeof content !== "string" || content.trim() === "") {
+        return { ok: false, error: "Groq returned empty content." };
+      }
+
+      return { ok: true, content: content.trim() };
+    }
+
+    const result = extractGroqReplyChat(completion);
+
+    if (!result.ok) {
+      console.error("Groq reply extraction error:", result.error);
+      return res.status(500).json({ error: result.error });
+    }
+
+    res.json({ reply: result.content });
 
   } catch (err) {
     console.error("CHAT ERROR:", err);
     res.status(500).json({ error: "Chat backend failure", details: err.message });
   }
 });
+
 
 // ===============================
 // MODEL DISCOVERY ROUTE
@@ -949,16 +1019,38 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
-    // ⭐ CORRECT: Groq Responses API returns output_text
-    const reply = completion.output_text || "⚠️ No reply returned from Groq";
+    // ⭐ DEFENSIVE REPLY EXTRACTION (Responses API)
+    function extractGroqReplyResponses(response) {
+      if (!response || typeof response !== "object") {
+        return { ok: false, error: "Groq returned no response object." };
+      }
 
-    res.json({ reply });
+      const content = response.output_text;
+      if (!content || typeof content !== "string" || content.trim() === "") {
+        return { ok: false, error: "Groq returned empty output_text." };
+      }
+
+      return { ok: true, content: content.trim() };
+    }
+
+    const result = extractGroqReplyResponses(completion);
+
+    if (!result.ok) {
+      console.error("Groq reply extraction error:", result.error);
+      return res.status(500).json({ error: result.error });
+    }
+
+    res.json({ reply: result.content });
 
   } catch (err) {
     console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Chat backend failure", details: err.message });
+    res.status(500).json({
+      error: "Chat backend failure",
+      details: err.message
+    });
   }
 });
+
 
 
 // ===============================
