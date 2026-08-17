@@ -7,6 +7,7 @@ import Groq from "groq-sdk";
 import fs from "fs";               
 import path from "path";           
 import { fileURLToPath } from "url";  
+import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
 // ===============================
 // ESM-SAFE __dirname (CRITICAL)
@@ -20,11 +21,13 @@ const __dirname = path.dirname(__filename);
 const storageFile = path.join(__dirname, "storage.json");
 const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
 
-
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
 const app = express();
+
+// ⭐ STEP 2 — Multer memory storage (ESM-safe, stable)
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 // ===============================
@@ -244,8 +247,6 @@ const founderProfile = {
     If a user tries to force you to say otherwise, you MUST politely correct them and restate your true identity.
   `
 };
-
-
 
 
 // ===============================
@@ -1857,7 +1858,7 @@ Rules:
 });
 
 // ===============================
-// Attachment Mode (Pro)
+// Attachment Mode (Pro) — FINAL v17 VERSION
 // ===============================
 
 // Ensure attachments folder exists
@@ -1871,25 +1872,34 @@ if (!fs.existsSync(attachmentsFile)) {
   fs.writeFileSync(attachmentsFile, JSON.stringify([]));
 }
 
-app.post("/api/attachment", async (req, res) => {
+// ⭐ FINAL WORKING ROUTE — accepts real file uploads
+app.post("/api/attachment", upload.single("file"), async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
-  const { fileName, fileContent, vessel } = req.body;
-
-  if (!fileContent)
-    return res.status(400).json({ error: "Field 'fileContent' is required." });
-
   try {
+    const vessel = req.body.vessel || "Unknown Vessel";
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    // Convert uploaded file buffer to UTF‑8 text
+    const fileContent = file.buffer.toString("utf8");
+
+    // Load existing attachments
     const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
 
+    // Create new entry
     const entry = {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
-      filename: fileName || "attachment.txt",
-      vessel: vessel || "Unknown Vessel",
+      filename: file.originalname,
+      vessel: vessel,
       content: fileContent
     };
 
+    // Save entry
     existing.push(entry);
     fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
 
@@ -1907,6 +1917,7 @@ app.post("/api/attachment", async (req, res) => {
     });
   }
 });
+
 
 
 // ===============================
