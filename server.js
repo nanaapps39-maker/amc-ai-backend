@@ -1472,7 +1472,6 @@ If you cannot produce valid JSON, return: {}
 // ===============================
 // SATCOM Diagnostics (Pro) — Unified Engine
 // ===============================
-import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
 app.post("/api/satcom/diagnostics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
