@@ -9,6 +9,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
+// ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
+import runDiagnosticsEngine from "./diagnosticsEngine.js";
+
+
 // ===============================================
 // GLOBAL DEFENSIVE GROQ REPLY EXTRACTORS (QA SAFE)
 // ===============================================
@@ -122,6 +126,71 @@ app.use((req, res, next) => {
 
   next();
 });
+
+
+// ===============================
+// Attachment Mode (Pro) — FINAL v17 VERSION
+// ===============================
+
+// Ensure attachments folder exists
+const attachmentsFolder = path.join(__dirname, "attachments");
+if (!fs.existsSync(attachmentsFolder)) {
+  fs.mkdirSync(attachmentsFolder);
+}
+
+// Ensure attachments.json exists
+if (!fs.existsSync(attachmentsFile)) {
+  fs.writeFileSync(attachmentsFile, JSON.stringify([]));
+}
+
+// ⭐ FINAL WORKING ROUTE — accepts real file uploads
+app.post("/api/attachment", upload.single("file"), async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const vessel = req.body.vessel || "Unknown Vessel";
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const fileContent = file.buffer.toString("utf8");
+
+    const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
+
+    const entry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      filename: file.originalname,
+      vessel: vessel,
+      content: fileContent
+    };
+
+    existing.push(entry);
+    fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
+
+    // ⭐ Run SATCOM diagnostics on the uploaded alarm log
+    const analysis = await runDiagnosticsEngine(fileContent);
+
+    return res.status(200).json({
+      status: "ok",
+      message: "Attachment stored successfully",
+      id: entry.id,
+      analysis
+    });
+
+  } catch (error) {
+    console.error("Attachment Mode error:", error);
+    return res.status(500).json({
+      error: "Attachment Mode failed",
+      details: error?.message
+    });
+  }
+});
+
+
+
 
 // 🌍 Health Check Endpoint
 app.get("/api/health", (req, res) => {
@@ -1948,68 +2017,6 @@ Rules:
     });
   }
 });
-
-// ===============================
-// Attachment Mode (Pro) — FINAL v17 VERSION
-// ===============================
-
-// Ensure attachments folder exists
-const attachmentsFolder = path.join(__dirname, "attachments");
-if (!fs.existsSync(attachmentsFolder)) {
-  fs.mkdirSync(attachmentsFolder);
-}
-
-// Ensure attachments.json exists
-if (!fs.existsSync(attachmentsFile)) {
-  fs.writeFileSync(attachmentsFile, JSON.stringify([]));
-}
-
-// ⭐ FINAL WORKING ROUTE — accepts real file uploads
-app.post("/api/attachment", upload.single("file"), async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const vessel = req.body.vessel || "Unknown Vessel";
-    const file = req.file;
-
-    if (!file) {
-      return res.status(400).json({ error: "No file uploaded." });
-    }
-
-    // Convert uploaded file buffer to UTF‑8 text
-    const fileContent = file.buffer.toString("utf8");
-
-    // Load existing attachments
-    const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
-
-    // Create new entry
-    const entry = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      filename: file.originalname,
-      vessel: vessel,
-      content: fileContent
-    };
-
-    // Save entry
-    existing.push(entry);
-    fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
-
-    return res.status(200).json({
-      status: "ok",
-      message: "Attachment stored successfully",
-      id: entry.id
-    });
-
-  } catch (error) {
-    console.error("Attachment Mode error:", error);
-    return res.status(500).json({
-      error: "Attachment Mode failed",
-      details: error?.message
-    });
-  }
-});
-
 
 
 // ===============================
