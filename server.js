@@ -100,6 +100,16 @@ app.use(
   })
 );
 
+// ===============================
+// Basic Security Headers
+// ===============================
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
+
 app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
 
 // ⭐ PRO ACCESS RESPONSE
@@ -132,6 +142,18 @@ app.use((req, res, next) => {
   next();
 });
 
+
+// ===============================
+// Basic Security: File Sanitiser
+// ===============================
+function sanitiseText(input) {
+  if (!input) return "";
+
+  return input
+    .replace(/\0/g, "")            // remove null bytes
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "") // remove hidden binary chars
+    .slice(0, 500000);             // hard limit: 500KB max
+}
 
 // ===============================
 // Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
@@ -184,7 +206,8 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
       });
     }
 
-    const fileContent = file.buffer.toString("utf8");
+    const rawContent = file.buffer.toString("utf8");
+    const fileContent = sanitiseText(rawContent);
 
     const existing = JSON.parse(fs.readFileSync(attachmentsFile, "utf8"));
 
