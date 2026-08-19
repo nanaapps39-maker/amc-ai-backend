@@ -1,3 +1,6 @@
+// test commit
+
+
 // redeploy v17.1
 
 // HARD REBUILD — August 16, 2026 — v17
@@ -131,7 +134,7 @@ app.use((req, res, next) => {
 
 
 // ===============================
-// Attachment Mode (Pro) — FINAL v17 VERSION
+// Attachment Mode (Pro) — FINAL v18 VERSION (with file-type validation)
 // ===============================
 
 // Ensure attachments folder exists
@@ -145,6 +148,19 @@ if (!fs.existsSync(attachmentsFile)) {
   fs.writeFileSync(attachmentsFile, JSON.stringify([]));
 }
 
+// ⭐ Allowed file extensions for SATCOM / Maritime logs
+const allowedExtensions = [
+  ".log",
+  ".txt",
+  ".cfg",
+  ".ini",
+  ".alarm",
+  ".event",
+  ".satcom",
+  ".nmea",
+  ".json"
+];
+
 // ⭐ FINAL WORKING ROUTE — accepts real file uploads
 app.post("/api/attachment", upload.single("file"), async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -153,8 +169,19 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
     const vessel = req.body.vessel || "Unknown Vessel";
     const file = req.file;
 
+    // ⭐ No file uploaded
     if (!file) {
       return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    // ⭐ File-type validation (extension-based)
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!allowedExtensions.includes(ext)) {
+      return res.status(400).json({
+        error: "Unsupported file type.",
+        allowed: allowedExtensions.join(", "),
+        received: ext
+      });
     }
 
     const fileContent = file.buffer.toString("utf8");
@@ -190,6 +217,7 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
     });
   }
 });
+
 
 
 
