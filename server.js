@@ -156,6 +156,24 @@ function sanitiseText(input) {
 }
 
 // ===============================
+// API Rate Limiter (Security v24.1)
+// ===============================
+import rateLimit from "express-rate-limit";
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: "Too many requests. Please slow down."
+});
+
+app.use("/api/", apiLimiter);
+
+// ===============================
+// Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
+// ===============================
+
+
+// ===============================
 // Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
 // ===============================
 
