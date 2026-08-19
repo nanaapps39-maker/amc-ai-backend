@@ -134,7 +134,7 @@ app.use((req, res, next) => {
 
 
 // ===============================
-// Attachment Mode (Pro) — FINAL v18 VERSION (with file-type validation)
+// Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
 // ===============================
 
 // Ensure attachments folder exists
@@ -217,6 +217,79 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
     });
   }
 });
+
+
+// ===============================
+// Translator Engine (Pro)
+// ===============================
+app.post("/api/translate", async (req, res) => {
+  if (!req.userIsPro) return requireProAccess(res);
+
+  try {
+    const { text, lang } = req.body;
+
+    if (!text || !lang) {
+      return res.status(400).json({
+        error: "Missing text or language parameter."
+      });
+    }
+
+    const translation = await runTranslatorEngine(text, lang);
+
+    if (!translation) {
+      return res.status(200).json({
+        status: "ok",
+        message: "No translation returned"
+      });
+    }
+
+    return res.status(200).json({
+      status: "ok",
+      translation
+    });
+
+  } catch (error) {
+    console.error("Translator error:", error);
+    return res.status(500).json({
+      error: "Translator Mode failed",
+      details: error?.message
+    });
+  }
+});
+
+
+// ===============================
+// Translator Engine Function
+// ===============================
+async function runTranslatorEngine(text, lang) {
+  try {
+    const prompt = `
+Translate the following SATCOM log content into ${lang}.
+Maintain technical accuracy and preserve alarm codes.
+
+Content:
+${text}
+    `;
+
+    const response = await groq.chat.completions.create({
+      model: "mixtral-8x7b",
+      messages: [
+        { role: "system", content: "You are a maritime SATCOM translator." },
+        { role: "user", content: prompt }
+      ]
+    });
+
+    if (!response.choices || !response.choices[0]?.message?.content) {
+      return null;
+    }
+
+    return response.choices[0].message.content.trim();
+
+  } catch (err) {
+    console.error("Translator Engine error:", err);
+    return null;
+  }
+}
 
 
 
