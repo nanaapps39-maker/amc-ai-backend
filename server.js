@@ -327,7 +327,7 @@ ${text}
     `;
 
     const response = await groq.chat.completions.create({
-      model: "mixtral-8x7b",
+      model: "mixtral-8x7b-32768",
       messages: [
         { role: "system", content: "You are a maritime SATCOM translator." },
         { role: "user", content: prompt }
