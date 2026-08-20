@@ -1,6 +1,5 @@
 // test commit
 
-
 // redeploy v17.1
 
 // HARD REBUILD — August 16, 2026 — v17
@@ -13,6 +12,11 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
+
+const app = express();
+
+// Trust Render/Cloudflare proxy for correct IP + rate limiting
+app.set("trust proxy", 1);
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
