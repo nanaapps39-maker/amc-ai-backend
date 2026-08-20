@@ -13,10 +13,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
-const app = express();
+const app = express();          // ⭐ Your ONLY app declaration
 
-// Trust Render/Cloudflare proxy for correct IP + rate limiting
-app.set("trust proxy", 1);
+app.set("trust proxy", 1);      // ⭐ Add THIS line directly under it
+
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
