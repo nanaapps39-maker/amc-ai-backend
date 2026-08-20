@@ -79,8 +79,6 @@ const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
-const app = express();
-
 // ⭐ STEP 2 — Multer memory storage (ESM-safe, stable)
 const upload = multer({ storage: multer.memoryStorage() });
 
