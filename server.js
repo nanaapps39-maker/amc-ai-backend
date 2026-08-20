@@ -13,9 +13,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
+// ⭐ Initialise Groq Client (REQUIRED)
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
+
 const app = express();          // ⭐ Your ONLY app declaration
 
 app.set("trust proxy", 1);      // ⭐ Add THIS line directly under it
+
 
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
