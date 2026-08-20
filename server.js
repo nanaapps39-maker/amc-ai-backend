@@ -22,48 +22,6 @@ app.set("trust proxy", 1);      // ⭐ Add THIS line directly under it
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
 
-// ===============================================
-// GLOBAL DEFENSIVE GROQ REPLY EXTRACTORS (QA SAFE)
-// ===============================================
-
-// For chat.completions API
-export function extractGroqReplyChat(response) {
-  if (!response || typeof response !== "object") {
-    return { ok: false, error: "Groq returned no response object." };
-  }
-
-  const choices = response.choices;
-  if (!Array.isArray(choices) || choices.length === 0) {
-    return { ok: false, error: "Groq returned no choices." };
-  }
-
-  const message = choices[0]?.message;
-  if (!message || typeof message !== "object") {
-    return { ok: false, error: "Groq returned an invalid message object." };
-  }
-
-  const content = message.content;
-  if (!content || typeof content !== "string" || content.trim() === "") {
-    return { ok: false, error: "Groq returned empty content." };
-  }
-
-  return { ok: true, content: content.trim() };
-}
-
-// For responses API
-export function extractGroqReplyResponses(response) {
-  if (!response || typeof response !== "object") {
-    return { ok: false, error: "Groq returned no response object." };
-  }
-
-  const content = response.output_text;
-  if (!content || typeof content !== "string" || content.trim() === "") {
-    return { ok: false, error: "Groq returned empty output_text." };
-  }
-
-  return { ok: true, content: content.trim() };
-}
-
 // ===============================
 // ESM-SAFE __dirname (CRITICAL)
 // ===============================
