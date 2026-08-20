@@ -169,6 +169,41 @@ app.use((req, res, next) => {
 });
 
 // ===============================
+// Suspicious IP Pattern Detection (Security v24.4)
+// ===============================
+const ipActivity = new Map(); // { ip: { count, lastRequest } }
+
+app.use((req, res, next) => {
+  const ip =
+    req.headers["x-forwarded-for"] ||
+    req.connection.remoteAddress ||
+    req.ip;
+
+  const now = Date.now();
+
+  // Initialise record if new IP
+  if (!ipActivity.has(ip)) {
+    ipActivity.set(ip, { count: 1, lastRequest: now });
+  } else {
+    const record = ipActivity.get(ip);
+    record.count += 1;
+
+    // If too many requests in a short time, flag it
+    if (record.count > 50 && now - record.lastRequest < 5000) {
+      console.warn(`⚠️ Suspicious IP Activity Detected: ${ip} (${record.count} requests in 5s)`);
+    }
+
+    // Reset counter every 5 seconds
+    if (now - record.lastRequest > 5000) {
+      record.count = 1;
+      record.lastRequest = now;
+    }
+  }
+
+  next();
+});
+
+// ===============================
 // API Rate Limiter (Security v24.2)
 // ===============================
 import rateLimit from "express-rate-limit";
