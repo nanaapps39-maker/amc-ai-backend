@@ -270,7 +270,9 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
 // Translator Engine (Pro)
 // ===============================
 app.post("/api/translate", async (req, res) => {
-  if (!req.userIsPro) return requireProAccess(res);
+
+  // ❌ REMOVE THIS LINE TO UNLOCK TRANSLATOR MODE
+  // if (!req.userIsPro) return requireProAccess(res);
 
   try {
     const { text, lang } = req.body;
@@ -337,6 +339,7 @@ ${text}
     return null;
   }
 }
+
 
 
 
