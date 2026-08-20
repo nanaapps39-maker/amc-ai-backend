@@ -156,7 +156,20 @@ function sanitiseText(input) {
 }
 
 // ===============================
-// API Rate Limiter (Security v24.1)
+// IP Logging (Security v24.3)
+// ===============================
+app.use((req, res, next) => {
+  const ip =
+    req.headers["x-forwarded-for"] ||
+    req.connection.remoteAddress ||
+    req.ip;
+
+  console.log(`🔐 IP Log: ${ip} -> ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// ===============================
+// API Rate Limiter (Security v24.2)
 // ===============================
 import rateLimit from "express-rate-limit";
 
@@ -167,11 +180,6 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api/", apiLimiter);
-
-// ===============================
-// Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
-// ===============================
-
 
 // ===============================
 // Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
