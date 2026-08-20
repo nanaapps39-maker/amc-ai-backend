@@ -209,12 +209,15 @@ app.use((req, res, next) => {
 import rateLimit from "express-rate-limit";
 
 const apiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
+  windowMs: 60 * 1000,   // 1 minute
+  max: 100,              // safe limit
   message: "Too many requests. Please slow down."
 });
 
-app.use("/api/", apiLimiter);
+// Apply limiter ONLY to heavy routes
+app.use("/api/diagnostics", apiLimiter);
+app.use("/api/attachment", apiLimiter);
+
 
 // ===============================
 // Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
