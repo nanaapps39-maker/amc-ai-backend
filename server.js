@@ -46,6 +46,32 @@ import { calculateVoyage } from "./voyageEngine.js";
 // ⭐ STEP 2 — Multer memory storage (ESM-safe, stable)
 const upload = multer({ storage: multer.memoryStorage() });
 
+// ===============================
+// AUTO-UPGRADE ENGINE — MODULE RELOAD LOGIC
+// ===============================
+function reloadModule(moduleName) {
+  try {
+    delete require.cache[require.resolve(`./modules/${moduleName}.js`)];
+    return require(`./modules/${moduleName}.js`);
+  } catch (err) {
+    console.error(`[UPGRADE] Failed to reload module: ${moduleName}`, err);
+    return null;
+  }
+}
+
+// ===============================
+// AUTO-UPGRADE ENGINE — APPLY UPGRADE (PHASE 1)
+// ===============================
+async function applyUpgrade(manifest) {
+  console.log(`[UPGRADE] Applying version ${manifest.version}`);
+
+  // Phase 1: reload modules only
+  manifest.modules.forEach(module => {
+    reloadModule(module);
+  });
+
+  console.log(`[UPGRADE] Completed version ${manifest.version}`);
+}
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
@@ -106,6 +132,40 @@ app.use((req, res, next) => {
   }
 
   next();
+});
+
+
+// ===============================
+// AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT
+// ===============================
+app.get("/upgrade/version", (req, res) => {
+  try {
+    const manifest = require("./upgrade/manifest.json");
+    res.json(manifest);
+  } catch (err) {
+    res.status(500).json({ error: "Upgrade manifest not found" });
+  }
+});
+
+
+// ===============================
+// AUTO-UPGRADE ENGINE — TRIGGER ROUTE (PHASE 1)
+// ===============================
+app.post("/upgrade/apply", async (req, res) => {
+  try {
+    const manifest = require("./upgrade/manifest.json");
+
+    await applyUpgrade(manifest);
+
+    res.json({
+      status: "success",
+      version: manifest.version,
+      message: "Upgrade applied successfully"
+    });
+  } catch (err) {
+    console.error("[UPGRADE] Failed to apply upgrade:", err);
+    res.status(500).json({ error: "Upgrade failed" });
+  }
 });
 
 

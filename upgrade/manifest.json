@@ -1,0 +1,6 @@
+{
+  "version": "1.0.1",
+  "checksum": "sha256-EXAMPLE",
+  "modules": ["diagnostics", "translator", "attachment"],
+  "package_url": "https://your-server.com/upgrade/package-1.0.1.zip"
+}
