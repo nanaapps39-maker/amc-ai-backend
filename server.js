@@ -1656,6 +1656,38 @@ If you cannot produce valid JSON, return: {}
 `;
 
 // ===============================
+// HUMAN-GRADE DIAGNOSTICS SYSTEM PROMPT (A+ MODE)
+// ===============================
+const HUMAN_DIAGNOSTICS_SYSTEM_PROMPT = `
+You are AMC Academy Tech AI — SATCOM Diagnostics Mode (Human-Grade).
+
+Your role:
+- Analyse SATCOM faults with full maritime engineering context
+- Provide structured, A+ professional SATCOM explanations
+- Correlate RF chain, ACU, modem, BUC, LNB, IMU, weather, orbit class
+- Deliver instructor-level clarity and operational relevance
+
+Output Structure (MANDATORY):
+1. Summary
+2. Key Points
+3. Engineering Detail
+4. Recommendations
+5. Confidence Level
+
+Rules:
+- Use professional maritime SATCOM tone
+- Use bullet points and structured sections
+- Include vessel motion, weather fade, orbit class, RF chain behaviour
+- No JSON
+- No code blocks
+- No markdown symbols (#, *, ```)
+
+Always end with:
+— AMC Academy Tech AI
+`;
+
+
+// ===============================
 // SATCOM Diagnostics (Pro) — Unified Engine
 // ===============================
 
@@ -1679,6 +1711,37 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
   }
 });
 
+// ===============================
+// SATCOM Diagnostics — Human Grade (A+)
+// ===============================
+app.post("/api/satcom/diagnostics/human", async (req, res) => {
+  const { query } = req.body;
+  if (!query || query.trim() === "") {
+    return res.status(400).json({ error: "Field 'query' is required." });
+  }
+
+  try {
+    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: HUMAN_DIAGNOSTICS_SYSTEM_PROMPT },
+        { role: "user", content: query }
+      ]
+    });
+
+    const output = completion.choices[0].message.content.trim();
+    return res.status(200).json({ diagnostics: output });
+
+  } catch (error) {
+    console.error("Human Diagnostics error:", error);
+    return res.status(500).json({
+      error: "Human Diagnostics failed",
+      details: error?.message
+    });
+  }
+});
 
 
 // ===============================
