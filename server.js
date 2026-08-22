@@ -144,6 +144,10 @@ app.get("/upgrade/version", (req, res) => {
 
   const manifestPath = path.join(__dirname, "upgrade", "manifest.json");
 
+  console.log("DEBUG manifestPath:", manifestPath);
+  console.log("DEBUG __dirname:", __dirname);
+  console.log("DEBUG folder contents:", fs.readdirSync(__dirname));
+
   if (!fs.existsSync(manifestPath)) {
     return res.status(404).json({ error: "Upgrade manifest not found" });
   }
