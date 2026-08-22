@@ -1,6 +1,10 @@
 {
-  "version": "1.0.1",
+  "version": "17.1",
   "checksum": "sha256-EXAMPLE",
-  "modules": ["diagnostics", "translator", "attachment"],
-  "package_url": "https://your-server.com/upgrade/package-1.0.1.zip"
+  "modules": [
+    "translatorEngine",
+    "diagnosticsEngine",
+    "voyageEngine"
+  ],
+  "package_url": "https://your-server.com/upgrade/package-17.1.zip"
 }
