@@ -1291,39 +1291,6 @@ app.post("/api/chat", async (req, res) => {
 });
 
 
-    // ⭐ DEFENSIVE REPLY EXTRACTION (Responses API)
-    function extractGroqReplyResponses(response) {
-      if (!response || typeof response !== "object") {
-        return { ok: false, error: "Groq returned no response object." };
-      }
-
-      const content = response.output_text;
-      if (!content || typeof content !== "string" || content.trim() === "") {
-        return { ok: false, error: "Groq returned empty output_text." };
-      }
-
-      return { ok: true, content: content.trim() };
-    }
-
-    const result = extractGroqReplyResponses(completion);
-
-    if (!result.ok) {
-      console.error("Groq reply extraction error:", result.error);
-      return res.status(500).json({ error: result.error });
-    }
-
-    res.json({ reply: result.content });
-
-  } catch (err) {
-    console.error("CHAT ERROR:", err);
-    res.status(500).json({
-      error: "Chat backend failure",
-      details: err.message
-    });
-  }
-});
-
-
 
 // ===============================
 // TRANSLATOR ENGINE — GPT‑OSS‑20B (SAFE FOR AUG 2026+)
