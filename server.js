@@ -433,56 +433,10 @@ ${text}
 
 
 
-
-
-
 // 🌍 Health Check Endpoint
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
-
-    console.log("🔥 SYSTEM PROMPT INJECTED");
-    console.log("MODEL USED:", completion.model);
-
-    // ⭐ DEFENSIVE REPLY EXTRACTION (chat.completions API)
-    function extractGroqReplyChat(response) {
-      if (!response || typeof response !== "object") {
-        return { ok: false, error: "Groq returned no response object." };
-      }
-
-      const choices = response.choices;
-      if (!Array.isArray(choices) || choices.length === 0) {
-        return { ok: false, error: "Groq returned no choices." };
-      }
-
-      const message = choices[0]?.message;
-      if (!message || typeof message !== "object") {
-        return { ok: false, error: "Groq returned an invalid message object." };
-      }
-
-      const content = message.content;
-      if (!content || typeof content !== "string" || content.trim() === "") {
-        return { ok: false, error: "Groq returned empty content." };
-      }
-
-      return { ok: true, content: content.trim() };
-    }
-
-    const result = extractGroqReplyChat(completion);
-
-    if (!result.ok) {
-      console.error("Groq reply extraction error:", result.error);
-      return res.status(500).json({ error: result.error });
-    }
-
-    res.json({ reply: result.content });
-
-  } catch (err) {
-    console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Chat backend failure", details: err.message });
-  }
-});
-
 
 // ===============================
 // MODEL DISCOVERY ROUTE
