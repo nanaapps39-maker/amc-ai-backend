@@ -1247,6 +1247,27 @@ Always respond as AMC Academy Tech AI — Alarm Pack Analysis Mode.
 `;
 
 
+// ===============================================
+// AMC ACADEMY TECH AI — v29 INTELLIGENCE LAYER
+// ===============================================
+function applyV29Upgrades(text) {
+  if (!text || typeof text !== "string") return text;
+
+  // ⭐ Remove double spacing, normalize formatting
+  let output = text.replace(/\n{3,}/g, "\n\n").trim();
+
+  // ⭐ Ensure structured SATCOM formatting
+  output = output
+    .replace(/^\s*-\s*/gm, "• ")   // convert dashes to bullets
+    .replace(/^\s*\*\s*/gm, "• "); // convert stars to bullets
+
+  // ⭐ Add AMC Academy Tech signature tone
+  output = output + "\n\n— AMC Academy Tech AI";
+
+  return output;
+}
+
+
 // ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
