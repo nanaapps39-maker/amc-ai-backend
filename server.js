@@ -19,14 +19,10 @@ const groq = new Groq({
 });
 
 const app = express();          // ⭐ Your ONLY app declaration
-
-app.set("trust proxy", 1);      // ⭐ Add THIS line directly under it
-
-
+app.set("trust proxy", 1);      // ⭐ MUST be directly under app declaration
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
-
 
 // ===============================
 // ESM-SAFE __dirname (CRITICAL)
@@ -43,8 +39,22 @@ const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
 // ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
 
-// ⭐ STEP 2 — Multer memory storage (ESM-safe, stable)
+// ⭐ STEP 3 — Multer memory storage (ESM-safe, stable)
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ======================================================
+// ⭐⭐⭐ INSERT AMC ACADEMY TECH AI v29 MODULES HERE ⭐⭐⭐
+// ======================================================
+
+// (Paste SATCOM RF SANITY ENGINE)
+// (Paste PEPLINK SD-WAN ACCURACY LAYER)
+// (Paste MARITIME INSTALLATION KNOWLEDGE BASE)
+// (Paste applyV29Upgrades())
+
+// ======================================================
+// END OF v29 MODULE INSERTION POINT
+// ======================================================
+
 
 // ===============================
 // AUTO-UPGRADE ENGINE — MODULE RELOAD LOGIC
@@ -71,7 +81,9 @@ async function applyUpgrade(manifest) {
   });
 
   console.log(`[UPGRADE] Completed version ${manifest.version}`);
-}
+}   // ⭐ YOU WERE MISSING THIS CLOSING BRACE
+
+
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
@@ -428,30 +440,6 @@ ${text}
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
-
-
-// ===============================
-// CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
-// ===============================
-app.post("/api/chat", async (req, res) => {
-  try {
-    const userMessage = req.body.message || "";
-
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-20b",
-      messages: [
-        {
-          role: "system",
-          content: CHAT_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: userMessage
-        }
-      ]
-    });
 
     console.log("🔥 SYSTEM PROMPT INJECTED");
     console.log("MODEL USED:", completion.model);
@@ -1327,6 +1315,27 @@ app.post("/api/chat", async (req, res) => {
         }
       ]
     });
+
+    // ⭐ Extract raw AI output
+    const aiResponse =
+      completion.output_text ||
+      "⚠️ No reply returned from Groq";
+
+    // ⭐⭐⭐ APPLY AMC ACADEMY TECH AI v29 INTELLIGENCE LAYER ⭐⭐⭐
+    const upgraded = applyV29Upgrades(aiResponse);
+
+    // ⭐ Return upgraded A+ output
+    return res.json({ reply: upgraded });
+
+  } catch (err) {
+    console.error("CHAT ERROR:", err);
+    return res.status(500).json({
+      error: "Chat backend failure",
+      details: err.message
+    });
+  }
+});
+
 
     // ⭐ DEFENSIVE REPLY EXTRACTION (Responses API)
     function extractGroqReplyResponses(response) {
