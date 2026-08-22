@@ -261,7 +261,7 @@ import rateLimit from "express-rate-limit";
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,   // 1 minute
-  max: 100,              // safe limit
+  max: 300,              // safe limit
   message: "Too many requests. Please slow down."
 });
 
