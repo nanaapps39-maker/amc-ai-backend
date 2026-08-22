@@ -139,13 +139,19 @@ app.use((req, res, next) => {
 // AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT
 // ===============================
 app.get("/upgrade/version", (req, res) => {
-  try {
-    const manifest = require("./upgrade/manifest.json");
-    res.json(manifest);
-  } catch (err) {
-    res.status(500).json({ error: "Upgrade manifest not found" });
+  const path = require("path");
+  const fs = require("fs");
+
+  const manifestPath = path.join(__dirname, "upgrade", "manifest.json");
+
+  if (!fs.existsSync(manifestPath)) {
+    return res.status(404).json({ error: "Upgrade manifest not found" });
   }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  res.json(manifest);
 });
+
 
 
 // ===============================
