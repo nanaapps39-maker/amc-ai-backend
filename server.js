@@ -1655,9 +1655,6 @@ Rules:
 If you cannot produce valid JSON, return: {}
 `;
 
-// ===============================
-// HUMAN-GRADE DIAGNOSTICS SYSTEM PROMPT (A+ MODE)
-// ===============================
 const HUMAN_DIAGNOSTICS_SYSTEM_PROMPT = `
 You are AMC Academy Tech AI — SATCOM Diagnostics Mode (Human-Grade).
 
@@ -1680,7 +1677,7 @@ Rules:
 - Include vessel motion, weather fade, orbit class, RF chain behaviour
 - No JSON
 - No code blocks
-- No markdown symbols (#, *, ```)
+- No markdown symbols (hash, star, or code-fence markers)
 
 Always end with:
 — AMC Academy Tech AI
