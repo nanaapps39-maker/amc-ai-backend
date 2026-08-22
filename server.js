@@ -138,13 +138,6 @@ app.use((req, res, next) => {
 // ===============================
 // AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT (ESM MODE)
 // ===============================
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 app.get("/upgrade/version", (req, res) => {
   const manifestPath = path.join(__dirname, "upgrade", "manifest.json");
 
