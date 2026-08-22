@@ -136,17 +136,26 @@ app.use((req, res, next) => {
 
 
 // ===============================
-// AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT
+// AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT (ESM MODE)
 // ===============================
-app.get("/upgrade/version", (req, res) => {
-  const path = require("path");
-  const fs = require("fs");
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.get("/upgrade/version", (req, res) => {
   const manifestPath = path.join(__dirname, "upgrade", "manifest.json");
 
   console.log("DEBUG manifestPath:", manifestPath);
   console.log("DEBUG __dirname:", __dirname);
-  console.log("DEBUG folder contents:", fs.readdirSync(__dirname));
+
+  try {
+    console.log("DEBUG folder contents:", fs.readdirSync(__dirname));
+  } catch (err) {
+    console.log("DEBUG folder read error:", err);
+  }
 
   if (!fs.existsSync(manifestPath)) {
     return res.status(404).json({ error: "Upgrade manifest not found" });
@@ -155,6 +164,7 @@ app.get("/upgrade/version", (req, res) => {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   res.json(manifest);
 });
+
 
 
 
