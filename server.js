@@ -1246,6 +1246,7 @@ Clear, concise, operationally useful.
 Always respond as AMC Academy Tech AI — Alarm Pack Analysis Mode.
 `;
 
+
 // ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
@@ -1255,30 +1256,23 @@ app.post("/api/chat", async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ UPDATED: Correct model ID with namespace
-    const completion = await groq.responses.create({
+    // ⭐ Correct API for groq-sdk v1.5.0
+    const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-20b",
-      input: [
-        {
-          role: "system",
-          content: CHAT_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: userMessage
-        }
+      messages: [
+        { role: "system", content: CHAT_SYSTEM_PROMPT },
+        { role: "user", content: userMessage }
       ]
     });
 
     // ⭐ Extract raw AI output
     const aiResponse =
-      completion.output_text ||
+      completion.choices?.[0]?.message?.content?.trim() ||
       "⚠️ No reply returned from Groq";
 
-    // ⭐⭐⭐ APPLY AMC ACADEMY TECH AI v29 INTELLIGENCE LAYER ⭐⭐⭐
+    // ⭐ Apply AMC Academy Tech AI v29 Intelligence Layer
     const upgraded = applyV29Upgrades(aiResponse);
 
-    // ⭐ Return upgraded A+ output
     return res.json({ reply: upgraded });
 
   } catch (err) {
@@ -1289,6 +1283,7 @@ app.post("/api/chat", async (req, res) => {
     });
   }
 });
+
 
 
 
