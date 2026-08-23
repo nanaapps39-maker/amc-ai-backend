@@ -1711,10 +1711,88 @@ app.post("/api/tonnage-analytics", async (req, res) => {
 
 
 // ===============================
-// SATCOM Link Budget Mode (Pro)
+// SATCOM Link Budget Mode (Pro) — Upgraded (Math + AI Intelligence)
 // ===============================
 
-app.post("/api/satcom/link-budget", (req, res) => {
+// System prompt for Link Budget Intelligence Engine
+const LINK_BUDGET_SYSTEM_PROMPT = `
+You are AMC Academy Tech AI — SATCOM Link Budget Intelligence Engine.
+
+Your job:
+- Take numeric link-budget results (EIRP, received power, C/N0, margin, status).
+- Produce a structured, engineering-grade diagnostic.
+- Focus on Ku-band / Ka-band maritime VSAT scenarios.
+- Consider rain fade, pointing error, vessel motion, and RF chain realities.
+- Output in this structure:
+
+1. Summary*
+2. Key Points*
+3. Engineering Detail*
+4. Recommendations*
+5. Confidence Level*
+
+Do NOT invent impossible numbers; reason qualitatively from the provided results.
+Always respond as AMC Academy Tech AI — SATCOM & Maritime Engineering intelligence.
+`;
+
+// Helper: call AI (Groq if available, otherwise OpenAI)
+async function generateLinkBudgetNarrative(result) {
+  const messages = [
+    { role: "system", content: LINK_BUDGET_SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: JSON.stringify({
+        description: "Numeric SATCOM link-budget results for a maritime VSAT link.",
+        result
+      })
+    }
+  ];
+
+  // Try Groq first if configured
+  if (process.env.GROQ_API_KEY && process.env.GROQ_MODEL && global.groqClient) {
+    try {
+      const groqResponse = await global.groqClient.chat.completions.create({
+        model: process.env.GROQ_MODEL,
+        messages,
+        temperature: 0.2
+      });
+
+      const groqText =
+        groqResponse?.choices?.[0]?.message?.content?.trim();
+      if (groqText) return groqText;
+      console.warn("Groq Link Budget: empty content, falling back to OpenAI.");
+    } catch (err) {
+      console.error("Groq Link Budget error:", err);
+    }
+  }
+
+  // Fallback to OpenAI (primary if Groq not configured)
+  if (process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL && global.openaiClient) {
+    try {
+      const openaiResponse = await global.openaiClient.chat.completions.create({
+        model: process.env.OPENAI_MODEL,
+        messages,
+        temperature: 0.2
+      });
+
+      const openaiText =
+        openaiResponse?.choices?.[0]?.message?.content?.trim();
+      if (openaiText) return openaiText;
+
+      console.error("OpenAI Link Budget: empty content.");
+      return null;
+    } catch (err) {
+      console.error("OpenAI Link Budget error:", err);
+      return null;
+    }
+  }
+
+  console.error("No AI client configured for Link Budget Intelligence.");
+  return null;
+}
+
+// Upgraded route: math + AI narrative
+app.post("/api/satcom/link-budget", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
   const {
@@ -1748,6 +1826,7 @@ app.post("/api/satcom/link-budget", (req, res) => {
   }
 
   try {
+    // 1. Run numeric link-budget calculation (existing function)
     const result = calculateLinkBudget({
       frequencyGHz,
       txPower_dBW,
@@ -1757,13 +1836,26 @@ app.post("/api/satcom/link-budget", (req, res) => {
       rxSystemNoise_dBm
     });
 
+    // 2. Build a simple summary from math
+    const summary = {
+      linkStatus: result.linkStatus,
+      linkMargin_dB: result.linkMargin_dB,
+      receivedPower_dBm: result.receivedPower_dBm,
+      cn0_dBHz: result.cn0_dBHz
+    };
+
+    // 3. Generate AI narrative (intelligence layer)
+    const intelligence = await generateLinkBudgetNarrative({
+      ...result,
+      summary
+    });
+
+    // 4. Respond with math + intelligence
     return res.status(200).json({
       status: "success",
-      summary: {
-        linkStatus: result.linkStatus,
-        linkMargin_dB: result.linkMargin_dB
-      },
-      detail: result
+      summary,
+      detail: result,
+      intelligence: intelligence || null
     });
   } catch (error) {
     console.error("Link Budget Mode error:", error);
@@ -1773,6 +1865,7 @@ app.post("/api/satcom/link-budget", (req, res) => {
     });
   }
 });
+
 
 
 // ===============================
