@@ -480,30 +480,6 @@ app.get("/api/test-world-clock", (req, res) => {
 });
 
 // ===============================
-// Start Server — ONLY ONE
-// ===============================
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log("====================================================");
-  console.log(" AMC Academy Tech AI Backend — Boot Sequence");
-  console.log("====================================================");
-  console.log("✔ Chat Engine: ACTIVE");
-  console.log("✔ Translator Engine: ACTIVE");
-  console.log("✔ Akan Isolation: ENABLED");
-  console.log("✔ SATCOM Engineering Rules: LOADED");
-  console.log("✔ Africa Language Pack: LOADED");
-  console.log("✔ Groq Routing: CONNECTED");
-  console.log("✔ OpenAI Routing: CONNECTED");     // ⭐ NEW — Translator Mode engine
-  console.log("✔ Diagnostics Engine: READY");
-  console.log("✔ Attachment Mode: READY");
-  console.log("✔ Maritime AI Modules: INITIALIZED");
-  console.log("----------------------------------------------------");
-  console.log(`✔ Server running on port ${PORT}`);
-  console.log("====================================================");
-});
-
-
-// ===============================
 // 👤 FOUNDER PROFILE (GLOBAL)
 // ===============================
 const founderProfile = {
