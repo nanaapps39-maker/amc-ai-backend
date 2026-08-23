@@ -14,6 +14,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
+// ⭐ Cargo Analytics Engine (correct location)
+import runCargoAnalytics from "./cargoEngine.js";
+
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
@@ -1900,7 +1903,6 @@ app.post("/api/traffic-monitoring", async (req, res) => {
 // ===============================
 // Cargo Analytics (Pro)
 // ===============================
-import runCargoAnalytics from "./cargoEngine.js";
 
 app.post("/api/cargo-analytics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
