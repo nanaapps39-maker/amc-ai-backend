@@ -1326,48 +1326,6 @@ app.post("/api/chat", async (req, res) => {
 });
 
 
-
-
-// ===============================
-// TRANSLATOR ENGINE — GPT‑OSS‑20B (SAFE FOR AUG 2026+)
-// ===============================
-app.post("/api/translate", async (req, res) => {
-  try {
-    const text = req.body.text || "";
-    const sourceLanguage = req.body.sourceLanguage || "English";
-    const targetLanguage = req.body.targetLanguage || "Akan";
-
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-20b",
-      messages: [
-        {
-          role: "system",
-          content: TRANSLATOR_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: `Translate from ${sourceLanguage} to ${targetLanguage}: ${text}`
-        }
-      ]
-    });
-
-    const translatedText = completion.choices[0].message.content;
-
-    res.json({ translatedText });
-
-  } catch (err) {
-    console.error("TRANSLATOR ERROR:", err);
-    res.status(500).json({
-      error: "Translator backend failure",
-      details: err.message
-    });
-  }
-});
-
-
-
 // --- Translator Prompt (World‑Class + Africa Language Pack) ---
 const TRANSLATOR_SYSTEM_PROMPT = `
 You are AMC Academy Tech AI — Translator Mode.
