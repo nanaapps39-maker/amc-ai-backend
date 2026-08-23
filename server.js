@@ -17,6 +17,14 @@ import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 // ⭐ Cargo Analytics Engine (correct location)
 import runCargoAnalytics from "./cargoEngine.js";
 
+// ⭐ Tonnage Analytics Engine (correct location)
+import runTonnageAnalytics from "./tonnageEngine.js";
+
+// ⭐ SATCOM Engines (must be at top)
+import calculateLinkBudget from "./linkBudget.js";
+import calculateWeatherFade from "./weatherFade.js";
+import calculateRfHealth from "./rfHealth.js";
+
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
@@ -1933,7 +1941,6 @@ app.post("/api/cargo-analytics", async (req, res) => {
 // ===============================
 // Tonnage Analytics (Pro)
 // ===============================
-import runTonnageAnalytics from "./tonnageEngine.js";
 
 app.post("/api/tonnage-analytics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -1965,7 +1972,6 @@ app.post("/api/tonnage-analytics", async (req, res) => {
 // ===============================
 // SATCOM Link Budget Mode (Pro)
 // ===============================
-import calculateLinkBudget from "./linkBudget.js";
 
 app.post("/api/satcom/link-budget", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -2031,7 +2037,6 @@ app.post("/api/satcom/link-budget", (req, res) => {
 // ===============================
 // SATCOM Weather Fade Predictor Mode (Pro)
 // ===============================
-import calculateWeatherFade from "./weatherFade.js";
 
 app.post("/api/satcom/weather-fade", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
@@ -2100,7 +2105,6 @@ app.post("/api/satcom/weather-fade", (req, res) => {
 // ===============================
 // SATCOM RF Health Mode (Pro)
 // ===============================
-import calculateRfHealth from "./rfHealth.js";
 
 app.post("/api/satcom/rf-health", (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
