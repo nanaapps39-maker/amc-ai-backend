@@ -1745,7 +1745,10 @@ Do NOT invent impossible numbers; reason qualitatively from the provided results
 Always respond as AMC Academy Tech AI — SATCOM & Maritime Engineering intelligence.
 `;
 
-// Helper: call AI (Groq first, fallback to OpenAI)
+// ===============================
+// AI Narrative Generator (Groq + OpenAI, Fully Patched)
+// ===============================
+
 async function generateLinkBudgetNarrative(result) {
   const messages = [
     { role: "system", content: LINK_BUDGET_SYSTEM_PROMPT },
@@ -1758,7 +1761,9 @@ async function generateLinkBudgetNarrative(result) {
     }
   ];
 
-  // Try Groq first
+  // -----------------------------
+  // 1. Try Groq first (patched)
+  // -----------------------------
   if (process.env.GROQ_API_KEY && process.env.GROQ_MODEL && global.groqClient) {
     try {
       const groqResponse = await global.groqClient.chat.completions.create({
@@ -1767,16 +1772,25 @@ async function generateLinkBudgetNarrative(result) {
         temperature: 0.2
       });
 
-      const groqText = groqResponse?.choices?.[0]?.message?.content?.trim();
-      if (groqText) return groqText;
+      // Null-safe extraction
+      const groqText =
+        groqResponse?.choices?.[0]?.message?.content ??
+        groqResponse?.choices?.[0]?.message?.text ??
+        null;
 
-      console.warn("Groq Link Budget: empty content, falling back to OpenAI.");
+      if (groqText && groqText.trim() !== "") {
+        return groqText.trim();
+      }
+
+      console.warn("Groq Link Budget: empty or null content, falling back to OpenAI.");
     } catch (err) {
       console.error("Groq Link Budget error:", err);
     }
   }
 
-  // Fallback to OpenAI
+  // -----------------------------
+  // 2. Fallback to OpenAI (patched)
+  // -----------------------------
   if (process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL && global.openaiClient) {
     try {
       const openaiResponse = await global.openaiClient.chat.completions.create({
@@ -1785,8 +1799,15 @@ async function generateLinkBudgetNarrative(result) {
         temperature: 0.2
       });
 
-      const openaiText = openaiResponse?.choices?.[0]?.message?.content?.trim();
-      if (openaiText) return openaiText;
+      // Null-safe extraction
+      const openaiText =
+        openaiResponse?.choices?.[0]?.message?.content ??
+        openaiResponse?.choices?.[0]?.message?.text ??
+        null;
+
+      if (openaiText && openaiText.trim() !== "") {
+        return openaiText.trim();
+      }
 
       console.error("OpenAI Link Budget: empty content.");
       return null;
