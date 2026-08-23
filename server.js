@@ -38,6 +38,25 @@ const openai = new OpenAI({
 const app = express();          // ⭐ Your ONLY app declaration
 app.set("trust proxy", 1);      // ⭐ MUST be directly under app declaration
 
+// ⭐⭐⭐ CRITICAL — JSON BODY PARSING (FIXES EMPTY req.body) ⭐⭐⭐
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// ⭐⭐⭐ SINGLE, CLEAN, PRODUCTION-SAFE CORS CONFIG ⭐⭐⭐
+app.use(
+  cors({
+    origin: [
+      "https://amcacademy.tech",
+      "https://www.amcacademy.tech",
+      "https://amcacademy.tech:443",
+      "https://www.amcacademy.tech:443"
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-access-key"],
+    credentials: true
+  })
+);
+
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
@@ -98,28 +117,12 @@ async function applyUpgrade(manifest) {
   });
 
   console.log(`[UPGRADE] Completed version ${manifest.version}`);
-}   // ⭐ YOU WERE MISSING THIS CLOSING BRACE
-
-
+}
 
 // ===============================
 // 🌍 GLOBAL WORLD CLOCK (UTC) — MUST BE ABOVE ROUTES
 // ===============================
 const worldClock = () => new Date().toISOString();
-
-app.use(
-  cors({
-    origin: [
-      "https://amcacademy.tech",
-      "https://www.amcacademy.tech",
-      "https://amcacademy.tech:443",
-      "https://www.amcacademy.tech:443"
-    ],
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "x-access-key"],
-    credentials: true
-  })
-);
 
 // ===============================
 // Basic Security Headers
@@ -130,8 +133,6 @@ app.use((req, res, next) => {
   res.setHeader("Referrer-Policy", "no-referrer");
   next();
 });
-
-app.use(express.json());   // ⭐ MUST COME BEFORE PRO MIDDLEWARE
 
 // ⭐ PRO ACCESS RESPONSE
 function requireProAccess(res) {
@@ -147,16 +148,11 @@ function requireProAccess(res) {
 app.use((req, res, next) => {
   const key = req.headers["x-access-key"];
 
-  // Allow master Pro key
   if (key === "AMC-PRO-2024") {
     req.userIsPro = true;
-  }
-  // Allow customer keys (prefix AMC-CC)
-  else if (key && key.startsWith("AMC-CC")) {
+  } else if (key && key.startsWith("AMC-CC")) {
     req.userIsPro = true;
-  }
-  // Block everything else
-  else {
+  } else {
     req.userIsPro = false;
   }
 
@@ -1466,6 +1462,7 @@ Always prioritise clarity, natural phrasing, and technical accuracy.
 app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage, sourceLanguage } = req.body;
 
+  // ⭐ Input validation
   if (!text || !targetLanguage) {
     return res.status(400).json({
       error: "Both 'text' and 'targetLanguage' are required."
@@ -1478,7 +1475,7 @@ app.post("/api/translate", async (req, res) => {
     // ================================
     const normalized = text.normalize("NFKC").trim().toLowerCase();
     const overrideKey = normalized.replace(/[^\w\s]/gi, "");
-    const langKey = targetLanguage.toLowerCase();
+    const langKey = targetLanguage.toLowerCase().trim();
 
     // ================================
     // GHANA / AFRICA OVERRIDE ENGINE
@@ -1511,7 +1508,7 @@ app.post("/api/translate", async (req, res) => {
     };
 
     // ================================
-    // OVERRIDE MATCH
+    // OVERRIDE MATCH (instant return)
     // ================================
     if (OVERRIDES[langKey] && OVERRIDES[langKey][overrideKey]) {
       return res.status(200).json({
@@ -1537,7 +1534,7 @@ app.post("/api/translate", async (req, res) => {
       ]
     });
 
-    let output = completion.choices[0].message.content.trim();
+    const output = completion.choices[0].message.content.trim();
 
     return res.status(200).json({
       translatedText: output
@@ -1551,6 +1548,8 @@ app.post("/api/translate", async (req, res) => {
     });
   }
 });
+
+
 
 
 
