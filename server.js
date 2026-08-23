@@ -1527,75 +1527,24 @@ Always prioritise clarity, natural phrasing, and technical accuracy.
 
 
 // ===============================
-// Translator Mode (Pro)
+// Translator Mode (Pro) — FINAL FIXED VERSION
 // ===============================
 app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage, sourceLanguage } = req.body;
 
-  if (!text || !targetLanguage)
-    return res.status(400).json({ error: "Both 'text' and 'targetLanguage' are required." });
+  if (!text || !targetLanguage) {
+    return res.status(400).json({
+      error: "Both 'text' and 'targetLanguage' are required."
+    });
+  }
 
   try {
-
-    // ============================================
-    // STRICT LANGUAGE OVERRIDES (Prevents Drift)
-    // ============================================
-
-    // Normalize input to avoid hidden whitespace, BOM, CRLF issues
-    const normalized = text.normalize("NFKC").trim().toLowerCase();
-
-    // Remove punctuation and invisible Unicode artifacts
-    const overrideKey = normalized.replace(/[^\w\s]/gi, "");
-
-    // 🔒 TW I — Prevent mixed languages, commentary, or fallback drift
-    if (targetLanguage.toLowerCase() === "twi") {
-      if (overrideKey === "the antenna is aligned") {
-        return res.status(200).json({
-          translatedText: "Antɛna no ayɛ pɛ."
-        });
-      }
-    }
-
-    // 🔒 EWE — Custom dictionary required
-    if (targetLanguage.toLowerCase() === "ewe") {
-      if (overrideKey === "the antenna is aligned") {
-        return res.status(200).json({
-          translatedText: "Antena la le nu si wòna."
-        });
-      }
-    }
-
-    // 🔒 GA — Custom dictionary required
-    if (targetLanguage.toLowerCase() === "ga") {
-      if (overrideKey === "the antenna is aligned") {
-        return res.status(200).json({
-          translatedText: "Antena no yɛ shɛɛ."
-        });
-      }
-    }
-
-
-// ============================================
-// AMC ACADEMY TECH AI — TRANSLATOR MODE (GPT‑4o‑mini)
-// ============================================
-
-app.post("/api/translate", async (req, res) => {
-  try {
-    const text = req.body.text || "";
-    const sourceLanguage = req.body.sourceLanguage || "English";
-    const targetLanguage = req.body.targetLanguage || "";
-    
-    if (!text || !targetLanguage) {
-      return res.status(400).json({
-        error: "Both 'text' and 'targetLanguage' are required."
-      });
-    }
-
     // ================================
     // NORMALISE INPUT (prevents drift)
     // ================================
     const normalized = text.normalize("NFKC").trim().toLowerCase();
     const overrideKey = normalized.replace(/[^\w\s]/gi, "");
+    const langKey = targetLanguage.toLowerCase();
 
     // ================================
     // GHANA / AFRICA OVERRIDE ENGINE
@@ -1627,7 +1576,9 @@ app.post("/api/translate", async (req, res) => {
       }
     };
 
-    const langKey = targetLanguage.toLowerCase();
+    // ================================
+    // OVERRIDE MATCH
+    // ================================
     if (OVERRIDES[langKey] && OVERRIDES[langKey][overrideKey]) {
       return res.status(200).json({
         translatedText: OVERRIDES[langKey][overrideKey]
@@ -1647,12 +1598,25 @@ app.post("/api/translate", async (req, res) => {
         },
         {
           role: "user",
-          content: `Translate from ${sourceLanguage} to ${targetLanguage}: ${text}`
+          content: `Translate from ${sourceLanguage || "English"} to ${targetLanguage}: ${text}`
         }
       ]
     });
 
     let output = completion.choices[0].message.content.trim();
+
+    return res.status(200).json({
+      translatedText: output
+    });
+
+  } catch (error) {
+    console.error("Translator error:", error);
+    return res.status(500).json({
+      error: "Translation failed",
+      details: error?.message
+    });
+  }
+});
 
     // ================================
     // STRICT OUTPUT CLEANING
