@@ -8,6 +8,7 @@
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
+import OpenAI from "openai";   // ⭐ NEW — OpenAI client for Translator Mode
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,6 +17,11 @@ import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
+});
+
+// ⭐ Initialise OpenAI Client (Translator Mode)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 const app = express();          // ⭐ Your ONLY app declaration
@@ -476,6 +482,7 @@ app.listen(PORT, () => {
   console.log("✔ SATCOM Engineering Rules: LOADED");
   console.log("✔ Africa Language Pack: LOADED");
   console.log("✔ Groq Routing: CONNECTED");
+  console.log("✔ OpenAI Routing: CONNECTED");     // ⭐ NEW — Translator Mode engine
   console.log("✔ Diagnostics Engine: READY");
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
@@ -1556,54 +1563,72 @@ app.post("/api/translate", async (req, res) => {
       }
     }
 
-    // ============================================
-    // GROQ TRANSLATION ENGINE (Fallback)
-    // ============================================
-
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-20b",
-      messages: [
-        {
-          role: "system",
-          content: TRANSLATOR_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: `Translate from ${sourceLanguage || "English"} to ${targetLanguage}: ${text}`
-        }
-      ]
-    });
-
-    return res.status(200).json({
-      translatedText: completion.choices[0].message.content
-    });
-
-  } catch (err) {
-    console.error("TRANSLATOR ERROR:", err);
-    return res.status(500).json({
-      error: "Translation failed",
-      details: err.message
-    });
-  }
-});
-
-
 
 // ============================================
-// DEFAULT TRANSLATION FLOW (Groq — FIXED)
+// AMC ACADEMY TECH AI — TRANSLATOR MODE (GPT‑4o‑mini)
 // ============================================
+
 app.post("/api/translate", async (req, res) => {
   try {
     const text = req.body.text || "";
     const sourceLanguage = req.body.sourceLanguage || "English";
-    const targetLanguage = req.body.targetLanguage || "Akan";  // Africa Language Pack default
+    const targetLanguage = req.body.targetLanguage || "";
+    
+    if (!text || !targetLanguage) {
+      return res.status(400).json({
+        error: "Both 'text' and 'targetLanguage' are required."
+      });
+    }
 
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    // ================================
+    // NORMALISE INPUT (prevents drift)
+    // ================================
+    const normalized = text.normalize("NFKC").trim().toLowerCase();
+    const overrideKey = normalized.replace(/[^\w\s]/gi, "");
 
-    const completion = await client.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+    // ================================
+    // GHANA / AFRICA OVERRIDE ENGINE
+    // ================================
+    const OVERRIDES = {
+      twi: {
+        "the antenna is aligned": "Antɛna no ayɛ pɛ."
+      },
+      ewe: {
+        "the antenna is aligned": "Antena la le nu si wòna."
+      },
+      ga: {
+        "the antenna is aligned": "Antena no yɛ shɛɛ."
+      },
+      fante: {
+        "the vsat link is stable": "VSAT mbɔdo no yɛ pintinn."
+      },
+      dagbani: {
+        "the network is down": "Netsɔ la pam."
+      },
+      gonja: {
+        "the terminal is connected": "Terminal no kaŋa."
+      },
+      yoruba: {
+        "the antenna is aligned": "Antẹ́na náà ti ṣọ́ọ̀kan."
+      },
+      swahili: {
+        "the antenna is aligned": "Antenna imepangiliwa vizuri."
+      }
+    };
+
+    const langKey = targetLanguage.toLowerCase();
+    if (OVERRIDES[langKey] && OVERRIDES[langKey][overrideKey]) {
+      return res.status(200).json({
+        translatedText: OVERRIDES[langKey][overrideKey]
+      });
+    }
+
+    // ================================
+    // GPT‑4o‑mini TRANSLATION ENGINE
+    // ================================
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
       messages: [
         {
           role: "system",
@@ -1616,8 +1641,35 @@ app.post("/api/translate", async (req, res) => {
       ]
     });
 
+    let output = completion.choices[0].message.content.trim();
+
+    // ================================
+    // STRICT OUTPUT CLEANING
+    // ================================
+    output = output.replace(/^translation[:\-]\s*/i, "");
+    output = output.replace(/^in\s+\w+[:\-]\s*/i, "");
+    output = output.replace(/^here is.*?:\s*/i, "");
+    output = output.replace(/^output[:\-]\s*/i, "");
+
+    // ================================
+    // SATCOM DICTIONARY PRESERVATION
+    // ================================
+    const SATCOM_TERMS = [
+      "VSAT", "BUC", "LNB", "ACU", "Rx", "Tx",
+      "Ka-band", "Ku-band", "C-band",
+      "GEO", "MEO", "LEO",
+      "SD-WAN", "VLAN", "link budget", "fade margin"
+    ];
+
+    SATCOM_TERMS.forEach(term => {
+      output = output.replace(new RegExp(term, "gi"), term);
+    });
+
+    // ================================
+    // FINAL RESPONSE
+    // ================================
     return res.status(200).json({
-      translatedText: completion.choices[0].message.content
+      translatedText: output
     });
 
   } catch (error) {
@@ -1628,6 +1680,7 @@ app.post("/api/translate", async (req, res) => {
     });
   }
 });
+
 
 
 // ===============================
