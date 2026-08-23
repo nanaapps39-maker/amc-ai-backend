@@ -1711,18 +1711,28 @@ app.post("/api/tonnage-analytics", async (req, res) => {
 
 
 // ===============================
-// SATCOM Link Budget Mode (Pro) — Upgraded (Math + AI Intelligence)
+// SATCOM Link Budget Mode (Pro, A+ Upgrade)
 // ===============================
 
-// System prompt for Link Budget Intelligence Engine
+// System prompt for Link Budget Intelligence Engine (A+)
 const LINK_BUDGET_SYSTEM_PROMPT = `
-You are AMC Academy Tech AI — SATCOM Link Budget Intelligence Engine.
+You are AMC Academy Tech AI — SATCOM Link Budget Intelligence Engine (A+).
 
 Your job:
-- Take numeric link-budget results (EIRP, received power, C/N0, margin, status).
+- Take numeric link-budget results including A+ physics fields:
+  • EIRP
+  • atmospheric loss
+  • rain fade
+  • total path loss
+  • received power
+  • C/N
+  • link margin
+  • survivability score
+  • elevation angle
+  • rain rate
 - Produce a structured, engineering-grade diagnostic.
 - Focus on Ku-band / Ka-band maritime VSAT scenarios.
-- Consider rain fade, pointing error, vessel motion, and RF chain realities.
+- Consider rain fade, pointing error, vessel motion, atmospheric absorption, and RF chain realities.
 - Output in this structure:
 
 1. Summary*
@@ -1735,20 +1745,20 @@ Do NOT invent impossible numbers; reason qualitatively from the provided results
 Always respond as AMC Academy Tech AI — SATCOM & Maritime Engineering intelligence.
 `;
 
-// Helper: call AI (Groq if available, otherwise OpenAI)
+// Helper: call AI (Groq first, fallback to OpenAI)
 async function generateLinkBudgetNarrative(result) {
   const messages = [
     { role: "system", content: LINK_BUDGET_SYSTEM_PROMPT },
     {
       role: "user",
       content: JSON.stringify({
-        description: "Numeric SATCOM link-budget results for a maritime VSAT link.",
+        description: "A+ SATCOM link-budget results for a maritime VSAT link.",
         result
       })
     }
   ];
 
-  // Try Groq first if configured
+  // Try Groq first
   if (process.env.GROQ_API_KEY && process.env.GROQ_MODEL && global.groqClient) {
     try {
       const groqResponse = await global.groqClient.chat.completions.create({
@@ -1757,16 +1767,16 @@ async function generateLinkBudgetNarrative(result) {
         temperature: 0.2
       });
 
-      const groqText =
-        groqResponse?.choices?.[0]?.message?.content?.trim();
+      const groqText = groqResponse?.choices?.[0]?.message?.content?.trim();
       if (groqText) return groqText;
+
       console.warn("Groq Link Budget: empty content, falling back to OpenAI.");
     } catch (err) {
       console.error("Groq Link Budget error:", err);
     }
   }
 
-  // Fallback to OpenAI (primary if Groq not configured)
+  // Fallback to OpenAI
   if (process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL && global.openaiClient) {
     try {
       const openaiResponse = await global.openaiClient.chat.completions.create({
@@ -1775,8 +1785,7 @@ async function generateLinkBudgetNarrative(result) {
         temperature: 0.2
       });
 
-      const openaiText =
-        openaiResponse?.choices?.[0]?.message?.content?.trim();
+      const openaiText = openaiResponse?.choices?.[0]?.message?.content?.trim();
       if (openaiText) return openaiText;
 
       console.error("OpenAI Link Budget: empty content.");
@@ -1791,7 +1800,10 @@ async function generateLinkBudgetNarrative(result) {
   return null;
 }
 
-// Upgraded route: math + AI narrative
+// ===============================
+// A+ Route: Math + Physics + AI Narrative
+// ===============================
+
 app.post("/api/satcom/link-budget", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
@@ -1801,9 +1813,12 @@ app.post("/api/satcom/link-budget", async (req, res) => {
     txAntennaGain_dBi,
     rxAntennaGain_dBi,
     pathLoss_dB,
-    rxSystemNoise_dBm
+    rxSystemNoise_dBm,
+    elevationDeg = 20,
+    rainRate_mm_per_h = 0
   } = req.body;
 
+  // Validation
   if (
     frequencyGHz == null ||
     txPower_dBW == null ||
@@ -1826,37 +1841,45 @@ app.post("/api/satcom/link-budget", async (req, res) => {
   }
 
   try {
-    // 1. Run numeric link-budget calculation (existing function)
+    // 1. Run A+ physics + math engine
     const result = calculateLinkBudget({
       frequencyGHz,
       txPower_dBW,
       txAntennaGain_dBi,
       rxAntennaGain_dBi,
       pathLoss_dB,
-      rxSystemNoise_dBm
+      rxSystemNoise_dBm,
+      elevationDeg,
+      rainRate_mm_per_h
     });
 
-    // 2. Build a simple summary from math
+    // 2. A+ Summary for UI + AI
     const summary = {
       linkStatus: result.linkStatus,
       linkMargin_dB: result.linkMargin_dB,
+      survivabilityScore: result.survivabilityScore,
       receivedPower_dBm: result.receivedPower_dBm,
-      cn0_dBHz: result.cn0_dBHz
+      totalPathLoss_dB: result.totalPathLoss_dB,
+      atmLoss_dB: result.atmLoss_dB,
+      rainFade_dB: result.rainFade_dB,
+      elevationDeg,
+      rainRate_mm_per_h
     };
 
-    // 3. Generate AI narrative (intelligence layer)
+    // 3. AI narrative
     const intelligence = await generateLinkBudgetNarrative({
       ...result,
       summary
     });
 
-    // 4. Respond with math + intelligence
+    // 4. Final response
     return res.status(200).json({
       status: "success",
       summary,
       detail: result,
       intelligence: intelligence || null
     });
+
   } catch (error) {
     console.error("Link Budget Mode error:", error);
     return res.status(500).json({
