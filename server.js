@@ -1576,44 +1576,6 @@ app.post("/api/translate", async (req, res) => {
   }
 });
 
-    // ================================
-    // STRICT OUTPUT CLEANING
-    // ================================
-    output = output.replace(/^translation[:\-]\s*/i, "");
-    output = output.replace(/^in\s+\w+[:\-]\s*/i, "");
-    output = output.replace(/^here is.*?:\s*/i, "");
-    output = output.replace(/^output[:\-]\s*/i, "");
-
-    // ================================
-    // SATCOM DICTIONARY PRESERVATION
-    // ================================
-    const SATCOM_TERMS = [
-      "VSAT", "BUC", "LNB", "ACU", "Rx", "Tx",
-      "Ka-band", "Ku-band", "C-band",
-      "GEO", "MEO", "LEO",
-      "SD-WAN", "VLAN", "link budget", "fade margin"
-    ];
-
-    SATCOM_TERMS.forEach(term => {
-      output = output.replace(new RegExp(term, "gi"), term);
-    });
-
-    // ================================
-    // FINAL RESPONSE
-    // ================================
-    return res.status(200).json({
-      translatedText: output
-    });
-
-  } catch (error) {
-    console.error("Translator error:", error);
-    return res.status(500).json({
-      error: "Translation failed",
-      details: error?.message
-    });
-  }
-});
-
 
 
 // ===============================
