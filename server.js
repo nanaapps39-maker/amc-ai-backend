@@ -3154,14 +3154,13 @@ app.get("/api/knowledge/training-scenarios", (req, res) => {
           "Escalate to OEM if fault persists"
         ],
         assessmentQuestions: [
-          `What is the most likely root cause of the ${subsystem} issue?`,
-          `How does operating in the ${region} region affect this fault?`,
-          `What diagnostic steps would you perform first?`,
-          `How does ${orbitClass} orbit class influence link stability?`
-        ]
-      };
-    });
-
+         `What is the most likely root cause of the ${subsystem} issue?`,
+         `How does operating in the ${region} region affect this fault?`,
+         `What diagnostic steps would you perform first?`,
+         `How does ${orbitClass} orbit class influence link stability?`
+       ],
+            };
+           });
     return res.status(200).json({
       status: "success",
       scenarios
@@ -3738,4 +3737,3 @@ app.listen(PORT, () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
-
