@@ -25,6 +25,10 @@ import calculateLinkBudget from "./linkBudget.js";
 import calculateWeatherFade from "./weatherFade.js";
 import calculateRfHealth from "./rfHealth.js";
 
+// ⭐ BVLOS SATCOM + FBB Failover Controller (ESM-safe)
+import bvlosController from "./bvlosController.js";
+
+
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
@@ -279,6 +283,54 @@ const apiLimiter = rateLimit({
 // Apply limiter ONLY to heavy routes
 app.use("/api/diagnostics", apiLimiter);
 app.use("/api/attachment", apiLimiter);
+
+
+// ===============================
+// BVLOS SATCOM + FBB Failover Routes
+// ===============================
+
+app.post("/api/bvlos/link-health", (req, res) => {
+  const { satcomMetrics, fbbMetrics } = req.body;
+
+  if (!satcomMetrics || !fbbMetrics) {
+    return res.status(400).json({
+      error: "satcomMetrics and fbbMetrics are required",
+    });
+  }
+
+  const result = bvlosController.decideActiveLink(satcomMetrics, fbbMetrics);
+
+  res.json({
+    activeLink: result.activeLink,
+    satcomScore: result.satScore,
+    fbbScore: result.fbbScore,
+  });
+});
+
+app.post("/api/bvlos/control", async (req, res) => {
+  const { command } = req.body;
+
+  if (!command) {
+    return res.status(400).json({
+      error: "command payload is required",
+    });
+  }
+
+  try {
+    const routed = await bvlosController.routeCommand(command);
+    res.json({
+      command,
+      via: routed.via,
+      status: routed.status,
+      state: bvlosController.getState(),
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Failed to route command",
+      details: err.message,
+    });
+  }
+});
 
 
 // ===============================
@@ -3611,6 +3663,7 @@ app.listen(PORT, () => {
   console.log("✔ Diagnostics Engine: READY");
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
+  console.log("✔ BVLOS Failover Engine: READY");   // ⭐ NEW LINE ADDED
   console.log("----------------------------------------------------");
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
