@@ -442,13 +442,13 @@ app.post("/api/translate", async (req, res) => {
     if (!translation) {
       return res.status(200).json({
         status: "ok",
-        message: "No translation returned"
+        translation: ""   // ⭐ IMPORTANT: frontend checks data.translation
       });
     }
 
     return res.status(200).json({
       status: "ok",
-      translation
+      translation        // ⭐ frontend reads this key
     });
 
   } catch (error) {
@@ -467,8 +467,8 @@ app.post("/api/translate", async (req, res) => {
 async function runTranslatorEngine(text, lang) {
   try {
     const prompt = `
-Translate the following SATCOM log content into ${lang}.
-Maintain technical accuracy and preserve alarm codes.
+Translate the following content into ${lang}.
+Maintain technical accuracy and preserve any engineering terminology.
 
 Content:
 ${text}
@@ -493,6 +493,7 @@ ${text}
     return null;
   }
 }
+
 
 
 
