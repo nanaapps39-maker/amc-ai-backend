@@ -3813,7 +3813,12 @@ app.get("/api/test-world-clock", (req, res) => {
 // Start Server — ONLY ONE
 // ===============================
 const PORT = process.env.PORT || 10000;
+
+import { getLatestProKey } from "./get-latest-pro-key.js";  // ⭐ NEW IMPORT
+
 app.listen(PORT, () => {
+  const latestKey = getLatestProKey();
+
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
   console.log("====================================================");
@@ -3831,11 +3836,20 @@ app.listen(PORT, () => {
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
   console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
-  console.log("✔ Blood Pressure Awareness Logic: ENABLED");   // ⭐ NEW UPGRADE
+  console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
+
+  if (latestKey) {
+    console.log(`🔑 Latest Generated Pro Key: ${latestKey.key}`);
+    console.log(`👤 Assigned To: ${latestKey.email || "N/A"}`);
+  } else {
+    console.log("🔑 No Pro Keys generated yet.");
+  }
+
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
