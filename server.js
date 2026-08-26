@@ -16,6 +16,7 @@ import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
 import rateLimit from "express-rate-limit";
 import Stripe from "stripe";
+import bodyParser from "body-parser";
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
@@ -832,7 +833,7 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
 // ===============================
 // Stripe Webhook — Subscriber Tracking (ESM)
 // ===============================
-import bodyParser from "body-parser";
+
 import { handleStripeEvent } from "./stripe-subscriber-handler.js";
 
 app.post(
