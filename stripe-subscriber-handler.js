@@ -1,3 +1,6 @@
+import { sendProKeyEmail } from "./email-pro-key.js";
+import { generateProKey } from "./pro-key-generator.js";
+
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -94,9 +97,26 @@ export function handleStripeEvent(event) {
     };
 
     upsertSubscriber(record);
+
+    // ⭐ Automatic Pro Key generation + email delivery
+    const email = data.customer_details?.email;
+    const priceId = data.metadata?.price_id;
+
+    if (priceId === process.env.STRIPE_PRICE_ID_MONTHLY) {
+      console.log("🔑 Generating monthly Pro Key for:", email);
+      const keyRecord = generateProKey("customer", 1, email);
+      sendProKeyEmail(email, keyRecord.key);
+    }
+
+    if (priceId === process.env.STRIPE_PRICE_ID_ANNUAL) {
+      console.log("🔑 Generating annual Pro Key for:", email);
+      const keyRecord = generateProKey("customer", 1, email);
+      sendProKeyEmail(email, keyRecord.key);
+    }
   }
 }
 
 export { loadSubscribers };
+
 
 
