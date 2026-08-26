@@ -1035,7 +1035,7 @@ const CHAT_SYSTEM_PROMPT = `
 ${founderProfile.identityRules}
 
 [IDENTITY LOCK]
-You are AMC Academy Tech AI — the official SATCOM and Maritime Engineering intelligence system of AMC Academy Tech, created by Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd.
+You are AMC Academy Tech AI the official SATCOM and Maritime Engineering intelligence system of AMC Academy Tech, created by Nana Okai Ababio Appiah, Founder of Apps Maritime Consultancy Ltd.
 You must never claim to be created by any other person, team, organisation, company, or AI research group.
 
 [FOUNDATION HISTORY]
@@ -1426,18 +1426,46 @@ Always respond as AMC Academy Tech AI — Alarm Pack Analysis Mode.
 function applyV29Upgrades(text) {
   if (!text || typeof text !== "string") return text;
 
-  // ⭐ Remove double spacing, normalize formatting
   let output = text.replace(/\n{3,}/g, "\n\n").trim();
 
-  // ⭐ Ensure structured SATCOM formatting
   output = output
-    .replace(/^\s*-\s*/gm, "• ")   // convert dashes to bullets
-    .replace(/^\s*\*\s*/gm, "• "); // convert stars to bullets
+    .replace(/^\s*-\s*/gm, "• ")
+    .replace(/^\s*\*\s*/gm, "• ");
 
-  // ⭐ Add AMC Academy Tech signature tone
   output = output + "\n\n— AMC Academy Tech AI";
 
   return output;
+}
+
+
+// ===============================================
+// BLOOD PRESSURE AWARENESS LOGIC
+// ===============================================
+function applyBloodPressureAwareness(bpValue, aiOutput) {
+  if (!bpValue) return aiOutput;
+
+  const parts = bpValue.split("/");
+  if (parts.length !== 2) return aiOutput;
+
+  const systolic = parseInt(parts[0], 10);
+  const diastolic = parseInt(parts[1], 10);
+
+  if (Number.isNaN(systolic) || Number.isNaN(diastolic)) return aiOutput;
+
+  const highBP = systolic > 140 || diastolic > 90;
+  const lowBP = systolic < 95 || diastolic < 60;
+
+  if (highBP || lowBP) {
+    return (
+      "Safety Notice: Your physical state requires caution. I will avoid any steps that involve " +
+      "climbing, outdoor checks, antenna adjustments, or deck movement. " +
+      "Your readings indicate physical strain. I will slow down and simplify the explanation. " +
+      "We will proceed with safe, remote diagnostics only. " +
+      aiOutput
+    );
+  }
+
+  return aiOutput;
 }
 
 
@@ -1447,10 +1475,10 @@ function applyV29Upgrades(text) {
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message || "";
+    const bpValue = req.body.bp || null;   // ⭐ REQUIRED
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // ⭐ Correct API for groq-sdk v1.5.0
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-20b",
       messages: [
@@ -1459,15 +1487,16 @@ app.post("/api/chat", async (req, res) => {
       ]
     });
 
-    // ⭐ Extract raw AI output
     const aiResponse =
       completion.choices?.[0]?.message?.content?.trim() ||
       "⚠️ No reply returned from Groq";
 
-    // ⭐ Apply AMC Academy Tech AI v29 Intelligence Layer
     const upgraded = applyV29Upgrades(aiResponse);
 
-    return res.json({ reply: upgraded });
+    // ⭐ APPLY BP LOGIC HERE
+    const finalOutput = applyBloodPressureAwareness(bpValue, upgraded);
+
+    return res.json({ reply: finalOutput });
 
   } catch (err) {
     console.error("CHAT ERROR:", err);
@@ -1477,6 +1506,7 @@ app.post("/api/chat", async (req, res) => {
     });
   }
 });
+
 
 // --- Translator Prompt (World‑Class + Africa Language Pack) ---
 const TRANSLATOR_SYSTEM_PROMPT = `
@@ -3797,11 +3827,13 @@ app.listen(PORT, () => {
   console.log("✔ BVLOS Failover Engine: READY");
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
-  console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");   // ⭐ NEW UPGRADE
+  console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
+  console.log("✔ Blood Pressure Awareness Logic: ENABLED");   // ⭐ NEW UPGRADE
   console.log("----------------------------------------------------");
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
