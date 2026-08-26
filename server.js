@@ -14,6 +14,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
+import rateLimit from "express-rate-limit";
+
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
@@ -411,7 +413,6 @@ app.use((req, res, next) => {
 // ===============================
 // API Rate Limiter (Security v24.2)
 // ===============================
-import rateLimit from "express-rate-limit";
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,   // 1 minute
