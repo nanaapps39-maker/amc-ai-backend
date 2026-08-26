@@ -1,18 +1,14 @@
-// test commit
-
-// redeploy v17.1
-
 // HARD REBUILD — August 16, 2026 — v17
 // AMC Academy Tech AI Backend — Stable ES Module Build
 
 import express from "express";
 import cors from "cors";
 import Groq from "groq-sdk";
-import OpenAI from "openai";   // ⭐ NEW — OpenAI client for Translator Mode
+import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
+import multer from "multer";
 
 import rateLimit from "express-rate-limit";
 import Stripe from "stripe";
@@ -20,26 +16,14 @@ import bodyParser from "body-parser";
 import { handleStripeEvent } from "./stripe-subscriber-handler.js";
 import { generateProKey } from "./pro-key-generator.js";
 
-// ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
-
-// ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
 import { calculateVoyage } from "./voyageEngine.js";
-
-// ⭐ Cargo Analytics Engine (correct location)
 import runCargoAnalytics from "./cargoEngine.js";
-
-// ⭐ Tonnage Analytics Engine (correct location)
 import runTonnageAnalytics from "./tonnageEngine.js";
-
-// ⭐ SATCOM Engines (must be at top)
 import calculateLinkBudget from "./linkBudget.js";
 import calculateWeatherFade from "./weatherFade.js";
 import calculateRfHealth from "./rfHealth.js";
-
-// ⭐ BVLOS SATCOM + FBB Failover Controller (ESM-safe)
 import bvlosController from "./bvlosController.js";
-
 
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
@@ -51,17 +35,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-const app = express();          // ⭐ Your ONLY app declaration
-app.set("trust proxy", 1);      // ⭐ MUST be directly under app declaration
+const app = express();
+app.set("trust proxy", 1);
 
-// ⭐⭐⭐ CRITICAL — JSON BODY PARSING (FIXES EMPTY req.body) ⭐⭐⭐
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // ======================================================
-// ⭐⭐⭐ HEAVY USAGE MONITOR — PYTHON MICRO-SERVICE HOOK ⭐⭐⭐
+// HEAVY USAGE MONITOR — PYTHON MICRO-SERVICE HOOK
 // ======================================================
-
 async function checkUsage() {
   try {
     const response = await fetch("http://localhost:5001/usage-check", {
@@ -70,30 +52,24 @@ async function checkUsage() {
     const data = await response.json();
     return data.heavy_usage;
   } catch (err) {
-    return false; // fail-safe — never break AI output
+    return false;
   }
 }
 
 // ======================================================
-// ⭐⭐⭐ AMC ACADEMY TECH AI — MAIN AI ROUTE (WITH HUMAN AWARENESS + BREAK ADVISORY) ⭐⭐⭐
+// AMC ACADEMY TECH AI — MAIN AI ROUTE
 // ======================================================
-
 app.post("/api/amc-ai", async (req, res) => {
   const { message } = req.body;
 
-  // ======================================================
-  // ⭐ HEAVY USAGE CHECK (Python microservice)
-  // ======================================================
   const heavyUsage = await checkUsage();
 
   let advisory = "";
   if (heavyUsage) {
-    advisory = "\n\n⚠️ You’ve been using AMC Academy Tech AI heavily. Consider taking a short break to stay fresh and focused.";
+    advisory =
+      "\n\n⚠️ You’ve been using AMC Academy Tech AI heavily. Consider taking a short break to stay fresh and focused.";
   }
 
-  // ======================================================
-  // ⭐ HUMAN AWARENESS ENGINE — CULTURE + PATIENCE + SUPPORT
-  // ======================================================
   let awarenessProfile = {};
   try {
     const awarenessResponse = await fetch("http://localhost:5001/human-awareness", {
@@ -115,87 +91,107 @@ app.post("/api/amc-ai", async (req, res) => {
     };
   }
 
+  // BUILD HUMAN-AWARE SYSTEM MESSAGE
+  let humanSupportMessage = "";
 
-// ======================================================
-// ⭐ BUILD HUMAN-AWARE SYSTEM MESSAGE FOR AI
-// ======================================================
-let humanSupportMessage = "";
+  if (awarenessProfile.frustration) {
+    humanSupportMessage +=
+      "\n\n🟡 I sense some frustration I’ll explain this more clearly and step-by-step.";
+  }
 
-if (awarenessProfile.frustration) {
-  humanSupportMessage += "\n\n🟡 I sense some frustration I’ll explain this more clearly and step-by-step.";
-}
+  if (awarenessProfile.fatigue) {
+    humanSupportMessage +=
+      "\n\n🟡 You seem tired I’ll slow down and make things easier to follow.";
+  }
 
-if (awarenessProfile.fatigue) {
-  humanSupportMessage += "\n\n🟡 You seem tired I’ll slow down and make things easier to follow.";
-}
+  if (awarenessProfile.patience_needed) {
+    humanSupportMessage += "\n\n🟡 I’ll be patient and guide you gently through this.";
+  }
 
-if (awarenessProfile.patience_needed) {
-  humanSupportMessage += "\n\n🟡 I’ll be patient and guide you gently through this.";
-}
+  if (awarenessProfile.encouragement_needed) {
+    humanSupportMessage += "\n\n🟢 You’re making great progress keep going!";
+  }
 
-if (awarenessProfile.encouragement_needed) {
-  humanSupportMessage += "\n\n🟢 You’re making great progress keep going!";
-}
-
-if (awarenessProfile.culture_context) {
-  humanSupportMessage += "\n\n🌍 I’ll respond with cultural respect and global awareness.";
-}
-
-if (awarenessProfile.needs_support) {
-  humanSupportMessage += "\n\n🤝 I’m here to support you let’s work through this together.";
-}
-
-
-// ======================================================
-// ⭐ HUMAN-AWARE MARITIME SAFETY MODE
-// ======================================================
-
-const lowerMessage = message.toLowerCase();
-
-const maritimeKeywords = [
-  "vessel", "ship", "bridge", "engine room", "imo", "ism",
-  "navigation", "navtex", "gps", "gyro", "ais", "ecs", "ecdis",
-  "gmdss", "inmarsat", "vsat", "fbb", "cobham", "intellian",
-  "acu", "antenna control", "modem", "hub", "plc", "telemetry",
-  "distress", "mayday", "safety", "emergency", "solas"
-];
-
-const isMaritimeContext = maritimeKeywords.some(word =>
-  lowerMessage.includes(word)
-);
-
-let maritimeSafetyMessage = "";
-
-if (isMaritimeContext) {
-  maritimeSafetyMessage += "\n\n🛟 Maritime Safety Mode: ACTIVE I will respond with safety-first behaviour.";
-
-  if (awarenessProfile.fatigue || awarenessProfile.frustration) {
-    maritimeSafetyMessage += "\n\n⚠️ I will keep explanations calm, clear, and avoid any risky operational suggestions.";
+  if (awarenessProfile.culture_context) {
+    humanSupportMessage += "\n\n🌍 I’ll respond with cultural respect and global awareness.";
   }
 
   if (awarenessProfile.needs_support) {
-    maritimeSafetyMessage += "\n\n🤝 I’ll guide you step-by-step, prioritising stability of navigation, communication, and safety systems.";
+    humanSupportMessage += "\n\n🤝 I’m here to support you let’s work through this together.";
   }
-}
 
+  // HUMAN-AWARE MARITIME SAFETY MODE
+  const lowerMessage = message.toLowerCase();
 
-// ======================================================
-// ⭐ MAIN AI COMPLETION
-// ======================================================
-const completion = await openai.chat.completions.create({
-  model: "gpt-4o",
-  messages: [
-    { role: "system", content: systemPrompt + humanSupportMessage + maritimeSafetyMessage },
-    { role: "user", content: message }
-  ]
-});
+  const maritimeKeywords = [
+    "vessel",
+    "ship",
+    "bridge",
+    "engine room",
+    "imo",
+    "ism",
+    "navigation",
+    "navtex",
+    "gps",
+    "gyro",
+    "ais",
+    "ecs",
+    "ecdis",
+    "gmdss",
+    "inmarsat",
+    "vsat",
+    "fbb",
+    "cobham",
+    "intellian",
+    "acu",
+    "antenna control",
+    "modem",
+    "hub",
+    "plc",
+    "telemetry",
+    "distress",
+    "mayday",
+    "safety",
+    "emergency",
+    "solas"
+  ];
 
-const reply = completion.choices[0].message.content + advisory;
+  const isMaritimeContext = maritimeKeywords.some(word =>
+    lowerMessage.includes(word)
+  );
 
-res.json({ reply });
+  let maritimeSafetyMessage = "";
 
+  if (isMaritimeContext) {
+    maritimeSafetyMessage +=
+      "\n\n🛟 Maritime Safety Mode: ACTIVE I will respond with safety-first behaviour.";
 
+    if (awarenessProfile.fatigue || awarenessProfile.frustration) {
+      maritimeSafetyMessage +=
+        "\n\n⚠️ I will keep explanations calm, clear, and avoid any risky operational suggestions.";
+    }
 
+    if (awarenessProfile.needs_support) {
+      maritimeSafetyMessage +=
+        "\n\n🤝 I’ll guide you step-by-step, prioritising stability of navigation, communication, and safety systems.";
+    }
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt + humanSupportMessage + maritimeSafetyMessage
+      },
+      { role: "user", content: message }
+    ]
+  });
+
+  const reply = completion.choices[0].message.content + advisory;
+
+  res.json({ reply });
+}); // ⭐ CLOSED ROUTE PROPERLY
 
 // ⭐⭐⭐ SINGLE, CLEAN, PRODUCTION-SAFE CORS CONFIG ⭐⭐⭐
 app.use(
@@ -240,7 +236,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 // END OF v29 MODULE INSERTION POINT
 // ======================================================
 
-
 // ===============================
 // AUTO-UPGRADE ENGINE — MODULE RELOAD LOGIC
 // ===============================
@@ -260,7 +255,6 @@ function reloadModule(moduleName) {
 async function applyUpgrade(manifest) {
   console.log(`[UPGRADE] Applying version ${manifest.version}`);
 
-  // Phase 1: reload modules only
   manifest.modules.forEach(module => {
     reloadModule(module);
   });
@@ -308,30 +302,24 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // ===============================
 // AUTO-UPGRADE ENGINE — VERSION CHECK ENDPOINT (ESM MODE)
 // ===============================
 app.get("/upgrade/version", (req, res) => {
   const manifestPath = path.join(__dirname, "upgrade", "manifest.json");
 
-  console.log("DEBUG manifestPath:", manifestPath);
-  console.log("DEBUG __dirname:", __dirname);
-
   try {
-    console.log("DEBUG folder contents:", fs.readdirSync(__dirname));
+    if (!fs.existsSync(manifestPath)) {
+      return res.status(404).json({ error: "Upgrade manifest not found" });
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    res.json(manifest);
   } catch (err) {
-    console.log("DEBUG folder read error:", err);
+    console.error("Upgrade manifest error:", err);
+    res.status(500).json({ error: "Failed to read manifest" });
   }
-
-  if (!fs.existsSync(manifestPath)) {
-    return res.status(404).json({ error: "Upgrade manifest not found" });
-  }
-
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  res.json(manifest);
 });
-
 
 // ===============================
 // AUTO-UPGRADE ENGINE — TRIGGER ROUTE (PHASE 1)
@@ -353,7 +341,6 @@ app.post("/upgrade/apply", async (req, res) => {
   }
 });
 
-
 // ===============================
 // Basic Security: File Sanitiser
 // ===============================
@@ -361,9 +348,9 @@ function sanitiseText(input) {
   if (!input) return "";
 
   return input
-    .replace(/\0/g, "")            // remove null bytes
-    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "") // remove hidden binary chars
-    .slice(0, 500000);             // hard limit: 500KB max
+    .replace(/\0/g, "")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
+    .slice(0, 500000);
 }
 
 // ===============================
@@ -382,7 +369,7 @@ app.use((req, res, next) => {
 // ===============================
 // Suspicious IP Pattern Detection (Security v24.4)
 // ===============================
-const ipActivity = new Map(); // { ip: { count, lastRequest } }
+const ipActivity = new Map();
 
 app.use((req, res, next) => {
   const ip =
@@ -392,19 +379,18 @@ app.use((req, res, next) => {
 
   const now = Date.now();
 
-  // Initialise record if new IP
   if (!ipActivity.has(ip)) {
     ipActivity.set(ip, { count: 1, lastRequest: now });
   } else {
     const record = ipActivity.get(ip);
     record.count += 1;
 
-    // If too many requests in a short time, flag it
     if (record.count > 50 && now - record.lastRequest < 5000) {
-      console.warn(`⚠️ Suspicious IP Activity Detected: ${ip} (${record.count} requests in 5s)`);
+      console.warn(
+        `⚠️ Suspicious IP Activity Detected: ${ip} (${record.count} requests in 5s)`
+      );
     }
 
-    // Reset counter every 5 seconds
     if (now - record.lastRequest > 5000) {
       record.count = 1;
       record.lastRequest = now;
@@ -413,6 +399,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 
 // ===============================
 // API Rate Limiter (Security v24.2)
