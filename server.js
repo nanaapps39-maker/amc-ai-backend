@@ -103,50 +103,84 @@ app.post("/api/amc-ai", async (req, res) => {
     };
   }
 
-  // ======================================================
-  // ⭐ BUILD HUMAN-AWARE SYSTEM MESSAGE FOR AI
-  // ======================================================
-  let humanSupportMessage = "";
 
-  if (awarenessProfile.frustration) {
-    humanSupportMessage += "\n\n🟡 I sense some frustration I’ll explain this more clearly and step-by-step.";
-  }
+// ======================================================
+// ⭐ BUILD HUMAN-AWARE SYSTEM MESSAGE FOR AI
+// ======================================================
+let humanSupportMessage = "";
 
-  if (awarenessProfile.fatigue) {
-    humanSupportMessage += "\n\n🟡 You seem tired I’ll slow down and make things easier to follow.";
-  }
+if (awarenessProfile.frustration) {
+  humanSupportMessage += "\n\n🟡 I sense some frustration I’ll explain this more clearly and step-by-step.";
+}
 
-  if (awarenessProfile.patience_needed) {
-    humanSupportMessage += "\n\n🟡 I’ll be patient and guide you gently through this.";
-  }
+if (awarenessProfile.fatigue) {
+  humanSupportMessage += "\n\n🟡 You seem tired I’ll slow down and make things easier to follow.";
+}
 
-  if (awarenessProfile.encouragement_needed) {
-    humanSupportMessage += "\n\n🟢 You’re making great progress keep going!";
-  }
+if (awarenessProfile.patience_needed) {
+  humanSupportMessage += "\n\n🟡 I’ll be patient and guide you gently through this.";
+}
 
-  if (awarenessProfile.culture_context) {
-    humanSupportMessage += "\n\n🌍 I’ll respond with cultural respect and global awareness.";
+if (awarenessProfile.encouragement_needed) {
+  humanSupportMessage += "\n\n🟢 You’re making great progress keep going!";
+}
+
+if (awarenessProfile.culture_context) {
+  humanSupportMessage += "\n\n🌍 I’ll respond with cultural respect and global awareness.";
+}
+
+if (awarenessProfile.needs_support) {
+  humanSupportMessage += "\n\n🤝 I’m here to support you let’s work through this together.";
+}
+
+
+// ======================================================
+// ⭐ HUMAN-AWARE MARITIME SAFETY MODE
+// ======================================================
+
+const lowerMessage = message.toLowerCase();
+
+const maritimeKeywords = [
+  "vessel", "ship", "bridge", "engine room", "imo", "ism",
+  "navigation", "navtex", "gps", "gyro", "ais", "ecs", "ecdis",
+  "gmdss", "inmarsat", "vsat", "fbb", "cobham", "intellian",
+  "acu", "antenna control", "modem", "hub", "plc", "telemetry",
+  "distress", "mayday", "safety", "emergency", "solas"
+];
+
+const isMaritimeContext = maritimeKeywords.some(word =>
+  lowerMessage.includes(word)
+);
+
+let maritimeSafetyMessage = "";
+
+if (isMaritimeContext) {
+  maritimeSafetyMessage += "\n\n🛟 Maritime Safety Mode: ACTIVE I will respond with safety-first behaviour.";
+
+  if (awarenessProfile.fatigue || awarenessProfile.frustration) {
+    maritimeSafetyMessage += "\n\n⚠️ I will keep explanations calm, clear, and avoid any risky operational suggestions.";
   }
 
   if (awarenessProfile.needs_support) {
-    humanSupportMessage += "\n\n🤝 I’m here to support you let’s work through this together.";
+    maritimeSafetyMessage += "\n\n🤝 I’ll guide you step-by-step, prioritising stability of navigation, communication, and safety systems.";
   }
+}
 
-  // ======================================================
-  // ⭐ MAIN AI COMPLETION (OpenAI or Groq depending on systemPrompt)
-  // ======================================================
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt + humanSupportMessage },
-      { role: "user", content: message }
-    ]
-  });
 
-  const reply = completion.choices[0].message.content + advisory;
-
-  res.json({ reply });
+// ======================================================
+// ⭐ MAIN AI COMPLETION
+// ======================================================
+const completion = await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [
+    { role: "system", content: systemPrompt + humanSupportMessage + maritimeSafetyMessage },
+    { role: "user", content: message }
+  ]
 });
+
+const reply = completion.choices[0].message.content + advisory;
+
+res.json({ reply });
 
 
 
@@ -3770,9 +3804,13 @@ app.listen(PORT, () => {
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
   console.log("✔ BVLOS Failover Engine: READY");
-  console.log("✔ Heavy Usage Advisory System: ENABLED");   // ⭐ NEW UPGRADE
+  console.log("✔ Heavy Usage Advisory System: ENABLED");
+  console.log("✔ Human Awareness Engine: ENABLED");
+  console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");   // ⭐ NEW UPGRADE
   console.log("----------------------------------------------------");
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
+
 
