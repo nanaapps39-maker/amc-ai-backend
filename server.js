@@ -63,13 +63,15 @@ async function checkUsage() {
 }
 
 // ======================================================
-// ⭐⭐⭐ AMC ACADEMY TECH AI — MAIN AI ROUTE (WITH BREAK ADVISORY) ⭐⭐⭐
+// ⭐⭐⭐ AMC ACADEMY TECH AI — MAIN AI ROUTE (WITH HUMAN AWARENESS + BREAK ADVISORY) ⭐⭐⭐
 // ======================================================
 
 app.post("/api/amc-ai", async (req, res) => {
   const { message } = req.body;
 
-  // ⭐ Check heavy usage via Python microservice
+  // ======================================================
+  // ⭐ HEAVY USAGE CHECK (Python microservice)
+  // ======================================================
   const heavyUsage = await checkUsage();
 
   let advisory = "";
@@ -77,11 +79,66 @@ app.post("/api/amc-ai", async (req, res) => {
     advisory = "\n\n⚠️ You’ve been using AMC Academy Tech AI heavily. Consider taking a short break to stay fresh and focused.";
   }
 
-  // ⭐ Main AI completion (OpenAI or Groq depending on your systemPrompt)
+  // ======================================================
+  // ⭐ HUMAN AWARENESS ENGINE — CULTURE + PATIENCE + SUPPORT
+  // ======================================================
+  let awarenessProfile = {};
+  try {
+    const awarenessResponse = await fetch("http://localhost:5001/human-awareness", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+
+    awarenessProfile = await awarenessResponse.json();
+  } catch (err) {
+    awarenessProfile = {
+      usage_intensity: 0,
+      frustration: false,
+      fatigue: false,
+      culture_context: false,
+      patience_needed: false,
+      encouragement_needed: false,
+      needs_support: false
+    };
+  }
+
+  // ======================================================
+  // ⭐ BUILD HUMAN-AWARE SYSTEM MESSAGE FOR AI
+  // ======================================================
+  let humanSupportMessage = "";
+
+  if (awarenessProfile.frustration) {
+    humanSupportMessage += "\n\n🟡 I sense some frustration I’ll explain this more clearly and step-by-step.";
+  }
+
+  if (awarenessProfile.fatigue) {
+    humanSupportMessage += "\n\n🟡 You seem tired I’ll slow down and make things easier to follow.";
+  }
+
+  if (awarenessProfile.patience_needed) {
+    humanSupportMessage += "\n\n🟡 I’ll be patient and guide you gently through this.";
+  }
+
+  if (awarenessProfile.encouragement_needed) {
+    humanSupportMessage += "\n\n🟢 You’re making great progress keep going!";
+  }
+
+  if (awarenessProfile.culture_context) {
+    humanSupportMessage += "\n\n🌍 I’ll respond with cultural respect and global awareness.";
+  }
+
+  if (awarenessProfile.needs_support) {
+    humanSupportMessage += "\n\n🤝 I’m here to support you let’s work through this together.";
+  }
+
+  // ======================================================
+  // ⭐ MAIN AI COMPLETION (OpenAI or Groq depending on systemPrompt)
+  // ======================================================
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: systemPrompt + humanSupportMessage },
       { role: "user", content: message }
     ]
   });
@@ -90,6 +147,7 @@ app.post("/api/amc-ai", async (req, res) => {
 
   res.json({ reply });
 });
+
 
 
 
@@ -3711,8 +3769,10 @@ app.listen(PORT, () => {
   console.log("✔ Diagnostics Engine: READY");
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
-  console.log("✔ BVLOS Failover Engine: READY");   // ⭐ NEW LINE ADDED
+  console.log("✔ BVLOS Failover Engine: READY");
+  console.log("✔ Heavy Usage Advisory System: ENABLED");   // ⭐ NEW UPGRADE
   console.log("----------------------------------------------------");
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
