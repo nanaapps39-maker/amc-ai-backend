@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
 import rateLimit from "express-rate-limit";
+import Stripe from "stripe";
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
@@ -746,7 +747,7 @@ const founderProfile = {
 // ===============================
 // Stripe Setup (ESM)
 // ===============================
-import Stripe from "stripe";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICE_IDS = {
