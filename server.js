@@ -17,6 +17,9 @@ import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
+// ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
+import { calculateVoyage } from "./voyageEngine.js";
+
 // ⭐ Cargo Analytics Engine (correct location)
 import runCargoAnalytics from "./cargoEngine.js";
 
@@ -214,9 +217,6 @@ const __dirname = path.dirname(__filename);
 // ===============================
 const storageFile = path.join(__dirname, "storage.json");
 const attachmentsFile = path.join(__dirname, "attachments", "attachments.json");
-
-// ⭐ VOYAGE ENGINE IMPORT — EXACT CORRECT LOCATION
-import { calculateVoyage } from "./voyageEngine.js";
 
 // ⭐ STEP 3 — Multer memory storage (ESM-safe, stable)
 const upload = multer({ storage: multer.memoryStorage() });
