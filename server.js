@@ -14,6 +14,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 
+// ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
+import runDiagnosticsEngine from "./diagnosticsEngine.js";
+
 // ⭐ Cargo Analytics Engine (correct location)
 import runCargoAnalytics from "./cargoEngine.js";
 
@@ -199,9 +202,6 @@ app.use(
     credentials: true
   })
 );
-
-// ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
-import runDiagnosticsEngine from "./diagnosticsEngine.js";
 
 // ===============================
 // ESM-SAFE __dirname (CRITICAL)
