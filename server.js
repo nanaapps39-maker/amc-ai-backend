@@ -46,6 +46,53 @@ app.set("trust proxy", 1);      // ⭐ MUST be directly under app declaration
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// ======================================================
+// ⭐⭐⭐ HEAVY USAGE MONITOR — PYTHON MICRO-SERVICE HOOK ⭐⭐⭐
+// ======================================================
+
+async function checkUsage() {
+  try {
+    const response = await fetch("http://localhost:5001/usage-check", {
+      method: "POST"
+    });
+    const data = await response.json();
+    return data.heavy_usage;
+  } catch (err) {
+    return false; // fail-safe — never break AI output
+  }
+}
+
+// ======================================================
+// ⭐⭐⭐ AMC ACADEMY TECH AI — MAIN AI ROUTE (WITH BREAK ADVISORY) ⭐⭐⭐
+// ======================================================
+
+app.post("/api/amc-ai", async (req, res) => {
+  const { message } = req.body;
+
+  // ⭐ Check heavy usage via Python microservice
+  const heavyUsage = await checkUsage();
+
+  let advisory = "";
+  if (heavyUsage) {
+    advisory = "\n\n⚠️ You’ve been using AMC Academy Tech AI heavily. Consider taking a short break to stay fresh and focused.";
+  }
+
+  // ⭐ Main AI completion (OpenAI or Groq depending on your systemPrompt)
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: message }
+    ]
+  });
+
+  const reply = completion.choices[0].message.content + advisory;
+
+  res.json({ reply });
+});
+
+
+
 // ⭐⭐⭐ SINGLE, CLEAN, PRODUCTION-SAFE CORS CONFIG ⭐⭐⭐
 app.use(
   cors({
