@@ -17,6 +17,8 @@ import multer from "multer";   // ⭐ STEP 1 — Multer import (ESM-safe)
 import rateLimit from "express-rate-limit";
 import Stripe from "stripe";
 import bodyParser from "body-parser";
+import { handleStripeEvent } from "./stripe-subscriber-handler.js";
+import { generateProKey } from "./pro-key-generator.js";
 
 // ⭐ STEP 2 — SATCOM Diagnostics Engine Import (ESM-safe)
 import runDiagnosticsEngine from "./diagnosticsEngine.js";
@@ -834,7 +836,6 @@ app.post("/api/billing/create-checkout-session-annual", async (req, res) => {
 // Stripe Webhook — Subscriber Tracking (ESM)
 // ===============================
 
-import { handleStripeEvent } from "./stripe-subscriber-handler.js";
 
 app.post(
   "/api/stripe/webhook",
@@ -950,7 +951,7 @@ app.post("/api/pro/validate", (req, res) => {
 // ===============================
 // PRO KEY GENERATOR (Admin)
 // ===============================
-import { generateProKey } from "./pro-key-generator.js";
+
 
 app.post("/api/pro/generate", (req, res) => {
   const { type, seats, email } = req.body;
