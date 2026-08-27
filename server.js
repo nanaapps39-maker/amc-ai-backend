@@ -1476,30 +1476,69 @@ function applyBloodPressureAwareness(bpValue, aiOutput) {
 
 
 // ===============================
+// FALLBACK ENGINE — GROQ → OPENAI
+// ===============================
+async function runWithFallback(systemPrompt, userMessage) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+  // 1️⃣ Try Groq first
+  try {
+    const groqResponse = await groq.chat.completions.create({
+      model: "openai/gpt-oss-20b",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage }
+      ]
+    });
+
+    const groqText = groqResponse?.choices?.[0]?.message?.content?.trim();
+    if (groqText && groqText.length > 0) {
+      return groqText;
+    }
+  } catch (err) {
+    console.error("Groq failed:", err.message);
+  }
+
+  // 2️⃣ Fallback to OpenAI
+  try {
+    const openaiResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage }
+      ]
+    });
+
+    const openaiText = openaiResponse?.choices?.[0]?.message?.content?.trim();
+    if (openaiText && openaiText.length > 0) {
+      return openaiText;
+    }
+  } catch (err) {
+    console.error("OpenAI fallback failed:", err.message);
+  }
+
+  // 3️⃣ Final safe fallback
+  return "AI Engine Notice: No response generated. Try again or simplify the input.";
+}
+
+
+// ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message || "";
-    const bpValue = req.body.bp || null;   // ⭐ REQUIRED
+    const bpValue = req.body.bp || null;
 
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-20b",
-      messages: [
-        { role: "system", content: CHAT_SYSTEM_PROMPT },
-        { role: "user", content: userMessage }
-      ]
-    });
-
-    const aiResponse =
-      completion.choices?.[0]?.message?.content?.trim() ||
-      "⚠️ No reply returned from Groq";
+    // ⭐ USE FALLBACK ENGINE HERE
+    const aiResponse = await runWithFallback(
+      CHAT_SYSTEM_PROMPT,
+      userMessage
+    );
 
     const upgraded = applyV29Upgrades(aiResponse);
 
-    // ⭐ APPLY BP LOGIC HERE
+    // ⭐ APPLY BP LOGIC
     const finalOutput = applyBloodPressureAwareness(bpValue, upgraded);
 
     return res.json({ reply: finalOutput });
@@ -1512,6 +1551,7 @@ app.post("/api/chat", async (req, res) => {
     });
   }
 });
+
 
 
 // --- Translator Prompt (World‑Class + Africa Language Pack) ---
