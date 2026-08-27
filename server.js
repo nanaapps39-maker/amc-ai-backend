@@ -600,9 +600,14 @@ app.post("/api/translate", async (req, res) => {
 // ===============================
 async function runTranslatorEngine(text, lang) {
   try {
+
+    // ⭐ NEW TWI / AKAN ISOLATION PROMPT — FIXES YORUBA FALLBACK
     const prompt = `
-Translate the following content into ${lang}.
-Maintain technical accuracy and preserve any engineering terminology.
+You MUST translate the following SATCOM content into ${lang}.
+If ${lang} is "twi" or "akan", translate ONLY into Twi (Akan).
+Do NOT use Yoruba. Do NOT use Igbo. Do NOT use Hausa.
+Do NOT fallback to any other African language.
+Use natural Twi grammar, correct tone, and accurate SATCOM terminology.
 
 Content:
 ${text}
@@ -626,6 +631,8 @@ ${text}
     console.error("Translator Engine error:", err);
     return null;
   }
+}
+
 }
 
 
