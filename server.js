@@ -601,7 +601,6 @@ app.post("/api/translate", async (req, res) => {
 async function runTranslatorEngine(text, lang) {
   try {
 
-    // ⭐ NEW TWI / AKAN ISOLATION PROMPT — FIXES YORUBA FALLBACK
     const prompt = `
 You MUST translate the following SATCOM content into ${lang}.
 If ${lang} is "twi" or "akan", translate ONLY into Twi (Akan).
@@ -631,10 +630,7 @@ ${text}
     console.error("Translator Engine error:", err);
     return null;
   }
-}
-
-}
-
+}   // ✔ THIS IS THE ONLY CLOSING BRACE YOU NEED
 
 
 
