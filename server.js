@@ -1522,19 +1522,32 @@ async function runWithFallback(systemPrompt, userMessage) {
 }
 
 function detectTranslatorIntent(text) {
-  text = text.toLowerCase();
+  if (!text) return null;
 
-  if (text.includes("translate back to english")) {
+  // Normalize input
+  const lower = text.toLowerCase().trim();
+
+  // ⭐ Detect reverse translation
+  if (lower.includes("translate back to english")) {
     return { direction: "toEnglish" };
   }
 
-  if (text.includes("translate to")) {
-    const lang = text.split("translate to")[1].trim();
-    return { direction: "fromEnglish", target: lang };
+  // ⭐ Detect forward translation (handles colon, dash, punctuation)
+  if (lower.includes("translate to")) {
+    // Remove punctuation that breaks detection
+    const cleaned = lower.replace(/[:\-.,]/g, "");
+
+    // Extract language after "translate to"
+    const lang = cleaned.split("translate to")[1]?.trim();
+
+    if (lang && lang.length > 0) {
+      return { direction: "fromEnglish", target: lang };
+    }
   }
 
   return null;
 }
+
 
 
 // ===============================
