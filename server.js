@@ -1525,20 +1525,25 @@ function detectTranslatorIntent(text) {
   if (!text) return null;
 
   // Normalize input
-  const lower = text.toLowerCase().trim();
+  const lower = text.toLowerCase();
+
+  // Remove punctuation that breaks detection
+  const cleaned = lower.replace(/[:\-.,]/g, " ").replace(/\s+/g, " ").trim();
 
   // ⭐ Detect reverse translation
-  if (lower.includes("translate back to english")) {
+  if (cleaned.includes("translate back to english")) {
     return { direction: "toEnglish" };
   }
 
-  // ⭐ Detect forward translation (handles colon, dash, punctuation)
-  if (lower.includes("translate to")) {
-    // Remove punctuation that breaks detection
-    const cleaned = lower.replace(/[:\-.,]/g, "");
+  // ⭐ Detect forward translation (multi-line, colon, punctuation, spacing)
+  if (cleaned.includes("translate to")) {
+    // Extract everything after "translate to"
+    const after = cleaned.split("translate to")[1]?.trim();
 
-    // Extract language after "translate to"
-    const lang = cleaned.split("translate to")[1]?.trim();
+    if (!after) return null;
+
+    // Language is the first word after "translate to"
+    const lang = after.split(" ")[0]?.trim();
 
     if (lang && lang.length > 0) {
       return { direction: "fromEnglish", target: lang };
@@ -1547,6 +1552,7 @@ function detectTranslatorIntent(text) {
 
   return null;
 }
+
 
 
 
