@@ -1521,6 +1521,21 @@ async function runWithFallback(systemPrompt, userMessage) {
   return "AI Engine Notice: No response generated. Try again or simplify the input.";
 }
 
+function detectTranslatorIntent(text) {
+  text = text.toLowerCase();
+
+  if (text.includes("translate back to english")) {
+    return { direction: "toEnglish" };
+  }
+
+  if (text.includes("translate to")) {
+    const lang = text.split("translate to")[1].trim();
+    return { direction: "fromEnglish", target: lang };
+  }
+
+  return null;
+}
+
 
 // ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE (Free)
@@ -1530,9 +1545,16 @@ app.post("/api/chat", async (req, res) => {
     const userMessage = req.body.message || "";
     const bpValue = req.body.bp || null;
 
+    // ⭐ INSERT TRANSLATOR MODE DETECTION HERE
+    const translatorInstruction = detectTranslatorIntent(userMessage);
+
+    const systemPromptToUse = translatorInstruction
+      ? TRANSLATOR_SYSTEM_PROMPT(translatorInstruction)
+      : CHAT_SYSTEM_PROMPT;
+
     // ⭐ USE FALLBACK ENGINE HERE
     const aiResponse = await runWithFallback(
-      CHAT_SYSTEM_PROMPT,
+      systemPromptToUse,
       userMessage
     );
 
