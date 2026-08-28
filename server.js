@@ -1545,14 +1545,14 @@ app.post("/api/chat", async (req, res) => {
     const userMessage = req.body.message || "";
     const bpValue = req.body.bp || null;
 
-    // ⭐ INSERT TRANSLATOR MODE DETECTION HERE
+    // ⭐ TRANSLATOR MODE DETECTION
     const translatorInstruction = detectTranslatorIntent(userMessage);
 
     const systemPromptToUse = translatorInstruction
       ? TRANSLATOR_SYSTEM_PROMPT(translatorInstruction)
       : CHAT_SYSTEM_PROMPT;
 
-    // ⭐ USE FALLBACK ENGINE HERE
+    // ⭐ FALLBACK ENGINE
     const aiResponse = await runWithFallback(
       systemPromptToUse,
       userMessage
@@ -1560,7 +1560,7 @@ app.post("/api/chat", async (req, res) => {
 
     const upgraded = applyV29Upgrades(aiResponse);
 
-    // ⭐ APPLY BP LOGIC
+    // ⭐ BP LOGIC
     const finalOutput = applyBloodPressureAwareness(bpValue, upgraded);
 
     return res.json({ reply: finalOutput });
@@ -1575,6 +1575,9 @@ app.post("/api/chat", async (req, res) => {
 });
 
 
+// ===============================
+// TRANSLATOR SYSTEM PROMPT (v18.4)
+// ===============================
 function TRANSLATOR_SYSTEM_PROMPT(instruction) {
   const base = `
 You are AMC Academy Tech AI — Translator Mode (v18.4).
@@ -1641,7 +1644,6 @@ Always respond with ONLY the translated output.
 
   return base;
 }
-
 
 
 // ===============================
@@ -1713,7 +1715,10 @@ app.post("/api/translate", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: TRANSLATOR_SYSTEM_PROMPT
+          content: TRANSLATOR_SYSTEM_PROMPT({
+            direction: "fromEnglish",
+            target: targetLanguage
+          })
         },
         {
           role: "user",
