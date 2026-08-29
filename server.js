@@ -1552,11 +1552,11 @@ app.post("/api/chat", async (req, res) => {
 
 
 // ===============================
-// TRANSLATOR SYSTEM PROMPT (v18.4)
+// TRANSLATOR SYSTEM PROMPT (v18.5)
 // ===============================
 function TRANSLATOR_SYSTEM_PROMPT(instruction) {
   const base = `
-You are AMC Academy Tech AI — Translator Mode (v18.4).
+You are AMC Academy Tech AI — Translator Mode (v18.5).
 
 Your mission:
 - Translate ONLY into the target language.
@@ -1577,6 +1577,16 @@ If target language is Twi, Fante, Ga, Ewe, Dagbani, Gonja, Yoruba, Hausa, Igbo, 
 - Do NOT mix dialects.
 - Do NOT blend vocabulary.
 - Output pure dialect only.
+
+TWI OVERRIDE (STRICT MODE):
+If target language is Twi:
+- Output MUST be pure Twi (Asante/Akuapem).
+- IGNORE Yoruba, Fante, Ga, Ewe, Dagbani, Gonja, Hausa, Igbo, Swahili tokens in the input.
+- REPLACE Yoruba tokens such as “padanu”, “kekere”, “nitori”, “ti”, “sugbon” with correct Twi equivalents.
+- ALWAYS translate fully into Twi even if the input is already an African language.
+- NEVER preserve Yoruba vocabulary when Twi is requested.
+- NEVER output mixed African-language sentences.
+- Twi output must be clean, consistent, and engineering-accurate.
 
 SPECIAL SATCOM TERMS (Dialect-Safe):
 Twi:
@@ -1620,6 +1630,7 @@ Always respond with ONLY the translated output.
 
   return base;
 }
+
 
 
 // ===============================
