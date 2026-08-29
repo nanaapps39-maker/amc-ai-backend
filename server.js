@@ -1683,30 +1683,30 @@ app.post("/api/translate", async (req, res) => {
     }
 
     // ================================
-    // GPT‑4o‑mini TRANSLATION ENGINE
+    // TRANSLATOR SYSTEM PROMPT
     // ================================
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content: TRANSLATOR_SYSTEM_PROMPT({
-            direction: "fromEnglish",
-            target: targetLanguage
-          })
-        },
-        {
-          role: "user",
-          content: `Translate from ${sourceLanguage || "English"} to ${targetLanguage}: ${text}`
-        }
-      ]
+    const systemPrompt = TRANSLATOR_SYSTEM_PROMPT({
+      direction: "fromEnglish",
+      target: targetLanguage
     });
 
-    const output = completion.choices[0].message.content.trim();
+    const userMessage = `Translate from ${sourceLanguage || "English"} to ${targetLanguage}: ${text}`;
 
-    // ⭐ OPTIONAL DEBUG LOGGING
+    // ================================
+    // GROQ → OPENAI FALLBACK ENGINE
+    // ================================
+    const result = await runWithFallback(systemPrompt, userMessage);
+
+    // result MUST be { translatedText: string }
+    const output = result?.translatedText?.trim?.() || "";
+
     console.log("Translator output:", output);
+
+    if (!output) {
+      return res.status(200).json({
+        translatedText: ""
+      });
+    }
 
     return res.status(200).json({
       translatedText: output
@@ -1720,6 +1720,8 @@ app.post("/api/translate", async (req, res) => {
     });
   }
 });
+
+
 
 
 
