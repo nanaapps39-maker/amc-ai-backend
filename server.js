@@ -1460,7 +1460,7 @@ async function runWithFallback(systemPrompt, userMessage) {
   // 2️⃣ Fallback to OpenAI
   try {
     const openaiResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage }
@@ -1687,7 +1687,7 @@ app.post("/api/translate", async (req, res) => {
     // GPT‑4o‑mini TRANSLATION ENGINE
     // ================================
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       temperature: 0,
       messages: [
         {
