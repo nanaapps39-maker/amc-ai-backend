@@ -553,48 +553,6 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
   }
 });
 
-
-// ===============================
-// Translator Engine (Pro)
-// ===============================
-app.post("/api/translate", async (req, res) => {
-
-  // ❌ REMOVE THIS LINE TO UNLOCK TRANSLATOR MODE
-  // if (!req.userIsPro) return requireProAccess(res);
-
-  try {
-    const { text, lang } = req.body;
-
-    if (!text || !lang) {
-      return res.status(400).json({
-        error: "Missing text or language parameter."
-      });
-    }
-
-    const translation = await runTranslatorEngine(text, lang);
-
-    if (!translation) {
-      return res.status(200).json({
-        status: "ok",
-        translation: ""   // ⭐ IMPORTANT: frontend checks data.translation
-      });
-    }
-
-    return res.status(200).json({
-      status: "ok",
-      translation        // ⭐ frontend reads this key
-    });
-
-  } catch (error) {
-    console.error("Translator error:", error);
-    return res.status(500).json({
-      error: "Translator Mode failed",
-      details: error?.message
-    });
-  }
-});
-
-
 // ===============================
 // Translator Engine Function
 // ===============================
@@ -1682,8 +1640,8 @@ app.post("/api/translate", async (req, res) => {
     // ================================
     // NORMALISE INPUT (prevents drift)
     // ================================
-    const normalized = text.normalize("NFKC").trim().toLowerCase();
-    const overrideKey = normalized.replace(/[^\w\s]/gi, "");
+    const normalized = text.normalize("NFKC").trim();
+    const overrideKey = normalized.toLowerCase().replace(/[^\w\s]/gi, "");
     const langKey = targetLanguage.toLowerCase().trim();
 
     // ================================
@@ -1748,6 +1706,9 @@ app.post("/api/translate", async (req, res) => {
 
     const output = completion.choices[0].message.content.trim();
 
+    // ⭐ OPTIONAL DEBUG LOGGING
+    console.log("Translator output:", output);
+
     return res.status(200).json({
       translatedText: output
     });
@@ -1760,6 +1721,7 @@ app.post("/api/translate", async (req, res) => {
     });
   }
 });
+
 
 
 
