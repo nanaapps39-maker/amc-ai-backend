@@ -1434,7 +1434,7 @@ function applyBloodPressureAwareness(bpValue, aiOutput) {
 
 
 // ===============================
-// FALLBACK ENGINE — GROQ → OPENAI
+// FALLBACK ENGINE — GROQ → OPENAI (FIXED)
 // ===============================
 async function runWithFallback(systemPrompt, userMessage) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -1451,7 +1451,7 @@ async function runWithFallback(systemPrompt, userMessage) {
 
     const groqText = groqResponse?.choices?.[0]?.message?.content?.trim();
     if (groqText && groqText.length > 0) {
-      return groqText;
+      return { translatedText: groqText };
     }
   } catch (err) {
     console.error("Groq failed:", err.message);
@@ -1469,14 +1469,14 @@ async function runWithFallback(systemPrompt, userMessage) {
 
     const openaiText = openaiResponse?.choices?.[0]?.message?.content?.trim();
     if (openaiText && openaiText.length > 0) {
-      return openaiText;
+      return { translatedText: openaiText };
     }
   } catch (err) {
     console.error("OpenAI fallback failed:", err.message);
   }
 
   // 3️⃣ Final safe fallback
-  return "AI Engine Notice: No response generated. Try again or simplify the input.";
+  return { translatedText: "" };
 }
 
 function detectTranslatorIntent(text) {
@@ -1493,16 +1493,12 @@ function detectTranslatorIntent(text) {
     return { direction: "toEnglish" };
   }
 
-  // ⭐ Detect forward translation (multi-line, colon, punctuation, spacing)
+  // ⭐ Detect forward translation
   if (cleaned.includes("translate to")) {
-    // Extract everything after "translate to"
     const after = cleaned.split("translate to")[1]?.trim();
-
     if (!after) return null;
 
-    // Language is the first word after "translate to"
     const lang = after.split(" ")[0]?.trim();
-
     if (lang && lang.length > 0) {
       return { direction: "fromEnglish", target: lang };
     }
@@ -1510,6 +1506,9 @@ function detectTranslatorIntent(text) {
 
   return null;
 }
+
+
+
 
 
 
