@@ -3934,7 +3934,7 @@ async function checkSatcomEngine() {
     const payload = {
       message: "health_check",
       module: "satcom_diagnostics",
-      log_text: null
+      log_text: ""
     };
 
     const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
