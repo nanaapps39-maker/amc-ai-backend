@@ -72,7 +72,8 @@ async function runSatcomDiagnostics(userMessage, logText = null) {
       log_text: logText
     };
 
-    const response = await fetch("http://localhost:8000/diagnose", {
+    // ⭐ IMPORTANT — use Render URL from environment variable
+    const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -80,6 +81,7 @@ async function runSatcomDiagnostics(userMessage, logText = null) {
 
     const data = await response.json();
     return data;
+
   } catch (err) {
     console.error("SATCOM Python Engine Error:", err);
     return {
@@ -3929,7 +3931,7 @@ import { getLatestProKey } from "./get-latest-pro-key.js";  // ⭐ NEW IMPORT
 // Optional: lightweight SATCOM engine health check
 async function checkSatcomEngine() {
   try {
-    const response = await fetch("http://localhost:8000/diagnose", {
+    const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -3945,10 +3947,12 @@ async function checkSatcomEngine() {
 
     const data = await response.json();
     return !!data.finalSummary;
+
   } catch (err) {
     return false;
   }
 }
+
 
 app.listen(PORT, async () => {
   const latestKey = getLatestProKey();
