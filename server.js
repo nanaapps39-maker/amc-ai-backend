@@ -3931,17 +3931,22 @@ import { getLatestProKey } from "./get-latest-pro-key.js";  // ⭐ NEW IMPORT
 // Optional: lightweight SATCOM engine health check
 async function checkSatcomEngine() {
   try {
+    const payload = {
+      message: "health_check",
+      module: "satcom_diagnostics",
+      log_text: null
+    };
+
     const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: "health_check",
-        module: "satcom_diagnostics",
-        log_text: null
-      })
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "AMC-AI-Backend"
+      },
+      body: JSON.stringify(payload)
     });
 
-    // If the SATCOM engine responds with ANY 2xx status, treat it as healthy
     return response.ok;
 
   } catch (err) {
