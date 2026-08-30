@@ -3934,7 +3934,8 @@ async function checkSatcomEngine() {
     const payload = {
       message: "health_check",
       module: "satcom_diagnostics",
-      log_text: ""
+      log_text: "health_check_ping",   // ⭐ COMMA WAS MISSING
+      timestamp: Date.now()            // ⭐ CORRECT PLACEMENT
     };
 
     const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
@@ -3954,6 +3955,7 @@ async function checkSatcomEngine() {
     return false;
   }
 }
+
 
 
 app.listen(PORT, async () => {
