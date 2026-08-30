@@ -3941,14 +3941,11 @@ async function checkSatcomEngine() {
       })
     });
 
-    if (!response.ok) {
-      return false;
-    }
-
-    const data = await response.json();
-    return !!data.finalSummary;
+    // If the SATCOM engine responds with ANY 2xx status, treat it as healthy
+    return response.ok;
 
   } catch (err) {
+    console.error("SATCOM health-check failed:", err.message);
     return false;
   }
 }
