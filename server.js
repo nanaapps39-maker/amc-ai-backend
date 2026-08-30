@@ -3952,6 +3952,9 @@ async function checkSatcomEngine() {
 
 
 app.listen(PORT, async () => {
+  // Debug: confirm SATCOM URL is loaded from Render
+  console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
+
   const latestKey = getLatestProKey();
 
   // Run SATCOM health check
@@ -3995,6 +3998,7 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
