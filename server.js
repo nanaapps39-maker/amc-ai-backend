@@ -3956,6 +3956,8 @@ async function checkSatcomEngine() {
 
 app.listen(PORT, async () => {
   const latestKey = getLatestProKey();
+
+  // Run SATCOM health check
   const satcomEngineOk = await checkSatcomEngine();
 
   console.log("====================================================");
@@ -3975,11 +3977,14 @@ app.listen(PORT, async () => {
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
   console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
+
+  // SATCOM status print
   console.log(
     satcomEngineOk
       ? "✔ SATCOM Reasoning Engine: CONNECTED"
       : "⚠ SATCOM Reasoning Engine: UNAVAILABLE"
   );
+
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
 
