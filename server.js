@@ -1,6 +1,5 @@
 // webhook integration confirmed
 
-
 // HARD REBUILD — August 16, 2026 — v17
 // AMC Academy Tech AI Backend — Stable ES Module Build
 
@@ -27,6 +26,9 @@ import calculateLinkBudget from "./linkBudget.js";
 import calculateWeatherFade from "./weatherFade.js";
 import calculateRfHealth from "./rfHealth.js";
 import bvlosController from "./bvlosController.js";
+
+// ⭐ IMPORTANT — fetch must be imported BEFORE any usage
+import fetch from "node-fetch";
 
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
@@ -58,6 +60,37 @@ async function checkUsage() {
     return false;
   }
 }
+
+// ======================================================
+// SATCOM REASONING ENGINE — PYTHON MICRO-SERVICE HOOK
+// ======================================================
+async function runSatcomDiagnostics(userMessage, logText = null) {
+  try {
+    const payload = {
+      message: userMessage,
+      module: "satcom_diagnostics",
+      log_text: logText
+    };
+
+    const response = await fetch("http://localhost:8000/diagnose", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error("SATCOM Python Engine Error:", err);
+    return {
+      error: "Python reasoning engine unavailable",
+      details: err.message
+    };
+  }
+}
+
+
+
 
 // ======================================================
 // AMC ACADEMY TECH AI — MAIN AI ROUTE
@@ -127,36 +160,10 @@ app.post("/api/amc-ai", async (req, res) => {
   const lowerMessage = message.toLowerCase();
 
   const maritimeKeywords = [
-    "vessel",
-    "ship",
-    "bridge",
-    "engine room",
-    "imo",
-    "ism",
-    "navigation",
-    "navtex",
-    "gps",
-    "gyro",
-    "ais",
-    "ecs",
-    "ecdis",
-    "gmdss",
-    "inmarsat",
-    "vsat",
-    "fbb",
-    "cobham",
-    "intellian",
-    "acu",
-    "antenna control",
-    "modem",
-    "hub",
-    "plc",
-    "telemetry",
-    "distress",
-    "mayday",
-    "safety",
-    "emergency",
-    "solas"
+    "vessel","ship","bridge","engine room","imo","ism","navigation","navtex",
+    "gps","gyro","ais","ecs","ecdis","gmdss","inmarsat","vsat","fbb","cobham",
+    "intellian","acu","antenna control","modem","hub","plc","telemetry",
+    "distress","mayday","safety","emergency","solas"
   ];
 
   const isMaritimeContext = maritimeKeywords.some(word =>
@@ -180,6 +187,22 @@ app.post("/api/amc-ai", async (req, res) => {
     }
   }
 
+  // ======================================================
+  // ⭐ SATCOM DIAGNOSTICS — PYTHON ENGINE
+  // ======================================================
+  if (req.body.module === "satcom_diagnostics") {
+    const result = await runSatcomDiagnostics(message, req.body.logText || null);
+
+    return res.json({
+      reply: result,
+      heavyUsage,
+      awarenessProfile
+    });
+  }
+
+  // ======================================================
+  // DEFAULT — GPT‑4o
+  // ======================================================
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -194,7 +217,8 @@ app.post("/api/amc-ai", async (req, res) => {
   const reply = completion.choices[0].message.content + advisory;
 
   res.json({ reply });
-}); // ⭐ CLOSED ROUTE PROPERLY
+});
+
 
 // ⭐⭐⭐ SINGLE, CLEAN, PRODUCTION-SAFE CORS CONFIG ⭐⭐⭐
 app.use(
@@ -3902,8 +3926,33 @@ const PORT = process.env.PORT || 10000;
 
 import { getLatestProKey } from "./get-latest-pro-key.js";  // ⭐ NEW IMPORT
 
-app.listen(PORT, () => {
+// Optional: lightweight SATCOM engine health check
+async function checkSatcomEngine() {
+  try {
+    const response = await fetch("http://localhost:8000/diagnose", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "health_check",
+        module: "satcom_diagnostics",
+        log_text: null
+      })
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    return !!data.finalSummary;
+  } catch (err) {
+    return false;
+  }
+}
+
+app.listen(PORT, async () => {
   const latestKey = getLatestProKey();
+  const satcomEngineOk = await checkSatcomEngine();
 
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
@@ -3922,6 +3971,11 @@ app.listen(PORT, () => {
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
   console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
+  console.log(
+    satcomEngineOk
+      ? "✔ SATCOM Reasoning Engine: CONNECTED"
+      : "⚠ SATCOM Reasoning Engine: UNAVAILABLE"
+  );
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
 
@@ -3935,6 +3989,7 @@ app.listen(PORT, () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
