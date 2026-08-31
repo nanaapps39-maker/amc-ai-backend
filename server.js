@@ -8,7 +8,7 @@
 
 // webhook integration confirmed
 
-// HARD REBUILD — August 16, 2026 — v17
+// HARD REBUILD — August 31, 2026 — v18
 // AMC Academy Tech AI Backend — Stable ES Module Build
 
 import express from "express";
