@@ -448,24 +448,37 @@ app.use("/api/attachment", apiLimiter);
 
 
 // ===============================
-// BVLOS SATCOM + FBB Failover Routes
+// BVLOS SATCOM + Multi‑OEM Failover Routes
 // ===============================
 
 app.post("/api/bvlos/link-health", (req, res) => {
-  const { satcomMetrics, fbbMetrics } = req.body;
+  const { vsatMetrics, leoMetrics, lbandMetrics, scenarioProfile, oemProfile } = req.body;
 
-  if (!satcomMetrics || !fbbMetrics) {
+  // Validate required fields
+  if (!vsatMetrics || !leoMetrics || !lbandMetrics) {
     return res.status(400).json({
-      error: "satcomMetrics and fbbMetrics are required",
+      error: "vsatMetrics, leoMetrics, and lbandMetrics are required",
     });
   }
 
-  const result = bvlosController.decideActiveLink(satcomMetrics, fbbMetrics);
+  // Call controller with OEM + scenario support
+  const result = bvlosController.decideActiveLink(
+    vsatMetrics,
+    leoMetrics,
+    lbandMetrics,
+    scenarioProfile,
+    oemProfile
+  );
 
+  // Respond with full BVLOS state
   res.json({
     activeLink: result.activeLink,
-    satcomScore: result.satScore,
-    fbbScore: result.fbbScore,
+    vsatScore: result.vsatScore,
+    leoScore: result.leoScore,
+    lbandScore: result.lbandScore,
+    scenarioProfile: result.scenarioProfile,
+    compliance: result.compliance,
+    oemProfile: result.oemProfile,
   });
 });
 
@@ -480,11 +493,12 @@ app.post("/api/bvlos/control", async (req, res) => {
 
   try {
     const routed = await bvlosController.routeCommand(command);
+
     res.json({
       command,
-      via: routed.via,
+      via: routed.via,               // VSAT / LEO / LBAND
       status: routed.status,
-      state: bvlosController.getState(),
+      state: bvlosController.getState(), // activeLink + scores + scenario + OEM
     });
   } catch (err) {
     res.status(500).json({
@@ -493,6 +507,8 @@ app.post("/api/bvlos/control", async (req, res) => {
     });
   }
 });
+
+
 
 
 // ===============================
