@@ -20,15 +20,24 @@ let lastOemProfile = {
 // ---- OEM profiles ----
 
 const OEM_PROFILES = {
-  Intellian: { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
-  Cobham: { latencyWeight: 0.3, jitterWeight: 0.4, lossWeight: 0.3 },
-  KNS: { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
-  JRC: { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
-  Starlink: { latencyWeight: 0.6, jitterWeight: 0.2, lossWeight: 0.2 },
-  OneWeb: { latencyWeight: 0.5, jitterWeight: 0.3, lossWeight: 0.2 },
-  Inmarsat: { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
-  Iridium: { latencyWeight: 0.2, jitterWeight: 0.2, lossWeight: 0.6 },
-  Peplink: { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
+  Intellian:   { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
+  Cobham:      { latencyWeight: 0.3, jitterWeight: 0.4, lossWeight: 0.3 },
+  KNS:         { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+  JRC:         { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+  Furuno:      { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+  KVH:         { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+  ThraneThane: { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+
+  Starlink:    { latencyWeight: 0.6, jitterWeight: 0.2, lossWeight: 0.2 },
+  OneWeb:      { latencyWeight: 0.5, jitterWeight: 0.3, lossWeight: 0.2 },
+
+  Inmarsat:    { latencyWeight: 0.3, jitterWeight: 0.3, lossWeight: 0.4 },
+  Iridium:     { latencyWeight: 0.2, jitterWeight: 0.2, lossWeight: 0.6 },
+  Peplink:     { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
+
+  SES_O3b:     { latencyWeight: 0.5, jitterWeight: 0.3, lossWeight: 0.2 },
+  Marlink:     { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
+  Speedcast:   { latencyWeight: 0.4, jitterWeight: 0.3, lossWeight: 0.3 },
 };
 
 // ---- Health scoring (OEM‑aware) ----
@@ -77,9 +86,9 @@ function decideActiveLink(
   lbandMetrics,
   scenarioProfile = "Generic",
   oemProfile = {
-    vsatOem: "Intellian",   // can be Intellian, Cobham, KNS, JRC, etc.
-    leoOem: "Starlink",     // can be Starlink, OneWeb
-    lbandOem: "Iridium",    // can be Iridium, Inmarsat
+    vsatOem: "Intellian",   // Intellian, Cobham, KNS, JRC, Furuno, KVH, ThraneThane...
+    leoOem: "Starlink",     // Starlink, OneWeb, SES_O3b...
+    lbandOem: "Iridium",    // Iridium, Inmarsat...
   }
 ) {
   lastOemProfile = oemProfile;
@@ -139,12 +148,25 @@ function decideActiveLink(
   const compliance = {
     imo_solas: true,
     icao_uas: true,
-    oem_peplink: true,
-    oem_cobham: true,
-    oem_intellian: true,
-    oem_iridium: true,
-    oem_kns: true,
-    oem_jrc: true,
+
+    oem_intellian:   true,
+    oem_cobham:      true,
+    oem_kns:         true,
+    oem_jrc:         true,
+    oem_furuno:      true,
+    oem_kvh:         true,
+    oem_thranethane: true,
+
+    oem_starlink:    true,
+    oem_oneweb:      true,
+    oem_ses_o3b:     true,
+
+    oem_inmarsat:    true,
+    oem_iridium:     true,
+    oem_peplink:     true,
+    oem_marlink:     true,
+    oem_speedcast:   true,
+
     encryption: "AES-256",
     latencyOk,
     redundantPathsUp,
@@ -197,4 +219,5 @@ export default {
     oemProfile: lastOemProfile,
   }),
 };
+
 
