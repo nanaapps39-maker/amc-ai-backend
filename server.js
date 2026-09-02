@@ -100,6 +100,44 @@ async function runSatcomDiagnostics(userMessage, logText = null) {
 }
 
 
+// ======================================================
+// HISTORICAL VALIDATION LAYER
+// ======================================================
+function validateHistoricalData(output) {
+  if (!output) return output;
+
+  // Ghana Independence Correction
+  if (output?.history?.ghanaIndependence === 1960) {
+    output.history.ghanaIndependence = 1957;
+  }
+
+  return output;
+}
+
+
+// ======================================================
+// PYTHON SATCOM ENGINE CONNECTOR (NEW)
+// ======================================================
+async function callSatcomEngine(payload) {
+  try {
+    const response = await fetch("http://localhost:8000/satcom", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    return data;
+
+  } catch (err) {
+    console.error("SATCOM Python Engine Error:", err);
+    return {
+      error: "Python SATCOM engine unavailable",
+      details: err.message
+    };
+  }
+}
+
 
 
 // ======================================================
@@ -1881,8 +1919,27 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
   }
 
   try {
-    const diagnostics = await runDiagnosticsEngine(query);
-    return res.status(200).json({ diagnostics });
+    // Run existing JS diagnostics
+    const jsDiagnostics = await runDiagnosticsEngine(query);
+
+    // Run Python SATCOM engine
+    const pyDiagnostics = await callSatcomEngine({ query });
+
+    // Merge both
+    let finalOutput = {
+      js: jsDiagnostics,
+      python: pyDiagnostics
+    };
+
+    // Apply historical validation
+    finalOutput = validateHistoricalData(finalOutput);
+
+    // Send structured output
+    return res.status(200).json({
+      status: "ok",
+      diagnostics: finalOutput
+    });
+
   } catch (error) {
     console.error("Diagnostics error:", error);
     return res.status(500).json({
@@ -1891,6 +1948,7 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
     });
   }
 });
+
 
 // ===============================
 // SATCOM Diagnostics — Human Grade (A+)
