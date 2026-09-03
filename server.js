@@ -4085,43 +4085,48 @@ app.listen(PORT, async () => {
   const satcomEngineOk = await checkSatcomEngine();
 
   console.log("====================================================");
-  console.log(" AMC Academy Tech AI Backend — Boot Sequence");
-  console.log("====================================================");
-  console.log("✔ Chat Engine: ACTIVE");
-  console.log("✔ Translator Engine: ACTIVE");
-  console.log("✔ Akan Isolation: ENABLED");
-  console.log("✔ SATCOM Engineering Rules: LOADED");
-  console.log("✔ Africa Language Pack: LOADED");
-  console.log("✔ Groq Routing: CONNECTED");
-  console.log("✔ OpenAI Routing: CONNECTED");
-  console.log("✔ Diagnostics Engine: READY");
-  console.log("✔ Attachment Mode: READY");
-  console.log("✔ Maritime AI Modules: INITIALIZED");
-  console.log("✔ BVLOS Failover Engine: READY");
-  console.log("✔ Heavy Usage Advisory System: ENABLED");
-  console.log("✔ Human Awareness Engine: ENABLED");
-  console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
+console.log(" AMC Academy Tech AI Backend — Boot Sequence");
+console.log("====================================================");
+console.log("✔ Chat Engine: ACTIVE");
+console.log("✔ Translator Engine: ACTIVE");
+console.log("✔ Akan Isolation: ENABLED");
+console.log("✔ SATCOM Engineering Rules: LOADED");
+console.log("✔ Africa Language Pack: LOADED");
+console.log("✔ Groq Routing: CONNECTED");
+console.log("✔ OpenAI Routing: CONNECTED");
+console.log("✔ Diagnostics Engine: READY");
+console.log("✔ Attachment Mode: READY");
+console.log("✔ Maritime AI Modules: INITIALIZED");
+console.log("✔ BVLOS Failover Engine: READY");
+console.log("✔ Heavy Usage Advisory System: ENABLED");
+console.log("✔ Human Awareness Engine: ENABLED");
+console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
 
-  // SATCOM status print
-  console.log(
-    satcomEngineOk
-      ? "✔ SATCOM Reasoning Engine: CONNECTED"
-      : "⚠ SATCOM Reasoning Engine: UNAVAILABLE"
-  );
+// ⭐ ICO Compliance + GDPR
+console.log("✔ ICO Compliance: ACTIVE (ZC236313)");
+console.log("✔ GDPR Mode: ENABLED");
+console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
 
-  console.log("✔ Blood Pressure Awareness Logic: ENABLED");
-  console.log("----------------------------------------------------");
+// SATCOM status print
+console.log(
+  satcomEngineOk
+    ? "✔ SATCOM Reasoning Engine: CONNECTED"
+    : "⚠ SATCOM Reasoning Engine: UNAVAILABLE"
+);
 
-  if (latestKey) {
-    console.log(`🔑 Latest Generated Pro Key: ${latestKey.key}`);
-    console.log(`👤 Assigned To: ${latestKey.email || "N/A"}`);
-  } else {
-    console.log("🔑 No Pro Keys generated yet.");
-  }
+console.log("✔ Blood Pressure Awareness Logic: ENABLED");
+console.log("----------------------------------------------------");
 
-  console.log(`✔ Server running on port ${PORT}`);
-  console.log("====================================================");
-});
+if (latestKey) {
+  console.log(`🔑 Latest Generated Pro Key: ${latestKey.key}`);
+  console.log(`👤 Assigned To: ${latestKey.email || "N/A"}`);
+} else {
+  console.log("🔑 No Pro Keys generated yet.");
+}
+
+console.log(`✔ Server running on port ${PORT}`);
+console.log("====================================================");
+
 
 
 
