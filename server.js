@@ -38,6 +38,18 @@ import bvlosController from "./bvlosController.js";
 // ⭐ IMPORTANT — fetch must be imported BEFORE any usage
 import fetch from "node-fetch";
 
+// ⭐ ICO Compliance Middleware
+import compliance from "./middlewarecompliance.js";
+
+const app = express();
+app.set("trust proxy", 1);
+
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// ⭐ Enable ICO Compliance Headers Globally
+app.use(compliance);
+
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
@@ -47,12 +59,6 @@ const groq = new Groq({
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-
-const app = express();
-app.set("trust proxy", 1);
-
-app.use(express.json({ limit: "25mb" }));
-app.use(express.urlencoded({ extended: true }));
 
 // ======================================================
 // HEAVY USAGE MONITOR — PYTHON MICRO-SERVICE HOOK
@@ -68,6 +74,8 @@ async function checkUsage() {
     return false;
   }
 }
+
+
 
 // ======================================================
 // SATCOM REASONING ENGINE — PYTHON MICRO-SERVICE HOOK
