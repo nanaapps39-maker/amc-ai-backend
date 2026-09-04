@@ -1,43 +1,63 @@
 // Phase 10 – Unified SATCOM AI Orchestration Layer
 // Phase 10.1 – SATCOM Diagnostics Engine (Core Version)
 
+// -----------------------------------------------------------
+// RENDERER INTEGRATION
+// -----------------------------------------------------------
+const renderer = require('./rendererMode'); 
+// Default mode is "minimal" unless changed elsewhere
+
 module.exports = async function orchestrate(request) {
     try {
         const { mode, payload } = request;
 
+        let rawResponse;
+
         switch (mode) {
             case "diagnostics":
-                return await handleDiagnostics(payload);
+                rawResponse = await handleDiagnostics(payload);
+                break;
 
             case "translator":
-                return await handleTranslator(payload);
+                rawResponse = await handleTranslator(payload);
+                break;
 
             case "storage":
-                return await handleStorage(payload);
+                rawResponse = await handleStorage(payload);
+                break;
 
             case "attachments":
-                return await handleAttachments(payload);
+                rawResponse = await handleAttachments(payload);
+                break;
 
             case "orbit":
-                return await handleOrbit(payload);
+                rawResponse = await handleOrbit(payload);
+                break;
 
             case "vessel-intel":
-                return await handleVesselIntel(payload);
+                rawResponse = await handleVesselIntel(payload);
+                break;
 
             default:
-                return {
+                rawResponse = {
                     status: "error",
                     message: `Unknown mode: ${mode}`,
                     hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel"
                 };
+                break;
         }
 
+        // -----------------------------------------------------------
+        // RENDERER APPLIED TO ALL OUTPUTS
+        // -----------------------------------------------------------
+        return renderer.renderMessage(rawResponse);
+
     } catch (err) {
-        return {
+        return renderer.renderMessage({
             status: "fatal-error",
             message: "Orchestration layer encountered an unexpected error.",
             details: err.message
-        };
+        });
     }
 };
 
@@ -46,7 +66,6 @@ module.exports = async function orchestrate(request) {
 // -----------------------------------------------------------
 
 async function handleDiagnostics(payload) {
-    // 1. Parse fault lines
     const lines = payload.split("\n").map(l => l.trim()).filter(Boolean);
 
     const faults = lines.map(line => {
@@ -58,25 +77,12 @@ async function handleDiagnostics(payload) {
         };
     });
 
-    // 2. Subsystem classification
     const subsystems = faults.map(f => classifySubsystem(f.code));
-
-    // 3. Severity scoring
     const severity = scoreSeverity(subsystems);
-
-    // 4. Correlation engine
     const correlation = correlate(subsystems);
-
-    // 5. Root cause hypotheses
     const rootCauses = generateRootCauses(subsystems);
-
-    // 6. Corrective actions
     const actions = generateCorrectiveActions(subsystems);
-
-    // 7. Escalation guidance
     const escalation = generateEscalation(subsystems);
-
-    // 8. Missing data requests
     const missing = generateMissingData(subsystems);
 
     return {
@@ -181,7 +187,7 @@ function generateSummary(subsystems) {
 }
 
 // -----------------------------------------------------------
-// PLACEHOLDERS FOR OTHER MODES (still empty)
+// PLACEHOLDERS FOR OTHER MODES
 // -----------------------------------------------------------
 
 async function handleTranslator(payload) { return { mode: "translator", status: "ok", payload }; }
@@ -189,3 +195,4 @@ async function handleStorage(payload) { return { mode: "storage", status: "ok", 
 async function handleAttachments(payload) { return { mode: "attachments", status: "ok", payload }; }
 async function handleOrbit(payload) { return { mode: "orbit", status: "ok", payload }; }
 async function handleVesselIntel(payload) { return { mode: "vessel-intel", status: "ok", payload }; }
+
