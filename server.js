@@ -4074,12 +4074,6 @@ async function checkSatcomEngine() {
 }
 
 
-// ⭐ Renderer v3 Integration
-const renderer = require("./rendererMode");
-
-// Activate Simple Edition at boot
-renderer.setRendererMode("simple");
-
 app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
