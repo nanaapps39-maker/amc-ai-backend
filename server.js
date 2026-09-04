@@ -1,3 +1,6 @@
+// SATCOM v2 reconnect trigger
+
+
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
