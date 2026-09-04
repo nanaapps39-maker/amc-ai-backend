@@ -4074,11 +4074,13 @@ async function checkSatcomEngine() {
 }
 
 
+import { checkSatcomHealth } from "./satcomEngineConnector.js";
+
 app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
   const latestKey = getLatestProKey();
-  const satcomEngineOk = await checkSatcomEngine();
+  const satcomEngineOk = await checkSatcomHealth();
 
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
@@ -4097,20 +4099,15 @@ app.listen(PORT, async () => {
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
   console.log("✔ Human-Aware Maritime Safety Mode: ENABLED");
-
-  // ⭐ ICO Compliance + GDPR
   console.log("✔ ICO Compliance: ACTIVE (ZC236313)");
   console.log("✔ GDPR Mode: ENABLED");
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
-
-  // ⭐ Renderer v3 Simple Edition
   console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
 
-  // SATCOM status print
   console.log(
     satcomEngineOk
-      ? "✔ SATCOM Reasoning Engine: CONNECTED"
-      : "⚠ SATCOM Reasoning Engine: UNAVAILABLE"
+      ? "✔ SATCOM Reasoning Engine v2: CONNECTED"
+      : "⚠ SATCOM Reasoning Engine v2: UNAVAILABLE"
   );
 
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
@@ -4126,7 +4123,6 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
-
 
 
 

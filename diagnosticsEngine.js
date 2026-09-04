@@ -1,5 +1,6 @@
 // diagnosticsEngine.js
 import Groq from "groq-sdk";
+import { runSatcomReasoning } from "./satcomEngineConnector.js";
 
 // Ultra‑Robust JSON Extractor — AMC Academy Tech AI
 function extractJson(text) {
@@ -42,6 +43,9 @@ If you cannot produce valid JSON, return {}.
 `;
 
 export default async function runDiagnosticsEngine(query) {
+  // -----------------------------------------------------------
+  // 1. Run Groq JSON SATCOM Diagnostics (your existing engine)
+  // -----------------------------------------------------------
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY
   });
@@ -90,6 +94,40 @@ Do NOT include explanations.
     ]
   });
 
-  const raw = completion.choices[0].message.content;
-  return extractJson(raw);
+  const rawGroq = completion.choices[0].message.content;
+  const groqDiagnostics = extractJson(rawGroq);
+
+  // -----------------------------------------------------------
+  // 2. Run SATCOM Reasoning Engine v2 (Python microservice)
+  // -----------------------------------------------------------
+  let satcomV2 = null;
+
+  try {
+    satcomV2 = await runSatcomReasoning(query);
+  } catch (err) {
+    console.error("SATCOM v2 engine error:", err.message);
+    satcomV2 = {
+      status: "error",
+      engine: "satcom-v2",
+      message: "SATCOM Reasoning Engine v2 unavailable",
+      details: err.message
+    };
+  }
+
+  // -----------------------------------------------------------
+  // 3. Merge Groq Diagnostics + SATCOM v2 Reasoning
+  // -----------------------------------------------------------
+  return {
+    status: "ok",
+    engine: "diagnostics-v2",
+    groq: groqDiagnostics,
+    satcomV2: satcomV2.reasoning || satcomV2,
+    summary: {
+      combinedConfidence: satcomV2?.reasoning?.confidence || "Medium",
+      engines: {
+        groq: "active",
+        satcomV2: satcomV2?.status === "ok" ? "active" : "offline"
+      }
+    }
+  };
 }

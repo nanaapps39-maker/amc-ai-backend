@@ -1,198 +1,144 @@
 // Phase 10 – Unified SATCOM AI Orchestration Layer
-// Phase 10.1 – SATCOM Diagnostics Engine (Core Version)
+// SATCOM Reasoning Engine v2 + Renderer v3 Integration
+
+import { renderMessage } from "./rendererMode.js";
+import runDiagnosticsEngine from "./diagnosticsEngine.js";
+import { runSatcomReasoning } from "./satcomEngineConnector.js";
 
 // -----------------------------------------------------------
-// RENDERER INTEGRATION (ES MODULE)
+// MAIN ORCHESTRATION FUNCTION
 // -----------------------------------------------------------
-import { renderMessage } from "./rendererMode.js"; 
-// Default mode is set inside rendererMode.js
-
 export default async function orchestrate(request) {
-    try {
-        const { mode, payload } = request;
+  try {
+    const { mode, payload } = request;
+    let rawResponse;
 
-        let rawResponse;
+    switch (mode) {
+      // -------------------------------------------------------
+      // SATCOM DIAGNOSTICS MODE (Groq + SATCOM v2 merged)
+      // -------------------------------------------------------
+      case "diagnostics":
+        rawResponse = await handleDiagnostics(payload);
+        break;
 
-        switch (mode) {
-            case "diagnostics":
-                rawResponse = await handleDiagnostics(payload);
-                break;
+      // -------------------------------------------------------
+      // Translator Mode
+      // -------------------------------------------------------
+      case "translator":
+        rawResponse = await handleTranslator(payload);
+        break;
 
-            case "translator":
-                rawResponse = await handleTranslator(payload);
-                break;
+      // -------------------------------------------------------
+      // Storage Mode
+      // -------------------------------------------------------
+      case "storage":
+        rawResponse = await handleStorage(payload);
+        break;
 
-            case "storage":
-                rawResponse = await handleStorage(payload);
-                break;
+      // -------------------------------------------------------
+      // Attachment Mode
+      // -------------------------------------------------------
+      case "attachments":
+        rawResponse = await handleAttachments(payload);
+        break;
 
-            case "attachments":
-                rawResponse = await handleAttachments(payload);
-                break;
+      // -------------------------------------------------------
+      // Orbit Mode
+      // -------------------------------------------------------
+      case "orbit":
+        rawResponse = await handleOrbit(payload);
+        break;
 
-            case "orbit":
-                rawResponse = await handleOrbit(payload);
-                break;
+      // -------------------------------------------------------
+      // Vessel Intelligence Mode
+      // -------------------------------------------------------
+      case "vessel-intel":
+        rawResponse = await handleVesselIntel(payload);
+        break;
 
-            case "vessel-intel":
-                rawResponse = await handleVesselIntel(payload);
-                break;
-
-            default:
-                rawResponse = {
-                    status: "error",
-                    message: `Unknown mode: ${mode}`,
-                    hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel"
-                };
-                break;
-        }
-
-        // -----------------------------------------------------------
-        // RENDERER APPLIED TO ALL OUTPUTS
-        // -----------------------------------------------------------
-        return renderMessage(rawResponse);
-
-    } catch (err) {
-        return renderMessage({
-            status: "fatal-error",
-            message: "Orchestration layer encountered an unexpected error.",
-            details: err.message
-        });
-    }
-}
-
-// -----------------------------------------------------------
-// PHASE 10.1 — REAL SATCOM DIAGNOSTICS ENGINE
-// -----------------------------------------------------------
-
-async function handleDiagnostics(payload) {
-    const lines = payload.split("\n").map(l => l.trim()).filter(Boolean);
-
-    const faults = lines.map(line => {
-        const [timestamp, code, ...rest] = line.split(" ");
-        return {
-            timestamp,
-            code,
-            description: rest.join(" ")
+      // -------------------------------------------------------
+      // Unknown Mode
+      // -------------------------------------------------------
+      default:
+        rawResponse = {
+          status: "error",
+          message: `Unknown mode: ${mode}`,
+          hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel"
         };
+        break;
+    }
+
+    // -----------------------------------------------------------
+    // APPLY RENDERER v3 TO ALL OUTPUTS
+    // -----------------------------------------------------------
+    return renderMessage(rawResponse);
+
+  } catch (err) {
+    return renderMessage({
+      status: "fatal-error",
+      message: "Orchestration layer encountered an unexpected error.",
+      details: err.message
     });
+  }
+}
 
-    const subsystems = faults.map(f => classifySubsystem(f.code));
-    const severity = scoreSeverity(subsystems);
-    const correlation = correlate(subsystems);
-    const rootCauses = generateRootCauses(subsystems);
-    const actions = generateCorrectiveActions(subsystems);
-    const escalation = generateEscalation(subsystems);
-    const missing = generateMissingData(subsystems);
+// -----------------------------------------------------------
+// MODE HANDLERS
+// -----------------------------------------------------------
 
-    return {
-        mode: "diagnostics",
-        status: "ok",
-        phases: {
-            summary: generateSummary(subsystems),
-            subsystems,
-            severity,
-            correlation,
-            rootCauses,
-            actions,
-            escalation,
-            missing,
-            confidence: "Medium-High"
-        }
+// ⭐ Diagnostics Mode — SATCOM v2 + Groq JSON Engine
+async function handleDiagnostics(payload) {
+  // Run Groq JSON diagnostics engine
+  const groqDiagnostics = await runDiagnosticsEngine(payload);
+
+  // Run SATCOM Reasoning Engine v2 (Python microservice)
+  let satcomV2;
+  try {
+    satcomV2 = await runSatcomReasoning(payload);
+  } catch (err) {
+    satcomV2 = {
+      status: "error",
+      message: "SATCOM Reasoning Engine v2 unavailable",
+      details: err.message
     };
+  }
+
+  return {
+    mode: "diagnostics",
+    status: "ok",
+    engines: {
+      groq: "active",
+      satcomV2: satcomV2?.status === "ok" ? "active" : "offline"
+    },
+    diagnostics: {
+      groq: groqDiagnostics,
+      satcomV2: satcomV2.reasoning || satcomV2
+    },
+    confidence: satcomV2?.reasoning?.confidence || "Medium"
+  };
 }
 
 // -----------------------------------------------------------
-// SUPPORT FUNCTIONS — CLASSIFICATION, CORRELATION, ETC.
+// Placeholder Modes (still functional)
 // -----------------------------------------------------------
-
-function classifySubsystem(code) {
-    if (code.startsWith("ACU")) return { subsystem: "ACU Tracking", code };
-    if (code.startsWith("GYRO")) return { subsystem: "Gyro / IMU", code };
-    if (code.startsWith("MODEM")) return { subsystem: "Modem IF Chain", code };
-    if (code.startsWith("RF")) return { subsystem: "RF Chain / BUC", code };
-    if (code.startsWith("NET")) return { subsystem: "WAN Layer", code };
-    if (code.startsWith("CERTUS")) return { subsystem: "L-Band / Certus", code };
-    if (code.startsWith("SDWAN")) return { subsystem: "SD-WAN", code };
-    if (code.startsWith("NMEA")) return { subsystem: "GPS / Positioning", code };
-    return { subsystem: "Unknown", code };
+async function handleTranslator(payload) {
+  return { mode: "translator", status: "ok", payload };
 }
 
-function scoreSeverity(subsystems) {
-    if (subsystems.some(s => s.subsystem === "ACU Tracking")) return "Critical";
-    if (subsystems.some(s => s.subsystem === "Gyro / IMU")) return "Major";
-    if (subsystems.some(s => s.subsystem === "RF Chain / BUC")) return "Major";
-    return "Minor";
+async function handleStorage(payload) {
+  return { mode: "storage", status: "ok", payload };
 }
 
-function correlate(subsystems) {
-    const hasGyro = subsystems.some(s => s.subsystem === "Gyro / IMU");
-    const hasACU = subsystems.some(s => s.subsystem === "ACU Tracking");
-    const hasModem = subsystems.some(s => s.subsystem === "Modem IF Chain");
-    const hasRF = subsystems.some(s => s.subsystem === "RF Chain / BUC");
-
-    const correlations = [];
-
-    if (hasGyro && hasACU)
-        correlations.push("Gyro drift → ACU loses pointing → antenna out of range");
-
-    if (hasACU && hasModem)
-        correlations.push("ACU tracking loss → modem loses IF lock → Tx muted");
-
-    if (hasACU && hasRF)
-        correlations.push("Poor pointing → RF chain compensates → BUC overcurrent");
-
-    return correlations;
+async function handleAttachments(payload) {
+  return { mode: "attachments", status: "ok", payload };
 }
 
-function generateRootCauses(subsystems) {
-    return [
-        "Gyro malfunction or heading drift (High Confidence)",
-        "Vessel motion exceeding antenna tracking capability (Medium Confidence)",
-        "RF chain misalignment or blockage (Low Confidence)",
-        "BUC hardware stress due to poor pointing (Low Confidence)"
-    ];
+async function handleOrbit(payload) {
+  return { mode: "orbit", status: "ok", payload };
 }
 
-function generateCorrectiveActions(subsystems) {
-    return [
-        "Verify gyro operation and recalibrate if necessary",
-        "Check vessel speed and turning rate vs antenna slew rate",
-        "Perform manual antenna alignment",
-        "Inspect RF chain for damage, moisture, or loose connectors",
-        "Review ACU and modem logs for repeated tracking failures"
-    ];
+async function handleVesselIntel(payload) {
+  return { mode: "vessel-intel", status: "ok", payload };
 }
 
-function generateEscalation(subsystems) {
-    return [
-        "Escalate to OEM if gyro drift persists after recalibration",
-        "Notify NOC to monitor ACU tracking and IF lock stability",
-        "Provide BUC current trend and ACU tracking logs to OEM"
-    ];
-}
-
-function generateMissingData(subsystems) {
-    return [
-        "Vessel motion data (speed, turn rate)",
-        "Gyro drift logs",
-        "ACU tracking graph",
-        "BUC current trend",
-        "Modem Rx/Tx power levels"
-    ];
-}
-
-function generateSummary(subsystems) {
-    return "SATCOM system experiencing coordinated ACU, Gyro, Modem, and RF chain instability.";
-}
-
-// -----------------------------------------------------------
-// PLACEHOLDERS FOR OTHER MODES
-// -----------------------------------------------------------
-
-async function handleTranslator(payload) { return { mode: "translator", status: "ok", payload }; }
-async function handleStorage(payload) { return { mode: "storage", status: "ok", payload }; }
-async function handleAttachments(payload) { return { mode: "attachments", status: "ok", payload }; }
-async function handleOrbit(payload) { return { mode: "orbit", status: "ok", payload }; }
-async function handleVesselIntel(payload) { return { mode: "vessel-intel", status: "ok", payload }; }
 
