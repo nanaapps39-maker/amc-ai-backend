@@ -7,22 +7,27 @@ const router = express.Router();
 // POST /satcom/reasoning
 router.post("/reasoning", async (req, res) => {
   try {
-    const { payload } = req.body;
+    const { message, module } = req.body;
 
-    if (!payload || typeof payload !== "string") {
+    if (!message || !module) {
       return res.status(400).json({
         status: "error",
-        message: "Missing or invalid 'payload' (expected SATCOM log lines as string)"
+        message: "Missing required fields: 'message' and 'module'"
       });
     }
 
-    const result = await runSatcomReasoning(payload);
+    // Forward SATCOM v2 request to Python engine
+    const result = await runSatcomReasoning({
+      message,
+      module
+    });
 
     return res.json({
       status: "ok",
       engine: "satcom-v2",
       result
     });
+
   } catch (err) {
     console.error("SATCOM reasoning error:", err.message);
 
@@ -43,3 +48,4 @@ router.get("/health", async (req, res) => {
 });
 
 export default router;
+
