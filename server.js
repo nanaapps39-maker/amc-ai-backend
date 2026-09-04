@@ -4074,6 +4074,12 @@ async function checkSatcomEngine() {
 }
 
 
+// ⭐ Renderer v3 Integration
+const renderer = require("./rendererMode");
+
+// Activate Simple Edition at boot
+renderer.setRendererMode("simple");
+
 app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
@@ -4103,6 +4109,9 @@ app.listen(PORT, async () => {
   console.log("✔ GDPR Mode: ENABLED");
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
 
+  // ⭐ Renderer v3 Simple Edition
+  console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
+
   // SATCOM status print
   console.log(
     satcomEngineOk
@@ -4123,6 +4132,7 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
