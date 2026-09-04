@@ -1,24 +1,11 @@
 // rendererMode.js
-// AMC Academy Tech AI – Renderer v3 Simple Edition + Minimal + Professional
-// Backend-only rendering controller
+let currentMode = "minimal";
 
-// -------------------------------------------------------------
-// Mode selector
-// -------------------------------------------------------------
-let currentMode = "minimal"; 
-// Options: "simple", "minimal", "professional"
-
-// Allow other backend files to change the mode
-function setRendererMode(mode) {
+export function setRendererMode(mode) {
     const allowed = ["simple", "minimal", "professional"];
-    if (allowed.includes(mode)) {
-        currentMode = mode;
-    }
+    if (allowed.includes(mode)) currentMode = mode;
 }
 
-// -------------------------------------------------------------
-// SIMPLE EDITION (Renderer v3 Simple)
-// -------------------------------------------------------------
 function renderSimple(message) {
     return {
         mode: "simple",
@@ -32,9 +19,6 @@ function renderSimple(message) {
     };
 }
 
-// -------------------------------------------------------------
-// MINIMAL EDITION (Renderer v3 Professional Minimal Mode)
-// -------------------------------------------------------------
 function renderMinimal(message) {
     return {
         mode: "minimal",
@@ -48,9 +32,6 @@ function renderMinimal(message) {
     };
 }
 
-// -------------------------------------------------------------
-// PROFESSIONAL EDITION (Renderer v3 Professional)
-// -------------------------------------------------------------
 function renderProfessional(message) {
     return {
         mode: "professional",
@@ -64,10 +45,7 @@ function renderProfessional(message) {
     };
 }
 
-// -------------------------------------------------------------
-// MAIN RENDERER ENTRY POINT
-// -------------------------------------------------------------
-function renderMessage(message) {
+export function renderMessage(message) {
     switch (currentMode) {
         case "simple":
             return renderSimple(message);
@@ -77,11 +55,3 @@ function renderMessage(message) {
             return renderMinimal(message);
     }
 }
-
-// -------------------------------------------------------------
-// EXPORTS
-// -------------------------------------------------------------
-module.exports = {
-    setRendererMode,
-    renderMessage
-};

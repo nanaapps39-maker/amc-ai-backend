@@ -2,12 +2,12 @@
 // Phase 10.1 – SATCOM Diagnostics Engine (Core Version)
 
 // -----------------------------------------------------------
-// RENDERER INTEGRATION
+// RENDERER INTEGRATION (ES MODULE)
 // -----------------------------------------------------------
-const renderer = require('./rendererMode'); 
-// Default mode is "minimal" unless changed elsewhere
+import { renderMessage } from "./rendererMode.js"; 
+// Default mode is set inside rendererMode.js
 
-module.exports = async function orchestrate(request) {
+export default async function orchestrate(request) {
     try {
         const { mode, payload } = request;
 
@@ -50,16 +50,16 @@ module.exports = async function orchestrate(request) {
         // -----------------------------------------------------------
         // RENDERER APPLIED TO ALL OUTPUTS
         // -----------------------------------------------------------
-        return renderer.renderMessage(rawResponse);
+        return renderMessage(rawResponse);
 
     } catch (err) {
-        return renderer.renderMessage({
+        return renderMessage({
             status: "fatal-error",
             message: "Orchestration layer encountered an unexpected error.",
             details: err.message
         });
     }
-};
+}
 
 // -----------------------------------------------------------
 // PHASE 10.1 — REAL SATCOM DIAGNOSTICS ENGINE
