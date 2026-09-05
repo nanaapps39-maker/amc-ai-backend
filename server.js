@@ -53,6 +53,13 @@ app.use(express.urlencoded({ extended: true }));
 // ⭐ Enable ICO Compliance Headers Globally
 app.use(compliance);
 
+// ⭐ Enable CORS (REQUIRED for frontend → backend requests)
+app.use(cors());
+
+// ⭐ SATCOM v2 Routes — REQUIRED
+import satcomRoutes from "./routesatcom.js";
+app.use("/satcom", satcomRoutes);
+
 // ⭐ Initialise Groq Client (REQUIRED)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
@@ -62,6 +69,7 @@ const groq = new Groq({
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
+
 
 // ======================================================
 // HEAVY USAGE MONITOR — PYTHON MICRO-SERVICE HOOK
