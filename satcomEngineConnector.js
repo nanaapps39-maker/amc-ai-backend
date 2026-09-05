@@ -8,9 +8,8 @@ export async function runSatcomReasoning(payload) {
 
   const url = `${SATCOM_ENGINE_URL}/reasoning`;
 
-  const body = {
-    payload
-  };
+  // FIX: send message/module directly, NOT wrapped in { payload }
+  const body = payload;
 
   const res = await fetch(url, {
     method: "POST",
@@ -29,13 +28,3 @@ export async function runSatcomReasoning(payload) {
   return data;
 }
 
-export async function checkSatcomHealth() {
-  if (!SATCOM_ENGINE_URL) return false;
-
-  try {
-    const res = await fetch(`${SATCOM_ENGINE_URL}/health`);
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
