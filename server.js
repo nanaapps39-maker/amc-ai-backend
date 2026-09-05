@@ -4159,7 +4159,8 @@ async function checkSatcomEngine() {
 }
 
 
-import { checkSatcomHealth } from "./satcomEngineConnector.js";
+import { getSatcomHealth } from "./satcomEngineConnector.js";
+
 
 app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
