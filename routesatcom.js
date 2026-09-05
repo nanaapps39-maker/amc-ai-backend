@@ -1,10 +1,16 @@
-// routesatcom.js
+// routesatcom.js — SATCOM v2 + Telemetry Upgrade
 import express from "express";
-import { runSatcomReasoning } from "./satcomEngineConnector.js";
+import {
+  runSatcomReasoning,
+  getSatcomHeartbeat,
+  getSatcomHealth
+} from "./satcomEngineConnector.js";
 
 const router = express.Router();
 
+// -------------------------------------------------------
 // POST /satcom/reasoning
+// -------------------------------------------------------
 router.post("/reasoning", async (req, res) => {
   try {
     const { message, module } = req.body;
@@ -17,15 +23,23 @@ router.post("/reasoning", async (req, res) => {
     }
 
     // Forward SATCOM v2 request to Python engine
-    const result = await runSatcomReasoning({
-      message,
-      module
-    });
+    const satcomResult = await runSatcomReasoning({ message, module });
+
+    if (!satcomResult.ok) {
+      return res.status(500).json({
+        status: "error",
+        engine: "satcom-v2",
+        message: "SATCOM Reasoning Engine v2 unavailable",
+        latencyMs: satcomResult.latencyMs,
+        details: satcomResult.error
+      });
+    }
 
     return res.json({
       status: "ok",
       engine: "satcom-v2",
-      result
+      latencyMs: satcomResult.latencyMs,
+      result: satcomResult.data
     });
 
   } catch (err) {
@@ -33,19 +47,29 @@ router.post("/reasoning", async (req, res) => {
 
     return res.status(500).json({
       status: "fatal-error",
+      engine: "satcom-v2",
       message: "SATCOM Reasoning Engine v2 failed",
       details: err.message
     });
   }
 });
 
-// GET /satcom/health
+// -------------------------------------------------------
+// GET /satcom/heartbeat — lightweight microservice ping
+// -------------------------------------------------------
+router.get("/heartbeat", async (req, res) => {
+  const heartbeat = await getSatcomHeartbeat();
+  return res.json(heartbeat);
+});
+
+// -------------------------------------------------------
+// GET /satcom/health — full SATCOM Engine telemetry
+// -------------------------------------------------------
 router.get("/health", async (req, res) => {
-  return res.json({
-    status: "ok",
-    message: "SATCOM route online"
-  });
+  const health = await getSatcomHealth();
+  return res.json(health);
 });
 
 export default router;
+
 

@@ -1,40 +1,112 @@
-const SATCOM_ENGINE_URL = process.env.SATCOM_ENGINE_URL || "http://localhost:9000";
+// satcomEngineConnector.js (ESM + Telemetry Upgrade)
 
+const SATCOM_ENGINE_URL =
+  process.env.SATCOM_ENGINE_URL || "http://localhost:8000";
+
+// -------------------------------------------------------
+// Run SATCOM v2 Reasoning Engine
+// -------------------------------------------------------
 export async function runSatcomReasoning(payload) {
   if (!SATCOM_ENGINE_URL) {
     throw new Error("SATCOM_ENGINE_URL is not defined");
   }
 
   const url = `${SATCOM_ENGINE_URL}/reasoning`;
-
-  // FIX: send message/module directly, NOT wrapped in { payload }
-  const body = payload;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`SATCOM engine HTTP ${res.status}: ${text}`);
-  }
-
-  const data = await res.json();
-  return data;
-}
-
-export async function checkSatcomHealth() {
-  if (!SATCOM_ENGINE_URL) return false;
+  const start = Date.now();
 
   try {
-    const res = await fetch(`${SATCOM_ENGINE_URL}/health`);
-    return res.ok;
-  } catch {
-    return false;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const latencyMs = Date.now() - start;
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`SATCOM engine HTTP ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+
+    return {
+      ok: true,
+      latencyMs,
+      data
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      latencyMs: Date.now() - start,
+      error: err.message
+    };
   }
 }
+
+// -------------------------------------------------------
+// Microservice Heartbeat (Lightweight)
+// -------------------------------------------------------
+export async function getSatcomHeartbeat() {
+  try {
+    const res = await fetch(`${SATCOM_ENGINE_URL}/heartbeat`, {
+      method: "GET",
+      timeout: 5000
+    });
+
+    if (!res.ok) {
+      return { status: "error", error: "Heartbeat failed" };
+    }
+
+    const data = await res.json();
+    return {
+      status: "ok",
+      telemetry: data
+    };
+  } catch (err) {
+    return {
+      status: "offline",
+      error: err.message
+    };
+  }
+}
+
+// -------------------------------------------------------
+// Full SATCOM Engine Health (Telemetry + Status)
+// -------------------------------------------------------
+export async function getSatcomHealth() {
+  try {
+    const res = await fetch(`${SATCOM_ENGINE_URL}/health`, {
+      method: "GET",
+      timeout: 5000
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        error: `HTTP ${res.status}`
+      };
+    }
+
+    const data = await res.json();
+
+    return {
+      status: "ok",
+      engine: data.engine,
+      telemetry: data.telemetry
+    };
+  } catch (err) {
+    return {
+      status: "offline",
+      error: err.message
+    };
+  }
+}
+
+export default {
+  runSatcomReasoning,
+  getSatcomHeartbeat,
+  getSatcomHealth
+};
+
 

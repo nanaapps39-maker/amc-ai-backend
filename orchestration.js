@@ -6,74 +6,91 @@ import runDiagnosticsEngine from "./diagnosticsEngine.js";
 import { runSatcomReasoning } from "./satcomEngineConnector.js";
 
 // -----------------------------------------------------------
+// ORCHESTRATION TELEMETRY SNAPSHOT
+// -----------------------------------------------------------
+const orchestrationTelemetry = {
+  lastMode: null,
+  lastEngine: null,
+  lastDurationMs: null,
+  lastTimestamp: null,
+  lastError: null,
+  lastPayloadSize: null
+};
+
+export function getHealth() {
+  return {
+    status: "ok",
+    telemetry: orchestrationTelemetry
+  };
+}
+
+// -----------------------------------------------------------
 // MAIN ORCHESTRATION FUNCTION
 // -----------------------------------------------------------
 export default async function orchestrate(request) {
+  const start = Date.now();
+
   try {
     const { mode, payload } = request;
     let rawResponse;
 
+    // Update telemetry (pre‑execution)
+    orchestrationTelemetry.lastMode = mode;
+    orchestrationTelemetry.lastTimestamp = new Date().toISOString();
+    orchestrationTelemetry.lastPayloadSize = JSON.stringify(payload)?.length || 0;
+
     switch (mode) {
-      // -------------------------------------------------------
-      // SATCOM DIAGNOSTICS MODE (Groq + SATCOM v2 merged)
-      // -------------------------------------------------------
       case "diagnostics":
         rawResponse = await handleDiagnostics(payload);
+        orchestrationTelemetry.lastEngine = "diagnostics";
         break;
 
-      // -------------------------------------------------------
-      // Translator Mode
-      // -------------------------------------------------------
       case "translator":
         rawResponse = await handleTranslator(payload);
+        orchestrationTelemetry.lastEngine = "translator";
         break;
 
-      // -------------------------------------------------------
-      // Storage Mode
-      // -------------------------------------------------------
       case "storage":
         rawResponse = await handleStorage(payload);
+        orchestrationTelemetry.lastEngine = "storage";
         break;
 
-      // -------------------------------------------------------
-      // Attachment Mode
-      // -------------------------------------------------------
       case "attachments":
         rawResponse = await handleAttachments(payload);
+        orchestrationTelemetry.lastEngine = "attachments";
         break;
 
-      // -------------------------------------------------------
-      // Orbit Mode
-      // -------------------------------------------------------
       case "orbit":
         rawResponse = await handleOrbit(payload);
+        orchestrationTelemetry.lastEngine = "orbit";
         break;
 
-      // -------------------------------------------------------
-      // Vessel Intelligence Mode
-      // -------------------------------------------------------
       case "vessel-intel":
         rawResponse = await handleVesselIntel(payload);
+        orchestrationTelemetry.lastEngine = "vessel-intel";
         break;
 
-      // -------------------------------------------------------
-      // Unknown Mode
-      // -------------------------------------------------------
       default:
         rawResponse = {
           status: "error",
           message: `Unknown mode: ${mode}`,
           hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel"
         };
+        orchestrationTelemetry.lastEngine = "unknown";
         break;
     }
 
-    // -----------------------------------------------------------
-    // APPLY RENDERER v3 TO ALL OUTPUTS
-    // -----------------------------------------------------------
+    // Update duration telemetry
+    orchestrationTelemetry.lastDurationMs = Date.now() - start;
+
     return renderMessage(rawResponse);
 
   } catch (err) {
+    orchestrationTelemetry.lastError = {
+      message: err.message,
+      time: new Date().toISOString()
+    };
+
     return renderMessage({
       status: "fatal-error",
       message: "Orchestration layer encountered an unexpected error.",
@@ -88,10 +105,8 @@ export default async function orchestrate(request) {
 
 // ⭐ Diagnostics Mode — SATCOM v2 + Groq JSON Engine
 async function handleDiagnostics(payload) {
-  // Run Groq JSON diagnostics engine
   const groqDiagnostics = await runDiagnosticsEngine(payload);
 
-  // Run SATCOM Reasoning Engine v2 (Python microservice)
   let satcomV2;
   try {
     satcomV2 = await runSatcomReasoning(payload);
@@ -108,13 +123,13 @@ async function handleDiagnostics(payload) {
     status: "ok",
     engines: {
       groq: "active",
-      satcomV2: satcomV2?.status === "ok" ? "active" : "offline"
+      satcomV2: satcomV2?.ok ? "active" : "offline"
     },
     diagnostics: {
       groq: groqDiagnostics,
-      satcomV2: satcomV2.reasoning || satcomV2
+      satcomV2: satcomV2.data || satcomV2
     },
-    confidence: satcomV2?.reasoning?.confidence || "Medium"
+    confidence: satcomV2?.data?.confidence || "Medium"
   };
 }
 
@@ -140,5 +155,6 @@ async function handleOrbit(payload) {
 async function handleVesselIntel(payload) {
   return { mode: "vessel-intel", status: "ok", payload };
 }
+
 
 

@@ -41,6 +41,10 @@ import bvlosController from "./bvlosController.js";
 // ⭐ IMPORTANT — fetch must be imported BEFORE any usage
 import fetch from "node-fetch";
 
+// ⭐ REQUIRED FOR TELEMETRY
+import satcomEngineConnector from "./satcomEngineConnector.js";
+import orchestration from "./orchestration.js";
+
 // ⭐ ICO Compliance Middleware
 import compliance from "./middlewarecompliance.js";
 
@@ -55,6 +59,76 @@ app.use(compliance);
 
 // ⭐ Enable CORS (REQUIRED for frontend → backend requests)
 app.use(cors());
+
+/* -------------------------------------------------------
+   🔥 TELEMETRY BLOCK — AMC Academy Tech AI
+------------------------------------------------------- */
+
+const telemetryState = {
+  startTime: Date.now(),
+  totalRequests: 0,
+  totalErrors: 0,
+  lastError: null,
+  avgLatencyMs: 0
+};
+
+// Request latency + counters
+app.use((req, res, next) => {
+  const start = Date.now();
+  telemetryState.totalRequests++;
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+
+    telemetryState.avgLatencyMs =
+      telemetryState.avgLatencyMs === 0
+        ? duration
+        : Math.round((telemetryState.avgLatencyMs * 0.9) + (duration * 0.1));
+  });
+
+  next();
+});
+
+// Error telemetry
+app.use((err, req, res, next) => {
+  telemetryState.totalErrors++;
+  telemetryState.lastError = {
+    message: err.message,
+    stack: err.stack,
+    time: new Date().toISOString()
+  };
+  next(err);
+});
+
+/* -------------------------------------------------------
+   🔥 HEALTH ROUTE — SATCOM Engine + Orchestration
+------------------------------------------------------- */
+
+app.get("/health", async (req, res) => {
+  try {
+    const satcomHealth = await satcomEngineConnector.getHealth();
+    const orchestrationHealth = orchestration.getHealth();
+
+    res.json({
+      status: "ok",
+      uptimeSeconds: Math.round((Date.now() - telemetryState.startTime) / 1000),
+      telemetry: telemetryState,
+      satcomEngine: satcomHealth,
+      orchestration: orchestrationHealth
+    });
+  } catch (e) {
+    res.status(500).json({
+      status: "error",
+      message: "Health check failed",
+      error: e.message
+    });
+  }
+});
+
+/* -------------------------------------------------------
+   🔥 END TELEMETRY BLOCK
+------------------------------------------------------- */
+
 
 // ⭐ SATCOM v2 Routes — REQUIRED
 import satcomRoutes from "./routesatcom.js";
@@ -4091,7 +4165,9 @@ app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
   const latestKey = getLatestProKey();
-  const satcomEngineOk = await checkSatcomHealth();
+
+  // NEW: full SATCOM Engine telemetry
+  const satcomHealth = await getSatcomHealth();
 
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
@@ -4115,11 +4191,19 @@ app.listen(PORT, async () => {
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
   console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
 
-  console.log(
-    satcomEngineOk
-      ? "✔ SATCOM Reasoning Engine v2: CONNECTED"
-      : "⚠ SATCOM Reasoning Engine v2: UNAVAILABLE"
-  );
+  // NEW: detailed SATCOM Engine telemetry
+  if (satcomHealth.status === "ok") {
+    console.log("✔ SATCOM Reasoning Engine v2: CONNECTED");
+    console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
+    console.log(`   ↳ CPU: ${satcomHealth.telemetry.cpu_percent}%`);
+    console.log(`   ↳ RAM: ${satcomHealth.telemetry.memory_percent}%`);
+    if (satcomHealth.telemetry.last_error) {
+      console.log(`   ↳ Last Error: ${satcomHealth.telemetry.last_error.message}`);
+    }
+  } else {
+    console.log("⚠ SATCOM Reasoning Engine v2: UNAVAILABLE");
+    console.log(`   ↳ Error: ${satcomHealth.error}`);
+  }
 
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
@@ -4134,6 +4218,7 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
