@@ -1,4 +1,3 @@
-// satcomEngineConnector.js
 const SATCOM_ENGINE_URL = process.env.SATCOM_ENGINE_URL || "http://localhost:9000";
 
 export async function runSatcomReasoning(payload) {
@@ -26,5 +25,16 @@ export async function runSatcomReasoning(payload) {
 
   const data = await res.json();
   return data;
+}
+
+export async function checkSatcomHealth() {
+  if (!SATCOM_ENGINE_URL) return false;
+
+  try {
+    const res = await fetch(`${SATCOM_ENGINE_URL}/health`);
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
