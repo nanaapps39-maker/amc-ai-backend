@@ -1,4 +1,4 @@
-// SATCOM v2 reconnect trigger
+// SATCOM v2 reconnect trigger deployment
 
 
 // ======================================================
