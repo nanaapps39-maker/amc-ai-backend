@@ -4165,11 +4165,19 @@ import { getSatcomHealth } from "./satcomEngineConnector.js";
 // MarineTraffic Tier 1 Integration (Backend Only)
 // ------------------------------------------------------
 
-// Lightweight MarineTraffic boot-check
+// Lightweight MarineTraffic boot-check (Browser User-Agent bypass)
 async function checkMarineTraffic() {
   try {
-    const testUrl = "https://www.marinetraffic.com/en/ais/details/ships/MSC%20Pamela";
-    const response = await fetch(testUrl);
+    const testUrl =
+      "https://www.marinetraffic.com/en/ais/details/ships/MSC%20Pamela";
+
+    const response = await fetch(testUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    });
 
     if (!response.ok) return false;
 
@@ -4192,7 +4200,14 @@ app.get("/marine-traffic", async (req, res) => {
 
     const url = `https://www.marinetraffic.com/en/ais/details/ships/${encodeURIComponent(vessel)}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    });
+
     const html = await response.text();
 
     const data = {
