@@ -4124,11 +4124,11 @@ app.get("/api/test-world-clock", (req, res) => {
 });
 
 // ===============================
-// Start Server — ONLY ONE
+// Backend Initialization
 // ===============================
 const PORT = process.env.PORT || 10000;
 
-import { getLatestProKey } from "./get-latest-pro-key.js";  // ⭐ NEW IMPORT
+import { getLatestProKey } from "./get-latest-pro-key.js";
 
 // Optional: lightweight SATCOM engine health check
 async function checkSatcomEngine() {
@@ -4165,7 +4165,7 @@ import { getSatcomHealth } from "./satcomEngineConnector.js";
 // MarineTraffic Tier 1 Integration (Backend Only)
 // ------------------------------------------------------
 
-// Lightweight MarineTraffic boot-check (Browser User-Agent bypass)
+// MarineTraffic boot-check (Full Browser Header Bypass)
 async function checkMarineTraffic() {
   try {
     const testUrl =
@@ -4175,14 +4175,29 @@ async function checkMarineTraffic() {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif," +
+          "image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-Dest": "document",
+        "Upgrade-Insecure-Requests": "1"
       }
     });
 
     if (!response.ok) return false;
 
     const html = await response.text();
-    return html.length > 500;   // simple sanity check
+
+    if (html.includes("Attention Required") || html.includes("blocked")) {
+      return false;
+    }
+
+    return html.length > 500;
 
   } catch (err) {
     console.error("MarineTraffic check failed:", err.message);
@@ -4204,7 +4219,17 @@ app.get("/marine-traffic", async (req, res) => {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif," +
+          "image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-Dest": "document",
+        "Upgrade-Insecure-Requests": "1"
       }
     });
 
@@ -4234,8 +4259,6 @@ app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
   const latestKey = getLatestProKey();
-
-  // NEW: full SATCOM Engine telemetry
   const satcomHealth = await getSatcomHealth();
 
   console.log("====================================================");
@@ -4273,7 +4296,6 @@ app.listen(PORT, async () => {
     console.log(`   ↳ Error: ${satcomHealth.error}`);
   }
 
-  // NEW: MarineTraffic boot sequence check
   const marineTrafficOK = await checkMarineTraffic();
   if (marineTrafficOK) {
     console.log("✔ MarineTraffic Integration: READY");
