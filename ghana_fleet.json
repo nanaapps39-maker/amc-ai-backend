@@ -1,0 +1,22 @@
+{
+  "country": "Ghana",
+  "fleet": {
+    "commercial": {
+      "ghana_flagged": 80,
+      "foreign_flagged_operating_in_ghana": 40,
+      "coastal_vessels": 30,
+      "offshore_support_vessels": 35,
+      "industrial_fishing_vessels": 250
+    },
+    "non_commercial": {
+      "artisanal_canoes": 12000
+    }
+  },
+  "satcom_relevant_vessels": 150,
+  "ports": [
+    "Tema",
+    "Takoradi",
+    "Sekondi Naval Base"
+  ],
+  "last_updated": "2026-09-06"
+}
