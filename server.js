@@ -4192,6 +4192,9 @@ app.listen(PORT, async () => {
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
   console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
 
+  // ⭐ NEW — Future Trends Engine (Phase 5)
+  console.log("✔ Future Trends Engine: READY (Phase 5 Structure)");
+
   if (satcomHealth.status === "ok") {
     console.log("✔ SATCOM Reasoning Engine v2: CONNECTED");
     console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
@@ -4218,6 +4221,7 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
+
 
 
 
