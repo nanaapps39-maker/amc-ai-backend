@@ -70,11 +70,17 @@ export default async function orchestrate(request) {
         orchestrationTelemetry.lastEngine = "vessel-intel";
         break;
 
+      // ⭐ NEW — Future Trends Engine (Phase 5 Activation)
+      case "future-trends":
+        rawResponse = await handleFutureTrends(payload);
+        orchestrationTelemetry.lastEngine = "future-trends";
+        break;
+
       default:
         rawResponse = {
           status: "error",
           message: `Unknown mode: ${mode}`,
-          hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel"
+          hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel, future-trends"
         };
         orchestrationTelemetry.lastEngine = "unknown";
         break;
@@ -155,6 +161,23 @@ async function handleOrbit(payload) {
 async function handleVesselIntel(payload) {
   return { mode: "vessel-intel", status: "ok", payload };
 }
+
+// -----------------------------------------------------------
+// ⭐ Future Trends Engine — Phase 5 Handler
+// -----------------------------------------------------------
+async function handleFutureTrends(payload) {
+  console.log("⚡ Future Trends Mode triggered");
+
+  return {
+    mode: "future-trends",
+    status: "ok",
+    message: "Future Trends Engine active (Phase 5 structure only)",
+    payload: payload || null
+  };
+}
+
+
+
 
 
 
