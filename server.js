@@ -4136,8 +4136,8 @@ async function checkSatcomEngine() {
     const payload = {
       message: "health_check",
       module: "satcom_diagnostics",
-      log_text: "health_check_ping",   // ⭐ COMMA WAS MISSING
-      timestamp: Date.now()            // ⭐ CORRECT PLACEMENT
+      log_text: "health_check_ping",
+      timestamp: Date.now()
     };
 
     const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
@@ -4158,10 +4158,63 @@ async function checkSatcomEngine() {
   }
 }
 
-
 import { getSatcomHealth } from "./satcomEngineConnector.js";
 
 
+// ------------------------------------------------------
+// MarineTraffic Tier 1 Integration (Backend Only)
+// ------------------------------------------------------
+
+// Lightweight MarineTraffic boot-check
+async function checkMarineTraffic() {
+  try {
+    const testUrl = "https://www.marinetraffic.com/en/ais/details/ships/MSC%20Pamela";
+    const response = await fetch(testUrl);
+
+    if (!response.ok) return false;
+
+    const html = await response.text();
+    return html.length > 500;   // simple sanity check
+
+  } catch (err) {
+    console.error("MarineTraffic check failed:", err.message);
+    return false;
+  }
+}
+
+// MarineTraffic lookup endpoint
+app.get("/marine-traffic", async (req, res) => {
+  try {
+    const vessel = req.query.vessel;
+    if (!vessel) {
+      return res.status(400).json({ error: "Missing vessel parameter" });
+    }
+
+    const url = `https://www.marinetraffic.com/en/ais/details/ships/${encodeURIComponent(vessel)}`;
+
+    const response = await fetch(url);
+    const html = await response.text();
+
+    const data = {
+      vessel: vessel,
+      status: html.includes("Vessel") ? "FOUND" : "UNKNOWN",
+      raw: html.substring(0, 2000)
+    };
+
+    res.json(data);
+
+  } catch (err) {
+    res.status(500).json({
+      error: "MarineTraffic lookup failed",
+      details: err.message
+    });
+  }
+});
+
+
+// ===============================
+// Start Server — ONLY ONE
+// ===============================
 app.listen(PORT, async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
@@ -4192,7 +4245,6 @@ app.listen(PORT, async () => {
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
   console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
 
-  // NEW: detailed SATCOM Engine telemetry
   if (satcomHealth.status === "ok") {
     console.log("✔ SATCOM Reasoning Engine v2: CONNECTED");
     console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
@@ -4204,6 +4256,14 @@ app.listen(PORT, async () => {
   } else {
     console.log("⚠ SATCOM Reasoning Engine v2: UNAVAILABLE");
     console.log(`   ↳ Error: ${satcomHealth.error}`);
+  }
+
+  // NEW: MarineTraffic boot sequence check
+  const marineTrafficOK = await checkMarineTraffic();
+  if (marineTrafficOK) {
+    console.log("✔ MarineTraffic Integration: READY");
+  } else {
+    console.log("⚠ MarineTraffic Integration: UNAVAILABLE");
   }
 
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");

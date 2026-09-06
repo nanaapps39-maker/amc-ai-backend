@@ -103,10 +103,47 @@ export async function getSatcomHealth() {
   }
 }
 
+// -------------------------------------------------------
+// MarineTraffic Tier 1 Lookup (Optional Helper)
+// -------------------------------------------------------
+export async function getMarineTrafficData(vessel) {
+  try {
+    if (!vessel) {
+      return { status: "error", error: "Missing vessel name" };
+    }
+
+    const url = `https://www.marinetraffic.com/en/ais/details/ships/${encodeURIComponent(vessel)}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        error: `MarineTraffic HTTP ${response.status}`
+      };
+    }
+
+    const html = await response.text();
+
+    return {
+      status: html.includes("Vessel") ? "FOUND" : "UNKNOWN",
+      vessel,
+      raw: html.substring(0, 2000)
+    };
+
+  } catch (err) {
+    return {
+      status: "error",
+      error: err.message
+    };
+  }
+}
+
 export default {
   runSatcomReasoning,
   getSatcomHeartbeat,
-  getSatcomHealth
+  getSatcomHealth,
+  getMarineTrafficData   // ⭐ NEW EXPORT
 };
+
 
 
