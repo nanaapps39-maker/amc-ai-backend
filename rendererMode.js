@@ -1,3 +1,10 @@
+// =====================================================
+// Renderer v3 — Simple Edition (with JSON bypass)
+// =====================================================
+
+// Default renderer mode
+export let currentMode = "minimal";
+
 function renderSimple(message) {
     return {
         mode: "simple",
@@ -39,12 +46,12 @@ function renderProfessional(message) {
 
 export function renderMessage(message) {
 
-    // ⭐ Bypass renderer for structured JSON modes (diagnostics, translator, storage, orbit, vessel-intel, future-trends)
+    // ⭐ Bypass renderer for structured JSON modes
     if (message && typeof message === "object" && message.mode) {
-        return message;   // return raw JSON directly
+        return message;
     }
 
-    // ⭐ Otherwise use Renderer v3 modes
+    // ⭐ Renderer v3 modes
     switch (currentMode) {
         case "simple":
             return renderSimple(message);
