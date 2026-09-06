@@ -4161,97 +4161,6 @@ async function checkSatcomEngine() {
 import { getSatcomHealth } from "./satcomEngineConnector.js";
 
 
-// ------------------------------------------------------
-// MarineTraffic Tier 1 Integration (Backend Only)
-// ------------------------------------------------------
-
-// MarineTraffic boot-check (Full Browser Header Bypass)
-async function checkMarineTraffic() {
-  try {
-    const testUrl =
-      "https://www.marinetraffic.com/en/ais/details/ships/MSC%20Pamela";
-
-    const response = await fetch(testUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif," +
-          "image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-User": "?1",
-        "Sec-Fetch-Dest": "document",
-        "Upgrade-Insecure-Requests": "1"
-      }
-    });
-
-    if (!response.ok) return false;
-
-    const html = await response.text();
-
-    if (html.includes("Attention Required") || html.includes("blocked")) {
-      return false;
-    }
-
-    return html.length > 500;
-
-  } catch (err) {
-    console.error("MarineTraffic check failed:", err.message);
-    return false;
-  }
-}
-
-// MarineTraffic lookup endpoint
-app.get("/marine-traffic", async (req, res) => {
-  try {
-    const vessel = req.query.vessel;
-    if (!vessel) {
-      return res.status(400).json({ error: "Missing vessel parameter" });
-    }
-
-    const url = `https://www.marinetraffic.com/en/ais/details/ships/${encodeURIComponent(vessel)}`;
-
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif," +
-          "image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-User": "?1",
-        "Sec-Fetch-Dest": "document",
-        "Upgrade-Insecure-Requests": "1"
-      }
-    });
-
-    const html = await response.text();
-
-    const data = {
-      vessel: vessel,
-      status: html.includes("Vessel") ? "FOUND" : "UNKNOWN",
-      raw: html.substring(0, 2000)
-    };
-
-    res.json(data);
-
-  } catch (err) {
-    res.status(500).json({
-      error: "MarineTraffic lookup failed",
-      details: err.message
-    });
-  }
-});
-
-
 // ===============================
 // Start Server — ONLY ONE
 // ===============================
@@ -4296,13 +4205,6 @@ app.listen(PORT, async () => {
     console.log(`   ↳ Error: ${satcomHealth.error}`);
   }
 
-  const marineTrafficOK = await checkMarineTraffic();
-  if (marineTrafficOK) {
-    console.log("✔ MarineTraffic Integration: READY");
-  } else {
-    console.log("⚠ MarineTraffic Integration: UNAVAILABLE");
-  }
-
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
 
@@ -4316,7 +4218,6 @@ app.listen(PORT, async () => {
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
 });
-
 
 
 
