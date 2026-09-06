@@ -1,11 +1,3 @@
-// rendererMode.js
-let currentMode = "minimal";
-
-export function setRendererMode(mode) {
-    const allowed = ["simple", "minimal", "professional"];
-    if (allowed.includes(mode)) currentMode = mode;
-}
-
 function renderSimple(message) {
     return {
         mode: "simple",
@@ -46,6 +38,13 @@ function renderProfessional(message) {
 }
 
 export function renderMessage(message) {
+
+    // ⭐ Bypass renderer for structured JSON modes (diagnostics, translator, storage, orbit, vessel-intel, future-trends)
+    if (message && typeof message === "object" && message.mode) {
+        return message;   // return raw JSON directly
+    }
+
+    // ⭐ Otherwise use Renderer v3 modes
     switch (currentMode) {
         case "simple":
             return renderSimple(message);
