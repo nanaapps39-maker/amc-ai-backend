@@ -740,12 +740,22 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
 async function runTranslatorEngine(text, lang) {
   try {
 
+    // ⭐ FIXED: Conditional prompt — Akan rules ONLY when lang = twi/akan
     const prompt = `
-You MUST translate the following SATCOM content into ${lang}.
-If ${lang} is "twi" or "akan", translate ONLY into Twi (Akan).
-Do NOT use Yoruba. Do NOT use Igbo. Do NOT use Hausa.
-Do NOT fallback to any other African language.
-Use natural Twi grammar, correct tone, and accurate SATCOM terminology.
+Translate the following SATCOM content into ${lang}.
+
+${(lang === "twi" || lang === "akan") ? `
+Akan Mode Rules:
+- Translate ONLY into Twi (Akan).
+- Do NOT use Yoruba, Igbo, Hausa.
+- Do NOT fallback to any other African language.
+- Use natural Twi grammar, correct tone, and accurate SATCOM terminology.
+` : `
+General Mode Rules:
+- Translate naturally into ${lang}.
+- Preserve SATCOM acronyms (VSAT, BGAN, L-band, Ka-band, GEO/MEO/LEO).
+- If no direct translation exists, keep the English technical term.
+`}
 
 Content:
 ${text}
@@ -4192,7 +4202,7 @@ app.listen(PORT, async () => {
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
   console.log("✔ Renderer v3 Mode: SIMPLE EDITION");
 
-  // ⭐ NEW — Future Trends Engine (Phase 5)
+  // ⭐ NEW — Future Trends Engine (Phase 6)
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
 
   if (satcomHealth.status === "ok") {
