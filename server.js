@@ -4271,6 +4271,9 @@ app.listen(PORT, async () => {
   // ⭐ NEW — Future Trends Engine (Phase 6)
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
 
+  // ⭐ NEW — SATCOM Insights Engine v3
+  console.log("✔ SATCOM Insights Engine v3: ACTIVE (Clustering + Severity + Beam Region)");
+
   if (satcomHealth.status === "ok") {
     console.log("✔ SATCOM Reasoning Engine v2: CONNECTED");
     console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
