@@ -649,7 +649,7 @@ app.post("/api/bvlos/control", async (req, res) => {
 
 
 // ===============================
-// Attachment Mode (Pro) — FINAL v25 (stable)
+// Attachment Mode (Pro) — FINAL v26 (stable)
 // ===============================
 
 // Ensure attachments folder exists
