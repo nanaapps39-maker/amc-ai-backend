@@ -649,7 +649,7 @@ app.post("/api/bvlos/control", async (req, res) => {
 
 
 // ===============================
-// Attachment Mode (Pro) — FINAL v24 (with file-type validation + translator)
+// Attachment Mode (Pro) — FINAL v25 (stable)
 // ===============================
 
 // Ensure attachments folder exists
@@ -686,14 +686,15 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
 
     // ⭐ No file uploaded
     if (!file) {
-      return res.status(400).json({ error: "No file uploaded." });
+      return res.status(400).json({ status: "error", message: "No file uploaded." });
     }
 
     // ⭐ File-type validation (extension-based)
     const ext = path.extname(file.originalname).toLowerCase();
     if (!allowedExtensions.includes(ext)) {
       return res.status(400).json({
-        error: "Unsupported file type.",
+        status: "error",
+        message: "Unsupported file type.",
         allowed: allowedExtensions.join(", "),
         received: ext
       });
@@ -715,24 +716,39 @@ app.post("/api/attachment", upload.single("file"), async (req, res) => {
     existing.push(entry);
     fs.writeFileSync(attachmentsFile, JSON.stringify(existing, null, 2));
 
-    // ⭐ Run SATCOM diagnostics on the uploaded alarm log
-    const analysis = await runDiagnosticsEngine(fileContent);
+    // ⭐ Run SATCOM diagnostics safely
+    let analysis = null;
 
+    try {
+      analysis = await runDiagnosticsEngine(fileContent);
+    } catch (err) {
+      console.error("Diagnostics engine failed:", err);
+      analysis = {
+        status: "error",
+        message: "Diagnostics engine failed",
+        details: err.message
+      };
+    }
+
+    // ⭐ ALWAYS return status:"ok" so frontend works
     return res.status(200).json({
       status: "ok",
       message: "Attachment stored successfully",
       id: entry.id,
+      vessel,
       analysis
     });
 
   } catch (error) {
     console.error("Attachment Mode error:", error);
     return res.status(500).json({
-      error: "Attachment Mode failed",
-      details: error?.message
+      status: "error",
+      message: "Attachment Mode failed",
+      details: error.message
     });
   }
 });
+
 
 // ===============================
 // Translator Engine Function
