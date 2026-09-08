@@ -1852,7 +1852,7 @@ Always respond with ONLY the translated output.
 
 
 // ===============================
-// Translator Mode (Pro) — FINAL FIXED VERSION
+// Translator Mode (Pro) — UNIFIED BACKEND VERSION
 // ===============================
 app.post("/api/translate", async (req, res) => {
   const { text, targetLanguage, sourceLanguage } = req.body;
@@ -1860,7 +1860,8 @@ app.post("/api/translate", async (req, res) => {
   // ⭐ Input validation
   if (!text || !targetLanguage) {
     return res.status(400).json({
-      error: "Both 'text' and 'targetLanguage' are required."
+      error: "Both 'text' and 'targetLanguage' are required.",
+      translatedText: ""
     });
   }
 
@@ -1871,6 +1872,47 @@ app.post("/api/translate", async (req, res) => {
     const normalized = text.normalize("NFKC").trim();
     const overrideKey = normalized.toLowerCase().replace(/[^\w\s]/gi, "");
     const langKey = targetLanguage.toLowerCase().trim();
+    const srcLang = (sourceLanguage || "english").toLowerCase().trim();
+
+    // ================================
+    // SUPPORTED LANGUAGE SET (backend truth)
+    // ================================
+    const SUPPORTED_LANGUAGES = [
+      "en", "english",
+      "fr", "french",
+      "es", "spanish",
+      "pt", "portuguese",
+      "ar", "arabic",
+      "zh", "zh-cn", "chinese",
+      "hi", "hindi",
+      "twi", "akan",
+      "ewe", "ga", "fante",
+      "dagbani", "gonja",
+      "yoruba", "yo",
+      "hausa", "ha",
+      "swahili", "sw"
+    ];
+
+    if (!SUPPORTED_LANGUAGES.includes(langKey)) {
+      console.warn("Unsupported target language:", langKey);
+      return res.status(400).json({
+        error: "Unsupported target language.",
+        translatedText: ""
+      });
+    }
+
+    // Normalise some aliases to canonical codes
+    let canonicalTarget = langKey;
+    if (langKey === "english") canonicalTarget = "en";
+    if (langKey === "french") canonicalTarget = "fr";
+    if (langKey === "spanish") canonicalTarget = "es";
+    if (langKey === "portuguese") canonicalTarget = "pt";
+    if (langKey === "arabic") canonicalTarget = "ar";
+    if (langKey === "chinese" || langKey === "zh-cn") canonicalTarget = "zh";
+    if (langKey === "hindi") canonicalTarget = "hi";
+    if (langKey === "yo") canonicalTarget = "yoruba";
+    if (langKey === "ha") canonicalTarget = "hausa";
+    if (langKey === "sw") canonicalTarget = "swahili";
 
     // ================================
     // GHANA / AFRICA OVERRIDE ENGINE
@@ -1903,12 +1945,18 @@ app.post("/api/translate", async (req, res) => {
     };
 
     // ================================
-    // OVERRIDE MATCH (instant return)
+    // OVERRIDE MATCH (safe, flexible)
     // ================================
-    if (OVERRIDES[langKey] && OVERRIDES[langKey][overrideKey]) {
-      return res.status(200).json({
-        translatedText: OVERRIDES[langKey][overrideKey]
-      });
+    const overrideTable = OVERRIDES[canonicalTarget] || OVERRIDES[langKey] || null;
+    if (overrideTable) {
+      const matchKey = Object.keys(overrideTable).find(k =>
+        overrideKey.includes(k)
+      );
+      if (matchKey) {
+        return res.status(200).json({
+          translatedText: overrideTable[matchKey]
+        });
+      }
     }
 
     // ================================
@@ -1916,10 +1964,10 @@ app.post("/api/translate", async (req, res) => {
     // ================================
     const systemPrompt = TRANSLATOR_SYSTEM_PROMPT({
       direction: "fromEnglish",
-      target: targetLanguage
+      target: canonicalTarget
     });
 
-    const userMessage = `Translate from ${sourceLanguage || "English"} to ${targetLanguage}: ${text}`;
+    const userMessage = `Translate from ${srcLang} to ${canonicalTarget}: ${text}`;
 
     // ================================
     // GROQ → OPENAI FALLBACK ENGINE
@@ -1945,10 +1993,12 @@ app.post("/api/translate", async (req, res) => {
     console.error("Translator error:", error);
     return res.status(500).json({
       error: "Translation failed",
-      details: error?.message
+      details: error?.message,
+      translatedText: ""
     });
   }
 });
+
 
 
 
