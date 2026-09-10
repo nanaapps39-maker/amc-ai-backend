@@ -2505,7 +2505,6 @@ app.post("/api/tonnage-analytics", async (req, res) => {
 // SATCOM Link Budget Mode (Pro, A+ Upgrade)
 // ===============================
 
-// System prompt for Link Budget Intelligence Engine (A+)
 const LINK_BUDGET_SYSTEM_PROMPT = `
 You are AMC Academy Tech AI — SATCOM Link Budget Intelligence Engine (A+).
 
@@ -2535,6 +2534,7 @@ Your job:
 Do NOT invent impossible numbers; reason qualitatively from the provided results.
 Always respond as AMC Academy Tech AI — SATCOM & Maritime Engineering intelligence.
 `;
+
 
 // ===============================
 // AI Narrative Generator (Groq + OpenAI, Fully Patched)
