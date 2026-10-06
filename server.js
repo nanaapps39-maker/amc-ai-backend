@@ -4,7 +4,7 @@
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
-// Deployment: Render Cloud — Sept 10, 2026
+// Deployment: Render Cloud — October 05, 2026
 // Author: NOA (Apps Maritime Consultancy Ltd)
 // ======================================================
 
