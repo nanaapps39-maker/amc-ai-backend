@@ -42,53 +42,51 @@ export default async function orchestrate(request) {
     switch (mode) {
       case "diagnostics":
         rawResponse = await handleDiagnostics(payload);
-        orchestrationTelemetry.lastEngine = "diagnostics";
         break;
 
       case "translator":
         rawResponse = await handleTranslator(payload);
-        orchestrationTelemetry.lastEngine = "translator";
         break;
 
       case "storage":
         rawResponse = await handleStorage(payload);
-        orchestrationTelemetry.lastEngine = "storage";
         break;
 
       case "attachments":
         rawResponse = await handleAttachments(payload);
-        orchestrationTelemetry.lastEngine = "attachments";
         break;
 
       case "orbit":
         rawResponse = await handleOrbit(payload);
-        orchestrationTelemetry.lastEngine = "orbit";
         break;
 
       case "vessel-intel":
         rawResponse = await handleVesselIntel(payload);
-        orchestrationTelemetry.lastEngine = "vessel-intel";
         break;
 
-      // ⭐ NEW — Future Trends Engine (Phase 5 Activation)
       case "future-trends":
         rawResponse = await handleFutureTrends(payload);
-        orchestrationTelemetry.lastEngine = "future-trends";
         break;
 
       default:
         rawResponse = {
+          mode: "error",
           status: "error",
           message: `Unknown mode: ${mode}`,
           hint: "Valid modes: diagnostics, translator, storage, attachments, orbit, vessel-intel, future-trends"
         };
-        orchestrationTelemetry.lastEngine = "unknown";
         break;
     }
 
     // Update duration telemetry
     orchestrationTelemetry.lastDurationMs = Date.now() - start;
 
+    // ⭐ Structured JSON modes MUST bypass renderer
+    if (rawResponse && typeof rawResponse === "object" && rawResponse.mode) {
+      return rawResponse;
+    }
+
+    // ⭐ Only plain text goes through renderer
     return renderMessage(rawResponse);
 
   } catch (err) {
@@ -97,11 +95,12 @@ export default async function orchestrate(request) {
       time: new Date().toISOString()
     };
 
-    return renderMessage({
+    return {
+      mode: "fatal-error",
       status: "fatal-error",
       message: "Orchestration layer encountered an unexpected error.",
       details: err.message
-    });
+    };
   }
 }
 
@@ -175,6 +174,7 @@ async function handleFutureTrends(payload) {
     payload: payload || null
   };
 }
+
 
 
 

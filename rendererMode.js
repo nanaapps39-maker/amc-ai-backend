@@ -1,9 +1,9 @@
 // =====================================================
-// Renderer v3 — Simple Edition (with JSON bypass)
+// Renderer v3 — Professional Backend-Only Edition
 // =====================================================
 
 // Default renderer mode
-export let currentMode = "minimal";
+export let currentMode = "minimal"; // can be set to "professional" from backend when needed
 
 function renderSimple(message) {
     return {
@@ -31,7 +31,9 @@ function renderMinimal(message) {
     };
 }
 
+// ⭐ Upgraded Professional Renderer (Backend-Only)
 function renderProfessional(message) {
+    // Backend-only structured formatting – no UI changes
     return {
         mode: "professional",
         output: message.toString(),
@@ -39,19 +41,28 @@ function renderProfessional(message) {
             markdown: true,
             sections: true,
             spacing: "wide",
-            style: "professional"
+            style: "professional",
+            layout: {
+                // purely semantic hints for backend/dashboards
+                enableSummaryBlock: true,
+                enableKeyPointsBlock: true,
+                enableEngineeringDetailBlock: true,
+                enableRecommendationsBlock: true,
+                enableConfidenceBlock: true
+            }
         }
     };
 }
 
 export function renderMessage(message) {
 
-    // ⭐ Bypass renderer for structured JSON modes
+    // ⭐ Critical: Bypass renderer for structured JSON modes
+    // Protects SATCOM Diagnostics, Translator Mode, Attachment Mode
     if (message && typeof message === "object" && message.mode) {
         return message;
     }
 
-    // ⭐ Renderer v3 modes
+    // ⭐ Renderer v3 modes (backend-only formatting)
     switch (currentMode) {
         case "simple":
             return renderSimple(message);
@@ -61,3 +72,4 @@ export function renderMessage(message) {
             return renderMinimal(message);
     }
 }
+

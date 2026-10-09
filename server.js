@@ -4,14 +4,14 @@
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
-// Deployment: Render Cloud — October 05, 2026
+// Deployment: Render Cloud — October 09, 2026
 // Author: NOA (Apps Maritime Consultancy Ltd)
 // ======================================================
 
 
 // webhook integration confirmed
 
-// HARD REBUILD — Sept 5, 2026 — v18
+// HARD REBUILD — Oct 09, 2026 — v19
 // AMC Academy Tech AI Backend — Stable ES Module Build
 
 import express from "express";
@@ -47,6 +47,18 @@ import orchestration from "./orchestration.js";
 
 // ⭐ ICO Compliance Middleware
 import compliance from "./middlewarecompliance.js";
+
+// =====================================================
+// Renderer v3 Professional (Backend-Only Edition)
+// =====================================================
+
+import { currentMode } from "./rendererMode.js";
+
+function enableProfessionalRenderer() {
+    currentMode = "professional";   // backend-only formatting upgrade
+}
+
+enableProfessionalRenderer();       // activate renderer v3 professional
 
 const app = express();
 app.set("trust proxy", 1);
