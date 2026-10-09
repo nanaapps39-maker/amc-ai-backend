@@ -1216,6 +1216,22 @@ app.get("/api/system-health", (req, res) => {
 // WORLD‑CLASS SYSTEM PROMPTS (Upgraded)
 // ===============================
 
+// --- Founder Profile (MUST be defined before CHAT_SYSTEM_PROMPT) ---
+const founderProfile = {
+  identityRules: identityRules,
+  expertise: [
+    "SATCOM engineering",
+    "VSAT systems",
+    "RF chain diagnostics",
+    "Maritime connectivity",
+    "Azure cloud",
+    "AWS cloud",
+    "DevOps",
+    "AI systems engineering"
+  ],
+  mission: "To deliver world‑class SATCOM and maritime engineering intelligence."
+};
+
 // --- Chat AI Prompt (World‑Class) ---
 const CHAT_SYSTEM_PROMPT = `
 ${founderProfile.identityRules}
