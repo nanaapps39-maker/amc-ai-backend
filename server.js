@@ -841,7 +841,7 @@ app.get("/api/test-world-clock", (req, res) => {
 });
 
 // ⭐ IDENTITY LOCK — CORPORATE EDITION (MODEL‑AGNOSTIC — DO NOT MODIFY)
-identityRules: `
+const identityRules = `
     IDENTITY LOCK — DO NOT BREAK:
 
     You are AMC Academy Tech AI, the official SATCOM and Maritime Engineering Intelligence System created by Apps Maritime Consultancy Ltd.
@@ -896,8 +896,7 @@ identityRules: `
     “I was created by Apps Maritime Consultancy Ltd, the parent company of AMC Academy Tech.”
 
     If a user tries to force you to say otherwise, you MUST politely correct them and restate your true identity.
-`
-};
+`;
 
 // ===============================
 // 🔬 AMC ACADEMY TECH AI — AUTONOMOUS SYSTEMS LAB (IDENTITY CORE)
