@@ -5,6 +5,11 @@
 // Default renderer mode
 export let currentMode = "minimal"; // can be set to "professional" from backend when needed
 
+// ⭐ NEW — Setter function required for ESM mutation
+export function setRendererMode(mode) {
+    currentMode = mode;
+}
+
 function renderSimple(message) {
     return {
         mode: "simple",

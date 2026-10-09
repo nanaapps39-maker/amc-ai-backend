@@ -52,13 +52,13 @@ import compliance from "./middlewarecompliance.js";
 // Renderer v3 Professional (Backend-Only Edition)
 // =====================================================
 
-import { currentMode } from "./rendererMode.js";
+import { setRendererMode } from "./rendererMode.js";
 
 function enableProfessionalRenderer() {
-    currentMode = "professional";   // backend-only formatting upgrade
+    setRendererMode("professional");   // ✔ correct, legal, ESM-safe
 }
 
-enableProfessionalRenderer();       // activate renderer v3 professional
+enableProfessionalRenderer();          // activate renderer v3 professional
 
 const app = express();
 app.set("trust proxy", 1);
