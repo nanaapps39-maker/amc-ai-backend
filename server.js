@@ -5096,7 +5096,6 @@ async function checkSatcomEngine() {
   }
 }
 
-import { getSatcomHealth } from "./satcomEngineConnector.js";
 
 // Optional: Fusion Intelligence Engine diagnostics
 async function getFusionHealth() {
