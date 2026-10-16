@@ -1,0 +1,35 @@
+[
+  {
+    "id": "vessel-001",
+    "name": "MSC Pamela",
+    "imo": "9305714",
+    "mmsi": "355755000",
+    "type": "Container Ship",
+    "length": 336,
+    "beam": 45,
+    "draft": 14.5,
+    "flag": "Panama"
+  },
+  {
+    "id": "vessel-002",
+    "name": "Ever Given",
+    "imo": "9811000",
+    "mmsi": "353136000",
+    "type": "Container Ship",
+    "length": 400,
+    "beam": 59,
+    "draft": 15.7,
+    "flag": "Panama"
+  },
+  {
+    "id": "vessel-003",
+    "name": "Maersk Mc-Kinney Moller",
+    "imo": "9619907",
+    "mmsi": "219561000",
+    "type": "Container Ship",
+    "length": 399,
+    "beam": 59,
+    "draft": 14.5,
+    "flag": "Denmark"
+  }
+]
