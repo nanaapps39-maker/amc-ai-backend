@@ -76,11 +76,27 @@ export async function getSatcomHeartbeat() {
 // -------------------------------------------------------
 export async function getSatcomHealth() {
   try {
-    const res = await fetch(`${SATCOM_ENGINE_URL}/health`, {
+    const url = `${SATCOM_ENGINE_URL}/health`;
+
+    // First attempt
+    let res = await fetch(url, {
       method: "GET",
       timeout: 5000
     });
 
+    // Handle rate-limit (HTTP 429)
+    if (res.status === 429) {
+      console.log("⚠ SATCOM Engine rate-limited — retrying in 3 seconds...");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Retry once
+      res = await fetch(url, {
+        method: "GET",
+        timeout: 5000
+      });
+    }
+
+    // If still failing after retry
     if (!res.ok) {
       return {
         status: "error",
@@ -95,6 +111,7 @@ export async function getSatcomHealth() {
       engine: data.engine,
       telemetry: data.telemetry
     };
+
   } catch (err) {
     return {
       status: "offline",
@@ -103,11 +120,6 @@ export async function getSatcomHealth() {
   }
 }
 
-export default {
-  runSatcomReasoning,
-  getSatcomHeartbeat,
-  getSatcomHealth
-};
 
 
 
