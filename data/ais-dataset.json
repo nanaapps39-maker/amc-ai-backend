@@ -1,0 +1,17 @@
+[
+  {
+    "name": "MSC Pamela",
+    "mmsi": "355755000",
+    "callsign": "H9UY"
+  },
+  {
+    "name": "Ever Given",
+    "mmsi": "353136000",
+    "callsign": "3EQR"
+  },
+  {
+    "name": "Maersk Mc-Kinney Moller",
+    "mmsi": "219561000",
+    "callsign": "OZYM2"
+  }
+]

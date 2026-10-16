@@ -1,0 +1,17 @@
+{
+  "9305714": {
+    "name": "MSC Pamela",
+    "type": "Container Ship",
+    "mmsi": "355755000"
+  },
+  "9811000": {
+    "name": "Ever Given",
+    "type": "Container Ship",
+    "mmsi": "353136000"
+  },
+  "9619907": {
+    "name": "Maersk Mc-Kinney Moller",
+    "type": "Container Ship",
+    "mmsi": "219561000"
+  }
+}
