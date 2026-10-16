@@ -5164,7 +5164,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ SATCOM Insights Engine v3: ACTIVE (Clustering + Severity + Beam Region)");
 
   if (satcomHealth.status === "ok") {
-    console.log("✔ SATCOM Reasoning Engine v2: CONNECTED");
+    console.log("✔ SATCOM Reasoning Engine v3: CONNECTED");
     console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
     console.log(`   ↳ CPU: ${satcomHealth.telemetry.cpu_percent}%`);
     console.log(`   ↳ RAM: ${satcomHealth.telemetry.memory_percent}%`);
