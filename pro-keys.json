@@ -1,0 +1,34 @@
+[
+  {
+    "key": "AMC-PRO-2024",
+    "type": "master",
+    "seats": 999,
+    "email": "admin@amcacademy.tech",
+    "active": true
+  },
+  {
+    "key": "AMC-EDEA1ABEDAF0",
+    "type": "customer",
+    "seats": 1,
+    "email": "manual-generator@amcacademy.tech",
+    "active": true
+  },
+  {
+    "key": "AMC-CC5D1EF066B0",
+    "type": "customer",
+    "seats": 1,
+    "email": "kwame@amcacademy.tech",
+    "active": true,
+    "created_at": "2026-08-08T22:30:00Z",
+    "expiry_at": "2026-09-07T22:30:00Z"
+  },
+  {
+  "key": "AMC-7BEC0E31D2B7",
+  "type": "customer",
+  "seats": 1,
+  "email": "daniel@example.com",
+  "active": true,
+  "created_at": "2026-08-11T19:57:22.129Z",
+  "expiry_at": "2026-09-10T23:59:59Z"
+}
+]
