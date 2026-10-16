@@ -44,7 +44,8 @@ import bvlosController from "./bvlosController.js";
 import fetch from "node-fetch";
 
 // ⭐ REQUIRED FOR TELEMETRY
-import satcomEngineConnector from "./satcomEngineConnector.js";
+import { runSatcomReasoning, getSatcomHeartbeat, getSatcomHealth } 
+  from "./satcomEngineConnector.js";
 import orchestration from "./orchestration.js";
 
 // ⭐ ICO Compliance Middleware
@@ -67,6 +68,9 @@ import maritimeRoutes from "./routes/maritimeRoutes.js";
 
 // ⭐ FUSION ROUTES (ESM-SAFE IMPORT)
 import fusionRoutes from "./routes/fusionRoutes.js";
+
+// ⭐ FUSION ENGINE (CORE MODULE)
+import { getFusionHealth, repairFusionEngine } from "./fusionEngine.js";
 
 // ⭐⭐⭐⭐⭐ INSERT STEP 1 RIGHT HERE ⭐⭐⭐⭐⭐
 // Load global port database once at startup
