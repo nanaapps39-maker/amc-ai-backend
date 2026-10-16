@@ -5227,14 +5227,13 @@ async function repairFusionEngine() {
 // ===============================
 // Start Server — ONLY ONE
 // ===============================
-app.listen(PORT, async () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
 
   const latestKey = getLatestProKey();
   const satcomHealth = await getSatcomHealth();
   const fusionHealth = await getFusionHealth();
   const fusionRepair = await repairFusionEngine();
-
 
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
@@ -5253,36 +5252,33 @@ app.listen(PORT, async () => {
   console.log("✔ Fusion Intelligence Engine: ACTIVE (AIS + Ports + Tonnage + ETA)");
   
   if (fusionHealth.status === "ok") {
-  console.log("   ↳ Vessel Dataset:", fusionHealth.datasets.vessels);
-  console.log("   ↳ AIS Dataset:", fusionHealth.datasets.ais);
-  console.log("   ↳ Port Dataset:", fusionHealth.datasets.ports);
-  console.log("   ↳ Modules:");
-  console.log("      • Haversine: OK");
-  console.log("      • Vessel Lookup: OK");
-  console.log("      • AIS Lookup: OK");
-  console.log("      • Port Lookup: OK");
-  console.log("      • ETA Engine: OK");
-  console.log("      • Tonnage Profile: OK");
-  console.log("      • Region Mapper: OK");
- } else {
-  console.log("⚠ Fusion Intelligence Engine: ERROR");
-  console.log(`   ↳ Error: ${fusionHealth.error}`);
- } 
-  
-  
-// Fusion Self-Repair Status
-if (fusionRepair.repaired) {
-  console.log("✔ Fusion Engine Self-Repair: COMPLETED");
-  console.log("   ↳ Issues:", fusionRepair.issues.join(", "));
-  console.log("   ↳ Repairs:", fusionRepair.repairs.join(", "));
-} else if (fusionRepair.status === "healthy") {
-  console.log("✔ Fusion Engine Self-Repair: NOT REQUIRED (Healthy)");
-} else {
-  console.log("⚠ Fusion Engine Self-Repair: FAILED");
-  console.log(`   ↳ Error: ${fusionRepair.error}`);
-}
+    console.log("   ↳ Vessel Dataset:", fusionHealth.datasets.vessels);
+    console.log("   ↳ AIS Dataset:", fusionHealth.datasets.ais);
+    console.log("   ↳ Port Dataset:", fusionHealth.datasets.ports);
+    console.log("   ↳ Modules:");
+    console.log("      • Haversine: OK");
+    console.log("      • Vessel Lookup: OK");
+    console.log("      • AIS Lookup: OK");
+    console.log("      • Port Lookup: OK");
+    console.log("      • ETA Engine: OK");
+    console.log("      • Tonnage Profile: OK");
+    console.log("      • Region Mapper: OK");
+  } else {
+    console.log("⚠ Fusion Intelligence Engine: ERROR");
+    console.log(`   ↳ Error: ${fusionHealth.error}`);
+  }
 
-  
+  if (fusionRepair.repaired) {
+    console.log("✔ Fusion Engine Self-Repair: COMPLETED");
+    console.log("   ↳ Issues:", fusionRepair.issues.join(", "));
+    console.log("   ↳ Repairs:", fusionRepair.repairs.join(", "));
+  } else if (fusionRepair.status === "healthy") {
+    console.log("✔ Fusion Engine Self-Repair: NOT REQUIRED (Healthy)");
+  } else {
+    console.log("⚠ Fusion Engine Self-Repair: FAILED");
+    console.log(`   ↳ Error: ${fusionRepair.error}`);
+  }
+
   console.log("✔ BVLOS Failover Engine: READY");
   console.log("✔ Heavy Usage Advisory System: ENABLED");
   console.log("✔ Human Awareness Engine: ENABLED");
@@ -5292,10 +5288,7 @@ if (fusionRepair.repaired) {
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
   console.log("✔ Renderer v3.1 Mode: Professional Edition");
 
-  // ⭐ NEW — Future Trends Engine (Phase 6)
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
-
-  // ⭐ NEW — SATCOM Insights Engine v3
   console.log("✔ SATCOM Insights Engine v3: ACTIVE (Clustering + Severity + Beam Region)");
 
   if (satcomHealth.status === "ok") {
