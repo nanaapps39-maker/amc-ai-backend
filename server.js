@@ -2322,8 +2322,6 @@ function detectTranslatorIntent(text) {
 }
 
 
-
-
 // ===============================
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE 
 // ===============================
@@ -2332,87 +2330,156 @@ app.post("/api/chat", async (req, res) => {
     const userMessage = req.body.message || "";
     const bpValue = req.body.bp || null;
 
-  // 🔥 DEBUG LOG — SEE EXACT MESSAGE RECEIVED
+    // 🔥 DEBUG LOG — SEE EXACT MESSAGE RECEIVED
     console.log("🔥 RAW MESSAGE RECEIVED:", JSON.stringify(userMessage));
 
-// ===============================
-// PRO KEY VALIDATION (DIRECT CALL)
-// ===============================
-const lower = userMessage
-  .toLowerCase()
-  .replace(/\s+/g, " ")
-  .replace(/&nbsp;/g, " ")
-  .trim();
+    // ===============================
+    // PRO KEY VALIDATION (DIRECT CALL)
+    // ===============================
+    const lower = userMessage
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .trim();
 
-if (
-  lower.includes("validate") &&
-  lower.includes("pro") &&
-  lower.includes("key")
-) {
-  const key = userMessage.split(" ").pop().trim();
-  const result = validateProKey(key);
+    if (
+      lower.includes("validate") &&
+      lower.includes("pro") &&
+      lower.includes("key")
+    ) {
+      const key = userMessage.split(" ").pop().trim();
+      const result = validateProKey(key);
 
-  if (!result) {
-    return res.json(
-      buildV31Response(
-        "chat",
-        { reply: "❌ Invalid Pro Key. Please check and try again." },
-        0.5
-      )
-    );
-  }
+      if (!result) {
+        return res.json(
+          buildV31Response(
+            "chat",
+            { reply: "❌ Invalid Pro Key. Please check and try again." },
+            0.5
+          )
+        );
+      }
 
-// ===============================
-  // ⭐ EXPIRY CHECK (NEW)
-  // ===============================
-  const expiry = result.payload.expiry_at;
-  if (expiry && Date.now() > new Date(expiry).getTime()) {
-    return res.json(
-      buildV31Response(
-        "chat",
-        { reply: "❌ Pro Key Expired. Please renew your subscription." },
-        0.5
-      )
-    );
-  }
+      // ⭐ EXPIRY CHECK
+      const expiry = result.payload.expiry_at;
+      if (expiry && Date.now() > new Date(expiry).getTime()) {
+        return res.json(
+          buildV31Response(
+            "chat",
+            { reply: "❌ Pro Key Expired. Please renew your subscription." },
+            0.5
+          )
+        );
+      }
 
-  // ===============================
-  // ⭐ ACTIVE CHECK (from webhook)
-  // ===============================
-  if (result.payload.active === false) {
-    return res.json(
-      buildV31Response(
-        "chat",
-        { reply: "⚠️ Pro Key Inactive. Please check your subscription status." },
-        0.5
-      )
-    );
-  }
+      // ⭐ ACTIVE CHECK
+      if (result.payload.active === false) {
+        return res.json(
+          buildV31Response(
+            "chat",
+            { reply: "⚠️ Pro Key Inactive. Please check your subscription status." },
+            0.5
+          )
+        );
+      }
 
-  return res.json(
-    buildV31Response(
-      "chat",
-      {
-        reply: `✔ Pro Key Active\nAssigned To: ${result.payload.assignedTo || result.payload.email || result.payload.user || "Unknown" }`
-      },
-      1.0
-    )
-  );
-}
+      return res.json(
+        buildV31Response(
+          "chat",
+          {
+            reply: `✔ Pro Key Active\nAssigned To: ${result.payload.assignedTo || result.payload.email || result.payload.user || "Unknown"}`
+          },
+          1.0
+        )
+      );
+    }
 
-// ❗ HARD STOP — ENSURES NO FALLBACK ENGINE OVERRIDES VALIDATOR
-// If the validator block fired, the route already returned.
-// If it did NOT fire, execution continues normally.
+    // ===============================
+    // ⭐ SYSTEM COMMAND ROUTER (NEW)
+    // ===============================
+    if (lower.startsWith("system:")) {
 
+      // SATCOM — HEALTH CHECK
+      if (lower.includes("satcom_health_check")) {
+        try {
+          const satcomRes = await fetch("https://amc-satcom-engine.onrender.com/health");
+          const satcomJson = await satcomRes.json();
 
+          return res.json(
+            buildV31Response(
+              "chat",
+              { reply: JSON.stringify(satcomJson, null, 2) },
+              1.0
+            )
+          );
+        } catch (err) {
+          return res.json(
+            buildV31Response(
+              "chat",
+              { reply: "⚠ SATCOM engine unreachable." },
+              0.5
+            )
+          );
+        }
+      }
+
+      // SATCOM — STRESS TEST (SIM MODE)
+      if (lower.includes("satcom_stress_test")) {
+        return res.json(
+          buildV31Response(
+            "chat",
+            { reply: "✔ SATCOM Stress Test triggered (simulation mode)." },
+            1.0
+          )
+        );
+      }
+
+      // BACKEND — HEALTH CHECK
+      if (lower.includes("backend_health_check")) {
+        try {
+          const backendRes = await fetch("https://amc-ai-backend-1.onrender.com/health");
+          const backendJson = await backendRes.json();
+
+          return res.json(
+            buildV31Response(
+              "chat",
+              { reply: JSON.stringify(backendJson, null, 2) },
+              1.0
+            )
+          );
+        } catch (err) {
+          return res.json(
+            buildV31Response(
+              "chat",
+              { reply: "⚠ Backend unreachable." },
+              0.5
+            )
+          );
+        }
+      }
+
+      // UNKNOWN SYSTEM COMMAND
+      return res.json(
+        buildV31Response(
+          "chat",
+          { reply: "⚠ Unknown SYSTEM command." },
+          0.5
+        )
+      );
+    }
+
+    // ===============================
     // ⭐ TRANSLATOR MODE DETECTION
+    // ===============================
     const translatorInstruction = detectTranslatorIntent(userMessage);
 
     const systemPromptToUse = translatorInstruction
       ? TRANSLATOR_SYSTEM_PROMPT(translatorInstruction)
       : CHAT_SYSTEM_PROMPT;
 
+    // ===============================
     // ⭐ FALLBACK ENGINE
+    // ===============================
     const aiResponse = await runWithFallback(
       systemPromptToUse,
       userMessage
@@ -2439,37 +2506,6 @@ if (
   }
 });
 
-// ===============================
-// PRO MODE — FRONTEND VALIDATION ROUTE
-// ===============================
-app.post("/api/validate-pro-key", (req, res) => {
-  const key = req.body.key;
-  const result = validateProKey(key);
-
-  if (!result) {
-    return res.json({ valid: false, message: "Invalid Pro Key." });
-  }
-
-  const expiry = result.payload.expiry_at;
-  if (expiry && Date.now() > new Date(expiry).getTime()) {
-    return res.json({
-      valid: false,
-      message: "Pro Key Expired. Please renew your subscription."
-    });
-  }
-
-  if (result.payload.status !== "active") {
-    return res.json({
-      valid: false,
-      message: "Pro Key Inactive. Please check your subscription status."
-    });
-  }
-
-  return res.json({
-    valid: true,
-    payload: result.payload
-  });
-});
 
 
 
@@ -3189,32 +3225,34 @@ async function generateLinkBudgetNarrative(result) {
     }
   ];
 
-  // -----------------------------
-  // 1. Try Groq first (patched)
-  // -----------------------------
-  if (process.env.GROQ_API_KEY && process.env.GROQ_MODEL && global.groqClient) {
-    try {
-      const groqResponse = await global.groqClient.chat.completions.create({
-        model: process.env.GROQ_MODEL,
-        messages,
-        temperature: 0.2
-      });
 
-      // Null-safe extraction
-      const groqText =
-        groqResponse?.choices?.[0]?.message?.content ??
-        groqResponse?.choices?.[0]?.message?.text ??
-        null;
+// -----------------------------
+// 1. Try Groq first (patched)
+// -----------------------------
+if (process.env.GROQ_API_KEY && process.env.GROQ_MODEL && global.groqClient) {
+  try {
+    const groqResponse = await global.groqClient.chat.completions.create({
+      model: process.env.GROQ_MODEL,   // MUST be updated in .env
+      messages,
+      temperature: 0.2
+    });
 
-      if (groqText && groqText.trim() !== "") {
-        return groqText.trim();
-      }
+    // Null-safe extraction
+    const groqText =
+      groqResponse?.choices?.[0]?.message?.content ??
+      groqResponse?.choices?.[0]?.message?.text ??
+      null;
 
-      console.warn("Groq Link Budget: empty or null content, falling back to OpenAI.");
-    } catch (err) {
-      console.error("Groq Link Budget error:", err);
+    if (groqText && groqText.trim() !== "") {
+      return groqText.trim();
     }
+
+    console.warn("Groq Link Budget: empty or null content, falling back to OpenAI.");
+  } catch (err) {
+    console.error("Groq Link Budget error:", err);
   }
+}
+
 
   // -----------------------------
   // 2. Fallback to OpenAI (patched)
