@@ -4,7 +4,7 @@
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
-// Deployment: Render Cloud — October 15, 2026
+// Deployment: Render Cloud — October 16, 2026
 // AMC Academy Tech AI R&D Labs
 // ======================================================
 
@@ -2251,6 +2251,12 @@ function applyBloodPressureAwareness(bpValue, aiOutput) {
 // FALLBACK ENGINE — GROQ → OPENAI (FIXED)
 // ===============================
 async function runWithFallback(systemPrompt, userMessage) {
+
+  console.log("========== AMC PROMPT DEBUG ==========");
+  console.log(systemPrompt);
+  console.log("USER MESSAGE:", userMessage);
+  console.log("======================================");
+
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   // 1️⃣ Try Groq first
