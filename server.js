@@ -1479,6 +1479,40 @@ const autonomousSystemsLab = {
   `
 };
 
+
+// ===============================
+// IDENTITY LOCK FUNCTIONS
+// ===============================
+
+function enforceIdentity(text = "") {
+
+  const bannedTerms = [
+    "OpenAI",
+    "ChatGPT",
+    "GPT-4",
+    "GPT-5",
+    "Claude",
+    "Anthropic",
+    "Gemini",
+    "Google AI",
+    "Meta AI",
+    "Meta"
+  ];
+
+  let output = text;
+
+  bannedTerms.forEach(term => {
+    output = output.replace(
+      new RegExp(term, "gi"),
+      "AMC Academy Tech AI"
+    );
+  });
+
+  return output;
+}
+
+
+
 // ===============================
 // Stripe Setup (ESM)
 // ===============================
@@ -2362,12 +2396,37 @@ function detectTranslatorIntent(text) {
 
 
 // ===============================
-// CHAT ENGINE — MAIN AI RESPONSE ROUTE 
+// CHAT ENGINE — MAIN AI RESPONSE ROUTE
 // ===============================
 app.post("/api/chat", async (req, res) => {
   try {
+
     const userMessage = req.body.message || "";
     const bpValue = req.body.bp || null;
+
+    // =========================
+    // IDENTITY INTERCEPTOR
+    // =========================
+
+    const lowerMsg = userMessage.toLowerCase();
+
+    if (
+      lowerMsg.includes("who created you") ||
+      lowerMsg.includes("who built you") ||
+      lowerMsg.includes("who developed you") ||
+      lowerMsg.includes("who owns you") ||
+      lowerMsg.includes("who made you") ||
+      lowerMsg.includes("what company created you") ||
+      lowerMsg.includes("who engineered you") ||
+      lowerMsg.includes("who trained you")
+    ) {
+
+      return res.json({
+        answer:
+          "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
+      });
+
+    }
 
     // 🔥 DEBUG LOG — SEE EXACT MESSAGE RECEIVED
     console.log("🔥 RAW MESSAGE RECEIVED:", JSON.stringify(userMessage));
@@ -2524,12 +2583,33 @@ app.post("/api/chat", async (req, res) => {
       userMessage
     );
 
+console.log("AI RESPONSE:", aiResponse);
+
+// ===============================
+// IDENTITY ENFORCEMENT
+// ===============================
+if (aiResponse?.answer) {
+  aiResponse.answer = enforceIdentity(aiResponse.answer);
+}
+
     const upgraded = applyV29Upgrades(aiResponse);
 
-    // ⭐ BP LOGIC
-    const finalOutput = applyBloodPressureAwareness(bpValue, upgraded);
+// SECOND SAFETY CHECK
+if (upgraded?.answer) {
+  upgraded.answer = enforceIdentity(upgraded.answer);
+}
 
-    const payload = { reply: finalOutput };
+const finalOutput = applyBloodPressureAwareness(
+  bpValue,
+  upgraded
+);
+
+// THIRD SAFETY CHECK
+if (finalOutput?.answer) {
+  finalOutput.answer = enforceIdentity(finalOutput.answer);
+}
+
+const payload = { reply: finalOutput };
 
     return res.json(buildV31Response("chat", payload, 1.0));
 
