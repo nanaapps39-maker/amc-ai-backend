@@ -2430,16 +2430,16 @@ if (
   console.log("🔒 MESSAGE:", userMessage);
 
   const payload = {
-    reply:
-      "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
+    reply: "🔒 IDENTITY INTERCEPTOR ACTIVE 🔒"
   };
 
   return res.json(
     buildV31Response("chat", payload, 1.0)
   );
-}
 
-    // ===============================
+}
+ 
+   // ===============================
     // PRO KEY VALIDATION (DIRECT CALL)
     // ===============================
     const lower = userMessage
