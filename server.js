@@ -5337,7 +5337,7 @@ app.listen(PORT, "0.0.0.0", async () => {
       console.log(`   ↳ Last Error: ${satcomHealth.telemetry.last_error.message}`);
     }
   } else {
-    console.log("⚠ SATCOM Reasoning Engine v2: UNAVAILABLE");
+    console.log("⚠ SATCOM Reasoning Engine v3: UNAVAILABLE");
     console.log(`   ↳ Error: ${satcomHealth.error}`);
   }
 
