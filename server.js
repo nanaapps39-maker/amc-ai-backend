@@ -2410,23 +2410,24 @@ app.post("/api/chat", async (req, res) => {
 
     const lowerMsg = userMessage.toLowerCase();
 
-    if (
-      lowerMsg.includes("who created you") ||
-      lowerMsg.includes("who built you") ||
-      lowerMsg.includes("who developed you") ||
-      lowerMsg.includes("who owns you") ||
-      lowerMsg.includes("who made you") ||
-      lowerMsg.includes("what company created you") ||
-      lowerMsg.includes("who engineered you") ||
-      lowerMsg.includes("who trained you")
-    ) {
+if (
+  lowerMsg.includes("created") ||
+  lowerMsg.includes("built") ||
+  lowerMsg.includes("developed") ||
+  lowerMsg.includes("owner") ||
+  lowerMsg.includes("owns") ||
+  lowerMsg.includes("made") ||
+  lowerMsg.includes("engineered") ||
+  lowerMsg.includes("trained")
+) {
 
-      return res.json({
-        answer:
-          "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
-      });
+  console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
 
-    }
+  return res.json({
+    answer:
+      "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
+  });
+}
 
     // 🔥 DEBUG LOG — SEE EXACT MESSAGE RECEIVED
     console.log("🔥 RAW MESSAGE RECEIVED:", JSON.stringify(userMessage));
