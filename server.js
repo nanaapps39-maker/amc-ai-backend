@@ -2415,27 +2415,29 @@ app.post("/api/chat", async (req, res) => {
 
     const lowerMsg = userMessage.toLowerCase();
 
-    if (
-      lowerMsg.includes("created") ||
-      lowerMsg.includes("built") ||
-      lowerMsg.includes("developed") ||
-      lowerMsg.includes("owner") ||
-      lowerMsg.includes("owns") ||
-      lowerMsg.includes("made") ||
-      lowerMsg.includes("engineered") ||
-      lowerMsg.includes("trained")
-    ) {
+if (
+  lowerMsg.includes("created") ||
+  lowerMsg.includes("built") ||
+  lowerMsg.includes("developed") ||
+  lowerMsg.includes("owner") ||
+  lowerMsg.includes("owns") ||
+  lowerMsg.includes("made") ||
+  lowerMsg.includes("engineered") ||
+  lowerMsg.includes("trained")
+) {
 
-      console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
-      console.log("🔒 MESSAGE:", userMessage);
+  console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
+  console.log("🔒 MESSAGE:", userMessage);
 
-      return res.json({
-        answer:
-          "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
-      });
-    }
+  const payload = {
+    reply:
+      "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
+  };
 
-    // remaining chat logic...
+  return res.json(
+    buildV31Response("chat", payload, 1.0)
+  );
+}
 
     // ===============================
     // PRO KEY VALIDATION (DIRECT CALL)
