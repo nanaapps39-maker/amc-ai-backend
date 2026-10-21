@@ -2399,10 +2399,15 @@ function detectTranslatorIntent(text) {
 // CHAT ENGINE — MAIN AI RESPONSE ROUTE
 // ===============================
 app.post("/api/chat", async (req, res) => {
+
+  console.log("🚀 CHAT ROUTE HIT");
+
   try {
 
     const userMessage = req.body.message || "";
     const bpValue = req.body.bp || null;
+
+    console.log("🔥 RAW MESSAGE RECEIVED:", userMessage);
 
     // =========================
     // IDENTITY INTERCEPTOR
@@ -2410,27 +2415,27 @@ app.post("/api/chat", async (req, res) => {
 
     const lowerMsg = userMessage.toLowerCase();
 
-if (
-  lowerMsg.includes("created") ||
-  lowerMsg.includes("built") ||
-  lowerMsg.includes("developed") ||
-  lowerMsg.includes("owner") ||
-  lowerMsg.includes("owns") ||
-  lowerMsg.includes("made") ||
-  lowerMsg.includes("engineered") ||
-  lowerMsg.includes("trained")
-) {
+    if (
+      lowerMsg.includes("created") ||
+      lowerMsg.includes("built") ||
+      lowerMsg.includes("developed") ||
+      lowerMsg.includes("owner") ||
+      lowerMsg.includes("owns") ||
+      lowerMsg.includes("made") ||
+      lowerMsg.includes("engineered") ||
+      lowerMsg.includes("trained")
+    ) {
 
-  console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
+      console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
+      console.log("🔒 MESSAGE:", userMessage);
 
-  return res.json({
-    answer:
-      "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
-  });
-}
+      return res.json({
+        answer:
+          "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd."
+      });
+    }
 
-    // 🔥 DEBUG LOG — SEE EXACT MESSAGE RECEIVED
-    console.log("🔥 RAW MESSAGE RECEIVED:", JSON.stringify(userMessage));
+    // remaining chat logic...
 
     // ===============================
     // PRO KEY VALIDATION (DIRECT CALL)
