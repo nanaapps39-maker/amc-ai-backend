@@ -217,6 +217,61 @@ app.get("/api/ports", (req, res) => {
 });
 
 
+// =====================================================
+// PORT DATASET HEALTH REPORT
+// =====================================================
+
+app.get("/api/ports/health", (req, res) => {
+  try {
+
+    const countrySet = new Set();
+    const regionSet = new Set();
+
+    worldPorts.forEach(port => {
+
+      if (port.country) {
+        countrySet.add(port.country);
+      }
+
+      if (port.region) {
+        regionSet.add(port.region);
+      }
+
+    });
+
+    const payload = {
+      dataset: "worldPorts.json",
+      totalPorts: worldPorts.length,
+      totalCountries: countrySet.size,
+      totalRegions: regionSet.size,
+      status: "healthy"
+    };
+
+    res.json(
+      buildV31Response(
+        "ports-health",
+        payload,
+        1.0
+      )
+    );
+
+  } catch (e) {
+
+    res.status(500).json(
+      buildV31Response(
+        "error",
+        {
+          message: "Port dataset health check failed",
+          error: e.message
+        },
+        0.0
+      )
+    );
+
+  }
+});
+
+
 /* -------------------------------------------------------
    🌍 PORT INTELLIGENCE ROUTES — AMC Academy Tech AI
 ------------------------------------------------------- */
@@ -2600,7 +2655,10 @@ if (aiResponse?.answer) {
   aiResponse.answer = enforceIdentity(aiResponse.answer);
 }
 
-    const upgraded = applyV29Upgrades(aiResponse);
+    const upgradedText =
+  applyV29Upgrades(
+      aiResponse.translatedText || ""
+  );
 
 // SECOND SAFETY CHECK
 if (upgraded?.answer) {
@@ -2632,7 +2690,6 @@ const payload = { reply: finalOutput };
     return res.status(500).json(buildV31Response("chat_error", errorPayload, 0.0));
   }
 });
-
 
 
 
@@ -3780,11 +3837,26 @@ Rules:
       ]
     });
 
-    const output = completion.choices[0].message.content;
+const output =
+completion?.choices?.[0]?.message?.content || "{}";
 
-    return res.status(200).json({
-      analysis: JSON.parse(output)
-    });
+let parsed;
+
+try {
+    parsed = JSON.parse(output);
+} catch (err) {
+
+    console.error("Alarm JSON Parse Error:", err);
+
+    parsed = {
+        summary: output,
+        parseError: true
+    };
+}
+
+return res.status(200).json({
+    analysis: parsed
+});
 
   } catch (error) {
     console.error("Alarm analysis error:", error);
