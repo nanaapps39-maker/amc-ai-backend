@@ -224,30 +224,55 @@ app.get("/api/ports", (req, res) => {
 app.get("/api/ports/health", (req, res) => {
   try {
 
+    if (!worldPorts || !Array.isArray(worldPorts)) {
+      throw new Error("worldPorts dataset not loaded");
+    }
+
     const countrySet = new Set();
     const regionSet = new Set();
 
+    let totalTerminals = 0;
+
     worldPorts.forEach(port => {
 
-      if (port.country) {
+      if (port?.country) {
         countrySet.add(port.country);
       }
 
-      if (port.region) {
+      if (port?.region) {
         regionSet.add(port.region);
+      }
+
+      if (Array.isArray(port?.terminals)) {
+        totalTerminals += port.terminals.length;
       }
 
     });
 
     const payload = {
       dataset: "worldPorts.json",
+      datasetVersion: "PGI-3.1",
+
       totalPorts: worldPorts.length,
       totalCountries: countrySet.size,
       totalRegions: regionSet.size,
-      status: "healthy"
+      totalTerminals,
+
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+
+      samplePort: worldPorts[0]?.name || "Unknown",
+
+      capabilities: [
+        "Great Circle Distance",
+        "Voyage Intelligence",
+        "ETA Calculation",
+        "Port Intelligence",
+        "Region Mapping"
+      ]
     };
 
-    res.json(
+    return res.json(
       buildV31Response(
         "ports-health",
         payload,
@@ -257,7 +282,9 @@ app.get("/api/ports/health", (req, res) => {
 
   } catch (e) {
 
-    res.status(500).json(
+    console.error("Port Dataset Health Error:", e);
+
+    return res.status(500).json(
       buildV31Response(
         "error",
         {
@@ -270,7 +297,6 @@ app.get("/api/ports/health", (req, res) => {
 
   }
 });
-
 
 /* -------------------------------------------------------
    🌍 PORT INTELLIGENCE ROUTES — AMC Academy Tech AI
@@ -5411,7 +5437,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   } else {
     console.log("⚠ SATCOM Reasoning Engine v3: UNAVAILABLE");
     console.log(`   ↳ Error: ${satcomHealth.error}`);
-  }
+ 
 
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
   console.log("----------------------------------------------------");
