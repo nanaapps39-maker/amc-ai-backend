@@ -5331,7 +5331,9 @@ const PORT = process.env.PORT || 10000;
 
 import { getLatestProKey } from "./get-latest-pro-key.js";
 
-// Optional: lightweight SATCOM engine health check
+// ===============================
+// Optional SATCOM Engine Health Check
+// ===============================
 async function checkSatcomEngine() {
   try {
     const payload = {
@@ -5341,20 +5343,28 @@ async function checkSatcomEngine() {
       timestamp: Date.now()
     };
 
-    const response = await fetch(`${process.env.SATCOM_ENGINE_URL}/diagnose`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "User-Agent": "AMC-AI-Backend"
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      `${process.env.SATCOM_ENGINE_URL}/diagnose`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "User-Agent": "AMC-AI-Backend"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
     return response.ok;
 
   } catch (err) {
-    console.error("SATCOM health-check failed:", err.message);
+
+    console.error(
+      "SATCOM health-check failed:",
+      err?.message || err
+    );
+
     return false;
   }
 }
@@ -5363,16 +5373,24 @@ async function checkSatcomEngine() {
 // Start Server — ONLY ONE
 // ===============================
 app.listen(PORT, "0.0.0.0", async () => {
-  console.log("SATCOM_ENGINE_URL =", process.env.SATCOM_ENGINE_URL);
+
+  console.log(
+    "SATCOM_ENGINE_URL =",
+    process.env.SATCOM_ENGINE_URL
+  );
 
   const latestKey = getLatestProKey();
+
   const satcomHealth = await getSatcomHealth();
   const fusionHealth = await getFusionHealth();
   const fusionRepair = await repairFusionEngine();
 
+  const satcomEngineOnline = await checkSatcomEngine();
+
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
   console.log("====================================================");
+
   console.log("✔ Chat Engine: ACTIVE");
   console.log("✔ Translator Engine: ACTIVE");
   console.log("✔ Akan Isolation: ENABLED");
@@ -5383,13 +5401,33 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ Diagnostics Engine: READY");
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
-  console.log("✔ Port Global Intelligence Stack: ACTIVE (R&D Labs Stable Build)");
-  console.log("✔ Fusion Intelligence Engine: ACTIVE (AIS + Ports + Tonnage + ETA)");
-  
-  if (fusionHealth.status === "ok") {
-    console.log("   ↳ Vessel Dataset:", fusionHealth.datasets.vessels);
-    console.log("   ↳ AIS Dataset:", fusionHealth.datasets.ais);
-    console.log("   ↳ Port Dataset:", fusionHealth.datasets.ports);
+  console.log(
+    "✔ Port Global Intelligence Stack: ACTIVE (R&D Labs Stable Build)"
+  );
+  console.log(
+    "✔ Fusion Intelligence Engine: ACTIVE (AIS + Ports + Tonnage + ETA)"
+  );
+
+  // ===============================
+  // Fusion Intelligence Health
+  // ===============================
+  if (fusionHealth && fusionHealth.status === "ok") {
+
+    console.log(
+      "   ↳ Vessel Dataset:",
+      fusionHealth?.datasets?.vessels || "Unknown"
+    );
+
+    console.log(
+      "   ↳ AIS Dataset:",
+      fusionHealth?.datasets?.ais || "Unknown"
+    );
+
+    console.log(
+      "   ↳ Port Dataset:",
+      fusionHealth?.datasets?.ports || "Unknown"
+    );
+
     console.log("   ↳ Modules:");
     console.log("      • Haversine: OK");
     console.log("      • Vessel Lookup: OK");
@@ -5398,20 +5436,49 @@ app.listen(PORT, "0.0.0.0", async () => {
     console.log("      • ETA Engine: OK");
     console.log("      • Tonnage Profile: OK");
     console.log("      • Region Mapper: OK");
+
   } else {
+
     console.log("⚠ Fusion Intelligence Engine: ERROR");
-    console.log(`   ↳ Error: ${fusionHealth.error}`);
+
+    console.log(
+      `   ↳ Error: ${fusionHealth?.error || "Unknown Error"}`
+    );
   }
 
-  if (fusionRepair.repaired) {
+  // ===============================
+  // Fusion Self-Repair
+  // ===============================
+  if (fusionRepair && fusionRepair.repaired) {
+
     console.log("✔ Fusion Engine Self-Repair: COMPLETED");
-    console.log("   ↳ Issues:", fusionRepair.issues.join(", "));
-    console.log("   ↳ Repairs:", fusionRepair.repairs.join(", "));
-  } else if (fusionRepair.status === "healthy") {
-    console.log("✔ Fusion Engine Self-Repair: NOT REQUIRED (Healthy)");
+
+    console.log(
+      "   ↳ Issues:",
+      fusionRepair?.issues?.join(", ") || "None"
+    );
+
+    console.log(
+      "   ↳ Repairs:",
+      fusionRepair?.repairs?.join(", ") || "None"
+    );
+
+  } else if (
+    fusionRepair &&
+    fusionRepair.status === "healthy"
+  ) {
+
+    console.log(
+      "✔ Fusion Engine Self-Repair: NOT REQUIRED (Healthy)"
+    );
+
   } else {
+
     console.log("⚠ Fusion Engine Self-Repair: FAILED");
-    console.log(`   ↳ Error: ${fusionRepair.error}`);
+
+    console.log(
+      `   ↳ Error: ${fusionRepair?.error || "Unknown Error"}`
+    );
   }
 
   console.log("✔ BVLOS Failover Engine: READY");
@@ -5424,33 +5491,77 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ Renderer v3.1 Mode: Professional Edition");
 
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
-  console.log("✔ SATCOM Insights Engine v3: ACTIVE (Clustering + Severity + Beam Region)");
 
-  if (satcomHealth.status === "ok") {
-    console.log("✔ SATCOM Reasoning Engine v3: CONNECTED");
-    console.log(`   ↳ Uptime: ${satcomHealth.telemetry.uptime_seconds}s`);
-    console.log(`   ↳ CPU: ${satcomHealth.telemetry.cpu_percent}%`);
-    console.log(`   ↳ RAM: ${satcomHealth.telemetry.memory_percent}%`);
-    if (satcomHealth.telemetry.last_error) {
-      console.log(`   ↳ Last Error: ${satcomHealth.telemetry.last_error.message}`);
-    }
+  console.log(
+    "✔ SATCOM Insights Engine v3: ACTIVE (Clustering + Severity + Beam Region)"
+  );
+
+  // ===============================
+  // SATCOM Endpoint Health
+  // ===============================
+  if (satcomEngineOnline) {
+    console.log("✔ SATCOM Engine Endpoint: ONLINE");
   } else {
+    console.log("⚠ SATCOM Engine Endpoint: OFFLINE");
+  }
+
+  // ===============================
+  // SATCOM Reasoning Health
+  // ===============================
+  if (satcomHealth && satcomHealth.status === "ok") {
+
+    console.log("✔ SATCOM Reasoning Engine v3: CONNECTED");
+
+    console.log(
+      `   ↳ Uptime: ${satcomHealth?.telemetry?.uptime_seconds || 0}s`
+    );
+
+    console.log(
+      `   ↳ CPU: ${satcomHealth?.telemetry?.cpu_percent || 0}%`
+    );
+
+    console.log(
+      `   ↳ RAM: ${satcomHealth?.telemetry?.memory_percent || 0}%`
+    );
+
+    if (satcomHealth?.telemetry?.last_error?.message) {
+
+      console.log(
+        `   ↳ Last Error: ${satcomHealth.telemetry.last_error.message}`
+      );
+    }
+
+  } else {
+
     console.log("⚠ SATCOM Reasoning Engine v3: UNAVAILABLE");
-    console.log(`   ↳ Error: ${satcomHealth.error}`);
- 
+
+    console.log(
+      `   ↳ Error: ${satcomHealth?.error || "Unknown Error"}`
+    );
+  }
 
   console.log("✔ Blood Pressure Awareness Logic: ENABLED");
+
   console.log("----------------------------------------------------");
 
   if (latestKey) {
-    console.log(`🔑 Latest Generated Pro Key: ${latestKey.key}`);
-    console.log(`👤 Assigned To: ${latestKey.email || "N/A"}`);
+
+    console.log(
+      `🔑 Latest Generated Pro Key: ${latestKey.key}`
+    );
+
+    console.log(
+      `👤 Assigned To: ${latestKey.email || "N/A"}`
+    );
+
   } else {
+
     console.log("🔑 No Pro Keys generated yet.");
   }
 
   console.log(`✔ Server running on port ${PORT}`);
   console.log("====================================================");
+
 });
 
 
