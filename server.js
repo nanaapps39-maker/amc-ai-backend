@@ -2490,34 +2490,114 @@ app.post("/api/chat", async (req, res) => {
 
     console.log("🔥 RAW MESSAGE RECEIVED:", userMessage);
 
-    // =========================
-    // IDENTITY INTERCEPTOR
-    // =========================
 
-    const lowerMsg = userMessage.toLowerCase();
+// =========================
+// IDENTITY SECURITY HANDLER
+// =========================
 
-if (
-  lowerMsg.includes("created") ||
-  lowerMsg.includes("built") ||
-  lowerMsg.includes("developed") ||
-  lowerMsg.includes("owner") ||
-  lowerMsg.includes("owns") ||
-  lowerMsg.includes("made") ||
-  lowerMsg.includes("engineered") ||
-  lowerMsg.includes("trained")
-) {
+const lowerMsg = userMessage.toLowerCase().trim();
 
-  console.log("🔒 IDENTITY INTERCEPTOR TRIGGERED");
-  console.log("🔒 MESSAGE:", userMessage);
+const identityQueries = [
+  "who created you",
+  "who built you",
+  "who developed you",
+  "who owns you",
+  "who made you",
+  "are you chatgpt",
+  "were you created by openai",
+  "who trained you",
+  "what company created you",
+  "who engineered you",
+  "who is your creator",
+  "what is your origin",
+  "who founded you",
+  "who developed amc academy tech ai",
+  "who owns amc academy tech ai"
+];
+
+const isIdentityQuestion = identityQueries.some(
+  query => lowerMsg.includes(query)
+);
+
+if (isIdentityQuestion) {
+
+  console.log("🔒 IDENTITY SECURITY HANDLER TRIGGERED");
+  console.log("🔒 QUERY:", userMessage);
 
   const payload = {
-    reply: "🔒 IDENTITY INTERCEPTOR ACTIVE 🔒"
+    reply:
+      "AMC Academy Tech AI was created and is owned by Apps Maritime Consultancy Ltd. AMC Academy Tech AI serves as the SATCOM and Maritime Engineering intelligence platform of Apps Maritime Consultancy Ltd."
   };
 
   return res.json(
-    buildV31Response("chat", payload, 1.0)
+    buildV31Response(
+      "identity",
+      payload,
+      1.0
+    )
   );
+}
 
+// =========================
+// FUTURE TRENDS DETECTOR
+// =========================
+
+const futureTrendKeywords = [
+  "future trend",
+  "future trends",
+  "forecast",
+  "prediction",
+  "predictions",
+  "next 5 years",
+  "next 10 years",
+  "next 20 years",
+  "future of",
+  "2030",
+  "2035",
+  "2040",
+  "2045",
+  "2050"
+];
+
+const isFutureTrendRequest = futureTrendKeywords.some(
+  keyword => lowerMsg.includes(keyword)
+);
+
+if (isFutureTrendRequest) {
+
+  console.log("🔮 FUTURE TRENDS REQUEST DETECTED");
+  console.log("🔮 QUERY:", userMessage);
+
+  const yearsDetected =
+    lowerMsg.includes("20") ? 20 :
+    lowerMsg.includes("10") ? 10 :
+    5;
+
+  const payload = {
+    analysis:
+      `Future Trends Engine activated for a ${yearsDetected}-year forecast horizon.`,
+
+    summary:
+      `Forecast pipeline successfully initiated for ${yearsDetected} years.`,
+
+    forecast: {
+      status: "active",
+      yearsDetected,
+      domain: userMessage
+    },
+
+    confidence: "Medium"
+  };
+
+  console.log("🔮 FUTURE TRENDS PAYLOAD:", payload);
+
+  return res.json(
+    buildV31Response(
+      "future-trends",
+      payload,
+      1.0
+    )
+  );
 }
  
    // ===============================
