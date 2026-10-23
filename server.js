@@ -2960,22 +2960,31 @@ if (isFutureTrendRequest) {
       );
     }
 
-    // ===============================
-    // ⭐ TRANSLATOR MODE DETECTION
-    // ===============================
-    const translatorInstruction = detectTranslatorIntent(userMessage);
 
-    const systemPromptToUse = translatorInstruction
-      ? TRANSLATOR_SYSTEM_PROMPT(translatorInstruction)
-      : CHAT_SYSTEM_PROMPT;
+// ===============================
+// ⭐ TRANSLATOR MODE DETECTION
+// ===============================
 
-    // ===============================
-    // ⭐ FALLBACK ENGINE
-    // ===============================
-    const aiResponse = await runWithFallback(
-      systemPromptToUse,
-      userMessage
-    );
+const translatorInstruction = detectTranslatorIntent(userMessage);
+
+const FULL_CHAT_PROMPT = `
+${CHAT_SYSTEM_PROMPT}
+
+${AMC_SYSTEM_BEHAVIOUR}
+`;
+
+const systemPromptToUse = translatorInstruction
+  ? TRANSLATOR_SYSTEM_PROMPT(translatorInstruction)
+  : FULL_CHAT_PROMPT;
+
+console.log("CHAT_SYSTEM_PROMPT LENGTH:", CHAT_SYSTEM_PROMPT.length);
+console.log("AMC_SYSTEM_BEHAVIOUR LENGTH:", AMC_SYSTEM_BEHAVIOUR.length);
+console.log("FINAL PROMPT LENGTH:", systemPromptToUse.length);
+
+const aiResponse = await runWithFallback(
+  systemPromptToUse,
+  userMessage
+);
 
 console.log("AI RESPONSE:", aiResponse);
 
