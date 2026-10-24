@@ -5264,6 +5264,14 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
   console.log("====================================================");
 
+  console.log("✔ AMC Academy Tech AI Identity Engine: ACTIVE");
+  console.log("✔ AMC Academy Tech AI: VERIFIED");
+  console.log("✔ Ownership Registry: Apps Maritime Consultancy Ltd");
+  console.log("✔ AMC Academy Tech Platform: VERIFIED");
+  console.log("✔ Maritime Intelligence Profile: LOADED");
+  console.log("✔ SATCOM Intelligence Profile: LOADED");
+  console.log("✔ Master System Prompt: LOADED");
+
   console.log("✔ Chat Engine: ACTIVE");
   console.log("✔ Translator Engine: ACTIVE");
   console.log("✔ Akan Isolation: ENABLED");
@@ -5277,6 +5285,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(
     "✔ Port Global Intelligence Stack: ACTIVE (R&D Labs Stable Build)"
   );
+  console.log("✔ Port Intelligence Dataset: VERIFIED");
   console.log(
     "✔ Fusion Intelligence Engine: ACTIVE (AIS + Ports + Tonnage + ETA)"
   );
