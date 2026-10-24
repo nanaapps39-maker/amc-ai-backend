@@ -4,7 +4,7 @@
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
-// Deployment: Render Cloud — October 24, 2026
+// Deployment: Render Cloud — October 25, 2026
 // AMC Academy Tech AI R&D Labs
 // ======================================================
 

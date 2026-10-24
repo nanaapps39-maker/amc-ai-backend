@@ -82794,5 +82794,12 @@
     "unlocode": "FRZZU",
     "lat": 43.3,
     "lon": 6.183333333333334
-  }
+  },
+  {
+  "portName": "Lagos",
+  "country": "NG",
+  "unlocode": "NGLOS",
+  "lat": 6.4541,
+  "lon": 3.3947
+}
 ]
