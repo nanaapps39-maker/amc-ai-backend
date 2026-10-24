@@ -3,6 +3,7 @@ import express from "express";
 import fetch from "node-fetch";
 import Groq from "groq-sdk";
 import { buildV31Response } from "../rendererMode.js";
+import { MASTER_SYSTEM_PROMPT } from "../prompts/systemPrompts.js";
 
 const router = express.Router();
 
@@ -77,14 +78,20 @@ router.post("/", async (req, res) => {
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
         const completion = await groq.chat.completions.create({
-            model: process.env.GROQ_MODEL,
-            messages: [
-                { role: "system", content: "You are AMC Academy Tech AI." },
-                { role: "user", content: rawMessage }
-            ]
-        });
+        model: process.env.GROQ_MODEL,
+        messages: [
+            {
+               role: "system",
+               content: MASTER_SYSTEM_PROMPT
+            },
+            {
+               role: "user",
+               content: rawMessage
+        }
+    ]
+});
 
-        const reply = completion.choices[0].message.content;
+const reply = completion.choices[0].message.content;
 
         return res.json(
             buildV31Response("chat", { reply }, 1.0)
