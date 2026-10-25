@@ -82801,5 +82801,12 @@
   "unlocode": "NGLOS",
   "lat": 6.4541,
   "lon": 3.3947
+  },
+  {
+  "portName": "Tema",
+  "country": "GH",
+  "unlocode": "GHTEM",
+  "lat": 5.6333,
+  "lon": 0.0167
 }
 ]
