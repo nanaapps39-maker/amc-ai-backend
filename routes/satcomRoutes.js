@@ -55,15 +55,21 @@ router.post("/reason", async (req, res) => {
             result: response.data
         });
     } catch (err) {
-        console.error("SATCOM Reasoning Error:", err.message);
 
-        return res.status(500).json({
-            status: "fatal-error",
-            message: "SATCOM Reasoning Engine v2 failed",
-            details: err.message
-        });
-    }
-});
+    console.error(
+        "SATCOM Reasoning Error:",
+        err.response?.status,
+        err.response?.data || err.message
+    );
+
+    return res.status(500).json({
+        status: "fatal-error",
+        message: "SATCOM Reasoning Engine v2 failed",
+        details: err.response?.data || err.message
+    });
+}
+
+});  
 
 // -------------------------------------------------------------
 // 3️⃣ SATCOM INSIGHTS ENGINE v3
