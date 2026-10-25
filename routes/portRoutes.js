@@ -208,4 +208,63 @@ router.get("/nearest", (req, res) => {
 });
 
 
+// -------------------------------------------------------------
+// 6️⃣ ROUTE DISTANCE BETWEEN TWO PORTS
+// -------------------------------------------------------------
+router.get("/route/:origin/:destination", (req, res) => {
+
+    try {
+
+        const originCode = req.params.origin.toUpperCase();
+        const destinationCode = req.params.destination.toUpperCase();
+
+        const origin = worldPorts.find(
+            p => p.unlocode === originCode
+        );
+
+        const destination = worldPorts.find(
+            p => p.unlocode === destinationCode
+        );
+
+        if (!origin || !destination) {
+            return res.json(
+                buildV31Response("route-intelligence", {
+                    error: "Port not found",
+                    origin: originCode,
+                    destination: destinationCode
+                }, 0.0)
+            );
+        }
+
+        const distanceKm = haversine(
+            origin.lat,
+            origin.lon,
+            destination.lat,
+            destination.lon
+        );
+
+        const distanceNm = distanceKm / 1.852;
+
+        return res.json(
+            buildV31Response("route-intelligence", {
+                origin,
+                destination,
+                distanceKm: Number(distanceKm.toFixed(2)),
+                distanceNm: Number(distanceNm.toFixed(2))
+            }, 1.0)
+        );
+
+    } catch (err) {
+
+        return res.status(500).json(
+            buildV31Response("error", {
+                message: "Route calculation failed",
+                details: err.message
+            }, 0.0)
+        );
+
+    }
+
+});
+
 export default router;

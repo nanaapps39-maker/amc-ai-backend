@@ -71,6 +71,30 @@ router.post("/", async (req, res) => {
         return res.json({ payload: { reply: JSON.stringify(data, null, 2) } });
     }
 
+
+// ======================================================
+// 2️⃣ ROUTE INTELLIGENCE
+// ======================================================
+if (rawMessage.startsWith("/route ")) {
+
+    const routeText = rawMessage.replace("/route ", "").trim();
+
+    const [origin, destination] = routeText.split("/");
+
+    const response = await fetch(
+    `${req.protocol}://${req.get("host")}/ports/route/${origin.trim()}/${destination.trim()}`
+);
+
+    const data = await response.json();
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(data, null, 2)
+        }
+    });
+}
+
+
     // ======================================================
     // 3️⃣ NORMAL AI CHAT — GROQ MODEL
     // ======================================================
