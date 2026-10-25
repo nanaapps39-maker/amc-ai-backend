@@ -135,7 +135,7 @@ export function getVerifiedRouteFacts(
                "1.0.0",
 
             verified:
-               true
+               true,
 
             generatedAt:
                  new Date().toISOString()
