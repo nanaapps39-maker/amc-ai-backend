@@ -243,28 +243,28 @@ router.get("/route/:origin/:destination", (req, res) => {
             destination.lon
         );
 
-        const distanceNm = distanceKm / 1.852;
 
-        return res.json(
-            buildV31Response("route-intelligence", {
-                origin,
-                destination,
-                distanceKm: Number(distanceKm.toFixed(2)),
-                distanceNm: Number(distanceNm.toFixed(2))
-            }, 1.0)
-        );
+const distanceNm = distanceKm / 1.852;
 
-    } catch (err) {
+// ETA calculations
+const eta12 = distanceNm / 12;
+const eta15 = distanceNm / 15;
+const eta18 = distanceNm / 18;
 
-        return res.status(500).json(
-            buildV31Response("error", {
-                message: "Route calculation failed",
-                details: err.message
-            }, 0.0)
-        );
+return res.json(
+    buildV31Response("route-intelligence", {
+        origin,
+        destination,
+        distanceKm: Number(distanceKm.toFixed(2)),
+        distanceNm: Number(distanceNm.toFixed(2)),
 
-    }
+        eta: {
+            speed12kt: Number((eta12 / 24).toFixed(2)),
+            speed15kt: Number((eta15 / 24).toFixed(2)),
+            speed18kt: Number((eta18 / 24).toFixed(2))
+        }
 
-});
+    }, 1.0)
+);
 
 export default router;
