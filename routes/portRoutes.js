@@ -243,6 +243,21 @@ router.get("/route/:origin/:destination", (req, res) => {
             destination.lon
         );
 
+// Initial bearing calculation
+const lat1 = origin.lat * Math.PI / 180;
+const lat2 = destination.lat * Math.PI / 180;
+
+const dLon = (destination.lon - origin.lon) * Math.PI / 180;
+
+const y = Math.sin(dLon) * Math.cos(lat2);
+
+const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+const bearing =
+    (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+
 
 const distanceNm = distanceKm / 1.852;
 
@@ -257,6 +272,8 @@ return res.json(
         destination,
         distanceKm: Number(distanceKm.toFixed(2)),
         distanceNm: Number(distanceNm.toFixed(2)),
+
+        bearing: Number(bearing.toFixed(2)),
 
         eta: {
             speed12kt: Number((eta12 / 24).toFixed(2)),
@@ -279,5 +296,8 @@ return res.json(
     }
 
 });
+
+
+
 
 export default router;
