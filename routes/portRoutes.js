@@ -267,4 +267,17 @@ return res.json(
     }, 1.0)
 );
 
+    } catch (err) {
+
+        return res.status(500).json(
+            buildV31Response("error", {
+                message: "Route calculation failed",
+                details: err.message
+            }, 0.0)
+        );
+
+    }
+
+});
+
 export default router;
