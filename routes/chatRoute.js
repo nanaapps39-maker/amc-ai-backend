@@ -8,6 +8,9 @@ import {
     getVerifiedRouteFacts
 } from "../maritimeFactsEngine.js";
 
+import calculateLinkBudget
+from "../linkBudget.js";
+
 const router = express.Router();
 
 // ======================================================
@@ -133,6 +136,9 @@ try {
 
     let maritimeFacts = "";
 
+    let satcomFacts = "";
+    
+
     if (
         rawMessage.toLowerCase().includes("tema") &&
         rawMessage.toLowerCase().includes("singapore")
@@ -169,6 +175,90 @@ ${facts.eta.speed18kt} days @ 18 knots
         }
     }
 
+
+// ======================================================
+// SATCOM LINK BUDGET ENGINE
+// ======================================================
+
+if (
+
+    rawMessage.toLowerCase().includes("link budget") ||
+
+    rawMessage.toLowerCase().includes("eirp") ||
+
+    rawMessage.toLowerCase().includes("carrier to noise") ||
+
+    rawMessage.toLowerCase().includes("c/n") ||
+
+    rawMessage.toLowerCase().includes("link margin") ||
+
+    rawMessage.toLowerCase().includes("satcom")
+
+) {
+    const budget =
+        calculateLinkBudget({
+
+            frequencyGHz: 14,
+
+            txPower_dBW: 12,
+
+            txAntennaGain_dBi: 41,
+
+            rxAntennaGain_dBi: 41,
+
+            pathLoss_dB: 206,
+
+            rxSystemNoise_dBm: -95,
+
+            elevationDeg: 20,
+
+            rainRate_mm_per_h: 25
+        });
+
+    satcomFacts = `
+VERIFIED SATCOM LINK BUDGET
+
+IMPORTANT:
+The following engineering calculations are authoritative.
+
+Do NOT recalculate them.
+Do NOT invent alternative values.
+Do NOT override link margin calculations.
+Do NOT override EIRP calculations.
+Do NOT generate conflicting SATCOM metrics.
+
+EIRP:
+${budget.eirp_dBW} dBW
+
+Atmospheric Loss:
+${budget.atmLoss_dB} dB
+
+Rain Fade:
+${budget.rainFade_dB} dB
+
+Total Path Loss:
+${budget.totalPathLoss_dB} dB
+
+Received Power:
+${budget.receivedPower_dBm} dBm
+
+Carrier to Noise:
+${budget.cn_dB} dB
+
+Link Margin:
+${budget.linkMargin_dB} dB
+
+Link Status:
+${budget.linkStatus}
+
+Survivability Score:
+${budget.survivabilityScore}/100
+`;
+
+}
+
+
+
     const groq = new Groq({
         apiKey: process.env.GROQ_API_KEY
     });
@@ -186,6 +276,8 @@ ${facts.eta.speed18kt} days @ 18 knots
                     content: `
 
 ${maritimeFacts}
+
+${satcomFacts}
 
 USER REQUEST:
 
