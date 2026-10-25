@@ -95,6 +95,33 @@ if (rawMessage.startsWith("/route ")) {
 }
 
 
+// ======================================================
+// 2️⃣ NATURAL LANGUAGE ROUTING
+// ======================================================
+
+const routeMatch = rawMessage.match(
+    /route from\s+([A-Z]{5})\s+to\s+([A-Z]{5})/i
+);
+
+if (routeMatch) {
+
+    const origin = routeMatch[1].toUpperCase();
+    const destination = routeMatch[2].toUpperCase();
+
+    const response = await fetch(
+        `${req.protocol}://${req.get("host")}/ports/route/${origin}/${destination}`
+    );
+
+    const data = await response.json();
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(data, null, 2)
+        }
+    });
+}
+
+
     // ======================================================
     // 3️⃣ NORMAL AI CHAT — GROQ MODEL
     // ======================================================
