@@ -4,6 +4,9 @@ import fetch from "node-fetch";
 import Groq from "groq-sdk";
 import { buildV31Response } from "../rendererMode.js";
 import { MASTER_SYSTEM_PROMPT } from "../prompts/systemPrompts.js";
+import {
+    getVerifiedRouteFacts
+} from "../maritimeFactsEngine.js";
 
 const router = express.Router();
 
@@ -122,42 +125,108 @@ if (routeMatch) {
 }
 
 
-    // ======================================================
-    // 3️⃣ NORMAL AI CHAT — GROQ MODEL
-    // ======================================================
-    try {
-        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+   
+// ======================================================
+// 3️⃣ NORMAL AI CHAT — GROQ MODEL
+// ======================================================
+try {
 
-        const completion = await groq.chat.completions.create({
-        model: process.env.GROQ_MODEL,
-        messages: [
-            {
-               role: "system",
-               content: MASTER_SYSTEM_PROMPT
-            },
-            {
-               role: "user",
-               content: rawMessage
+    let maritimeFacts = "";
+
+    if (
+        rawMessage.toLowerCase().includes("tema") &&
+        rawMessage.toLowerCase().includes("singapore")
+    ) {
+
+        const facts =
+            getVerifiedRouteFacts(
+                "GHTEM",
+                "SGSIN"
+            );
+
+        if (facts?.verified) {
+
+            maritimeFacts = `
+VERIFIED MARITIME FACTS
+
+Origin:
+${facts.origin.portName}, ${facts.origin.country}
+
+Destination:
+${facts.destination.portName}, ${facts.destination.country}
+
+Distance:
+${facts.distanceNm} NM
+
+Bearing:
+${facts.bearing}°
+
+ETA:
+${facts.eta.speed12kt} days @ 12 knots
+${facts.eta.speed15kt} days @ 15 knots
+${facts.eta.speed18kt} days @ 18 knots
+`;
         }
-    ]
-});
+    }
 
-const reply = completion.choices[0].message.content;
+    const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+    });
 
-        return res.json(
-            buildV31Response("chat", { reply }, 1.0)
-        );
+    const completion =
+        await groq.chat.completions.create({
+            model: process.env.GROQ_MODEL,
+            messages: [
+                {
+                    role: "system",
+                    content: MASTER_SYSTEM_PROMPT
+                },
+                {
+                    role: "user",
+                    content: `
 
-    } catch (err) {
-        console.error("CHAT ERROR:", err.message);
+${maritimeFacts}
 
-        return res.status(500).json(
-            buildV31Response("error", {
+USER REQUEST:
+
+${rawMessage}
+
+`
+                }
+            ]
+        });
+
+    const reply =
+        completion.choices[0].message.content;
+
+    return res.json(
+        buildV31Response(
+            "chat",
+            { reply },
+            1.0
+        )
+    );
+
+} catch (err) {
+
+    console.error(
+        "CHAT ERROR:",
+        err.message
+    );
+
+    return res.status(500).json(
+        buildV31Response(
+            "error",
+            {
                 message: "Chat backend failure",
                 details: err.message
-            }, 0.0)
-        );
-    }
+            },
+            0.0
+        )
+    );
+}
+
 });
 
 export default router;
+
