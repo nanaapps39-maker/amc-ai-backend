@@ -1,25 +1,31 @@
 // routes/satcomRoutes.js
+
 import express from "express";
 import axios from "axios";
 
 const router = express.Router();
 
-// Base URL for SATCOM Engine (FastAPI microservice)
+// SATCOM FastAPI Engine
 const SATCOM_ENGINE_URL = "https://amc-satcom-engine.onrender.com";
 
+
 // -------------------------------------------------------------
-// 1️⃣ SATCOM HEALTH CHECK
+// 1. SATCOM HEALTH CHECK
 // -------------------------------------------------------------
 router.get("/health", async (req, res) => {
     try {
-        const response = await axios.get(`${SATCOM_ENGINE_URL}/health`);
+        const response = await axios.get(
+            `${SATCOM_ENGINE_URL}/health`
+        );
 
         return res.json({
             status: "ok",
             engine: "satcom-v2",
             telemetry: response.data
         });
+
     } catch (err) {
+
         console.error("SATCOM Health Error:", err.message);
 
         return res.status(500).json({
@@ -30,52 +36,61 @@ router.get("/health", async (req, res) => {
     }
 });
 
+
 // -------------------------------------------------------------
-// 2️⃣ SATCOM REASONING ENGINE v2
+// 2. SATCOM REASONING ENGINE
 // -------------------------------------------------------------
 router.post("/reason", async (req, res) => {
     try {
+
         const { message, module } = req.body;
 
         if (!message || !module) {
             return res.status(400).json({
                 status: "error",
-                message: "Missing required fields: 'message' and 'module'"
+                message: "Missing required fields: message and module"
             });
         }
 
-        const response = await axios.post(`${SATCOM_ENGINE_URL}/reason`, {
-            message,
-            module
-        });
+        console.log(
+            "Calling SATCOM Reasoning:",
+            `${SATCOM_ENGINE_URL}/reasoning`
+        );
+
+        const response = await axios.post(
+            `${SATCOM_ENGINE_URL}/reasoning`,
+            {
+                message,
+                module
+            }
+        );
 
         return res.json({
             status: "ok",
             engine: "satcom-v2",
             result: response.data
         });
-    } catch (err) {
 
-    console.error(
-        "SATCOM Reasoning Error:",
-        err.response?.status,
-        err.response?.data || err.message
-    );
+        } catch (err) {
+        console.error("Status:", err.response?.status);
+        console.error("Data:", err.response?.data);
+        console.error("Message:", err.message);
 
-    return res.status(500).json({
-        status: "fatal-error",
-        message: "SATCOM Reasoning Engine v2 failed",
-        details: err.response?.data || err.message
-    });
-}
+        return res.status(500).json({
+            status: "fatal-error",
+            message: "SATCOM Reasoning Engine v2 failed",
+            details: err.response?.data || err.message
+        });
+    }
+});
 
-});  
 
 // -------------------------------------------------------------
-// 3️⃣ SATCOM INSIGHTS ENGINE v3
+// 3. SATCOM INSIGHTS ENGINE
 // -------------------------------------------------------------
 router.post("/insights", async (req, res) => {
     try {
+
         const {
             vsatMetrics,
             leoMetrics,
@@ -85,30 +100,37 @@ router.post("/insights", async (req, res) => {
             weather
         } = req.body;
 
-        const response = await axios.post(`${SATCOM_ENGINE_URL}/insights`, {
-            vsatMetrics,
-            leoMetrics,
-            lbandMetrics,
-            scenarioProfile,
-            oemProfile,
-            weather
-        });
+        const response = await axios.post(
+            `${SATCOM_ENGINE_URL}/insights`,
+            {
+                vsatMetrics,
+                leoMetrics,
+                lbandMetrics,
+                scenarioProfile,
+                oemProfile,
+                weather
+            }
+        );
 
         return res.json({
             status: "ok",
             engine: "satcom-v3-insights",
             insights: response.data
         });
+
     } catch (err) {
-        console.error("SATCOM Insights Error:", err.message);
+
+        console.error("SATCOM Insights Error");
+        console.error("Status:", err.response?.status);
+        console.error("Data:", err.response?.data);
+        console.error("Message:", err.message);
 
         return res.status(500).json({
             status: "fatal-error",
             message: "SATCOM Insights Engine v3 failed",
-            details: err.message
+            details: err.response?.data || err.message
         });
     }
 });
 
 export default router;
-

@@ -826,21 +826,52 @@ function validateHistoricalData(output) {
 
 
 // ======================================================
-// PYTHON SATCOM ENGINE CONNECTOR (NEW)
+// PYTHON SATCOM ENGINE CONNECTOR
 // ======================================================
+
 async function callSatcomEngine(payload) {
   try {
-    const response = await fetch("http://localhost:8000/satcom", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    console.log("SATCOM Payload:", payload);
 
-    const data = await response.json();
+    const response = await fetch(
+      "https://amc-satcom-engine.onrender.com/diagnose",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    console.log("SATCOM Status:", response.status);
+
+    const rawText = await response.text();
+    console.log("SATCOM Raw Body:", rawText);
+
+    if (!response.ok) {
+      throw new Error(
+        `SATCOM Engine HTTP ${response.status}: ${rawText}`
+      );
+    }
+
+    let data;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      throw new Error(
+        `Invalid JSON returned from SATCOM Engine: ${rawText}`
+      );
+    }
+
+    console.log("SATCOM Response:", data);
+
     return data;
 
   } catch (err) {
     console.error("SATCOM Python Engine Error:", err);
+
     return {
       error: "Python SATCOM engine unavailable",
       details: err.message
@@ -3024,41 +3055,59 @@ app.post("/api/satcom/diagnostics", async (req, res) => {
   if (!req.userIsPro) return requireProAccess(res);
 
   const { query } = req.body;
+
   if (!query || query.trim() === "") {
-    return res.status(400).json({ error: "Field 'query' is required." });
+    return res.status(400).json({
+      error: "Field 'query' is required."
+    });
   }
 
   try {
-    // Run existing JS diagnostics
+
+    console.log("STEP 1: runDiagnosticsEngine");
+
     const jsDiagnostics = await runDiagnosticsEngine(query);
 
-    // Run Python SATCOM engine
+    console.log("STEP 1 PASSED");
+
+    console.log("STEP 2: callSatcomEngine");
+
     const pyDiagnostics = await callSatcomEngine({ query });
 
-    // Merge both
+    console.log("STEP 2 PASSED");
+
+    console.log("PY RESULT:", pyDiagnostics);
+
     let finalOutput = {
       js: jsDiagnostics,
       python: pyDiagnostics
     };
 
-    // Apply historical validation
+    console.log("STEP 3: validateHistoricalData");
+
     finalOutput = validateHistoricalData(finalOutput);
 
-    // Send structured output
+    console.log("STEP 3 PASSED");
+
     return res.status(200).json({
       status: "ok",
       diagnostics: finalOutput
     });
 
   } catch (error) {
-    console.error("Diagnostics error:", error);
+
+    console.error("==============");
+    console.error("DIAGNOSTICS FAILURE");
+    console.error(error);
+    console.error(error?.stack);
+    console.error("==============");
+
     return res.status(500).json({
       error: "Diagnostics failed",
       details: error?.message
     });
   }
 });
-
 
 // ===============================
 // SATCOM Diagnostics — Human Grade (A+)
