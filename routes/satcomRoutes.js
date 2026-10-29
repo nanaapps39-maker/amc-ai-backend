@@ -9,6 +9,47 @@ const router = express.Router();
 const SATCOM_ENGINE_URL = "https://amc-satcom-engine.onrender.com";
 
 
+function renderSatcomDiagnostics(data) {
+    if (!data) {
+        return "SATCOM Diagnostics completed but no data was returned.";
+    }
+
+    const scores = data.rfChainScores || {};
+
+    return `
+AMC Academy Tech AI – SATCOM Diagnostics Report
+
+Summary
+${data.finalSummary || "No summary available."}
+
+Detected Fault Domain
+${data.intent || "Unknown"}
+
+Severity
+${data.severity || "Not Assessed"}
+
+Recommended Fix
+${data.recommendedFix || "No recommendation provided."}
+
+RF Chain Assessment
+• Antenna Pointing: ${Math.round((scores.antenna_pointing || 0) * 100)}%
+• Modem State: ${Math.round((scores.modem_state || 0) * 100)}%
+• Cable Integrity: ${Math.round((scores.cable_integrity || 0) * 100)}%
+• Weather Fade: ${Math.round((scores.weather_fade || 0) * 100)}%
+• Satellite Visibility: ${Math.round((scores.satellite_visibility || 0) * 100)}%
+
+Historical Validation
+${data.historicalValidation?.notes || "No historical validation available."}
+
+AMC Academy Tech AI
+`;
+}
+
+
+
+
+
+
 // -------------------------------------------------------------
 // 1. SATCOM HEALTH CHECK
 // -------------------------------------------------------------
@@ -65,12 +106,12 @@ router.post("/reason", async (req, res) => {
             }
         );
 
-        return res.json({
-            status: "ok",
-            engine: "satcom-v2",
-            result: response.data
-        });
-
+     return res.json({
+       status: "ok",
+       engine: "satcom-v2",
+       result: renderSatcomDiagnostics(response.data)
+      });
+        
         } catch (err) {
         console.error("Status:", err.response?.status);
         console.error("Data:", err.response?.data);
