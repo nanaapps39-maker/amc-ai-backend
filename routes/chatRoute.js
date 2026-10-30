@@ -139,7 +139,8 @@ if (
     rawMessage.toLowerCase().includes("translate") ||
     rawMessage.toLowerCase().includes("translation") ||
     rawMessage.toLowerCase().includes("translator mode")
-)
+) {
+
     const completion =
         await groq.chat.completions.create({
             model: process.env.GROQ_MODEL,
