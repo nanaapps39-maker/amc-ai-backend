@@ -19,6 +19,10 @@ const router = express.Router();
 router.post("/", async (req, res) => {
     const rawMessage = req.body.message || "";
 
+const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+    });
+
     // ======================================================
     // 1️⃣ SYSTEM COMMANDS — SATCOM ENGINE
     // ======================================================
@@ -127,7 +131,53 @@ if (routeMatch) {
     });
 }
 
+// ======================================================
+// TRANSLATOR MODE
+// ======================================================
 
+if (
+    rawMessage.toLowerCase().includes("translate") ||
+    rawMessage.toLowerCase().includes("translation") ||
+    rawMessage.toLowerCase().includes("translator mode")
+)
+    const completion =
+        await groq.chat.completions.create({
+            model: process.env.GROQ_MODEL,
+            messages: [
+                {
+                    role: "system",
+                    content: `
+You are AMC Academy Tech AI Translator Mode.
+
+Translate exactly as requested.
+
+Preserve:
+VSAT
+BUC
+LNB
+IF
+NOC
+dBm
+°C
+
+Return only translated text.
+No explanations.
+`
+                },
+                {
+                    role: "user",
+                    content: rawMessage
+                }
+            ]
+        });
+
+    return res.json({
+        payload: {
+            reply:
+              completion.choices[0].message.content
+        }
+    });
+}
    
 // ======================================================
 // 3️⃣ NORMAL AI CHAT — GROQ MODEL
@@ -258,10 +308,6 @@ ${budget.survivabilityScore}/100
 }
 
 
-
-    const groq = new Groq({
-        apiKey: process.env.GROQ_API_KEY
-    });
 
     const completion =
         await groq.chat.completions.create({
