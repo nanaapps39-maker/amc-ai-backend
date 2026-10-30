@@ -131,6 +131,8 @@ if (routeMatch) {
     });
 }
 
+
+
 // ======================================================
 // TRANSLATOR MODE
 // ======================================================
@@ -141,6 +143,9 @@ if (
     rawMessage.toLowerCase().includes("translator mode")
 ) {
 
+    console.log("TRANSLATOR MODE ACTIVATED");
+    console.log(rawMessage);
+
     const completion =
         await groq.chat.completions.create({
             model: process.env.GROQ_MODEL,
@@ -150,15 +155,9 @@ if (
                     content: `
 You are AMC Academy Tech AI Translator Mode.
 
-Your ONLY task is translation.
+Translate the user's text into the language requested.
 
-Always detect the requested target language.
-
-Always translate the user's text into the specified target language.
-
-Never return the original language unless the source language and target language are the same.
-
-Preserve exactly:
+Preserve technical terms exactly:
 
 VSAT
 BUC
@@ -176,14 +175,7 @@ dBm
 NM
 EIRP
 
-Return ONLY the translated text.
-
-Do not explain.
-Do not analyse.
-Do not answer questions.
-Do not provide commentary.
-
-Translation only.
+Return only the translation.
 `
                 },
                 {
@@ -193,13 +185,17 @@ Translation only.
             ]
         });
 
+    console.log("TRANSLATOR RESPONSE:");
+    console.log(completion.choices[0].message.content);
+
     return res.json({
         payload: {
             reply: completion.choices[0].message.content
         }
     });
 }
-   
+
+
 // ======================================================
 // 3️⃣ NORMAL AI CHAT — GROQ MODEL
 // ======================================================
