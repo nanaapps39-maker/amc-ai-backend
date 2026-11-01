@@ -2742,6 +2742,47 @@ app.post("/api/translate", async (req, res) => {
     if (lower.includes("translate into hausa")) return "hausa";
     if (lower.includes("translate into yoruba")) return "yoruba";
     if (lower.includes("translate into swahili")) return "swahili";
+    if (lower.includes("translate into korean")) return "ko";
+
+    if (lower.includes("translate into german")) return "de";
+    if (lower.includes("translate into italian")) return "it";
+    if (lower.includes("translate into dutch")) return "nl";
+    if (lower.includes("translate into russian")) return "ru";
+    if (lower.includes("translate into ukrainian")) return "uk";
+    if (lower.includes("translate into polish")) return "pl";
+    if (lower.includes("translate into turkish")) return "tr";
+    if (lower.includes("translate into greek")) return "el";
+    if (lower.includes("translate into swedish")) return "sv";
+    if (lower.includes("translate into norwegian")) return "no";
+    if (lower.includes("translate into danish")) return "da";
+    if (lower.includes("translate into finnish")) return "fi";
+    if (lower.includes("translate into romanian")) return "ro";
+    if (lower.includes("translate into czech")) return "cs";
+    if (lower.includes("translate into hungarian")) return "hu";
+    if (lower.includes("translate into bulgarian")) return "bg";
+    if (lower.includes("translate into serbian")) return "sr";
+    if (lower.includes("translate into croatian")) return "hr";
+    if (lower.includes("translate into slovak")) return "sk";
+    if (lower.includes("translate into slovenian")) return "sl";
+
+    if (lower.includes("translate into thai")) return "th";
+    if (lower.includes("translate into vietnamese")) return "vi";
+    if (lower.includes("translate into indonesian")) return "id";
+    if (lower.includes("translate into malay")) return "ms";
+    if (lower.includes("translate into filipino")) return "tl";
+
+    if (lower.includes("translate into hebrew")) return "he";
+    if (lower.includes("translate into persian")) return "fa";
+    if (lower.includes("translate into urdu")) return "ur";
+
+    if (lower.includes("translate into bengali")) return "bn";
+    if (lower.includes("translate into tamil")) return "ta";
+    if (lower.includes("translate into telugu")) return "te";
+    if (lower.includes("translate into malayalam")) return "ml";
+    if (lower.includes("translate into gujarati")) return "gu";
+    if (lower.includes("translate into marathi")) return "mr";
+    if (lower.includes("translate into nepali")) return "ne";
+    if (lower.includes("translate into sinhala")) return "si";
 
     return null;
   }
