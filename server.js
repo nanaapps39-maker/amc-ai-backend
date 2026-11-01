@@ -2720,13 +2720,47 @@ app.post("/api/translate", async (req, res) => {
     });
   }
 
+
+  // ================================
+  // BACKEND LANGUAGE OVERRIDE ENGINE
+  // ================================
+  function detectTargetLanguageOverride(inputText) {
+
+    const lower = String(inputText || "").toLowerCase();
+
+    if (lower.includes("translate into french")) return "fr";
+    if (lower.includes("translate into japanese")) return "ja";
+    if (lower.includes("translate into spanish")) return "es";
+    if (lower.includes("translate into portuguese")) return "pt";
+    if (lower.includes("translate into arabic")) return "ar";
+    if (lower.includes("translate into chinese")) return "zh";
+    if (lower.includes("translate into twi")) return "twi";
+    if (lower.includes("translate into akan")) return "akan";
+    if (lower.includes("translate into ewe")) return "ewe";
+    if (lower.includes("translate into ga")) return "ga";
+    if (lower.includes("translate into fante")) return "fante";
+    if (lower.includes("translate into hausa")) return "hausa";
+    if (lower.includes("translate into yoruba")) return "yoruba";
+    if (lower.includes("translate into swahili")) return "swahili";
+
+    return null;
+  }
+
+  const detectedTargetLanguage =
+    detectTargetLanguageOverride(text);
+
+  const effectiveTargetLanguage =
+    detectedTargetLanguage || targetLanguage;
+
+
   try {
     // ================================
     // NORMALISE INPUT (prevents drift)
     // ================================
     const normalized = text.normalize("NFKC").trim();
     const overrideKey = normalized.toLowerCase().replace(/[^\w\s]/gi, "");
-    const langKey = targetLanguage.toLowerCase().trim();
+    const langKey =
+    effectiveTargetLanguage.toLowerCase().trim();
     const srcLang = (sourceLanguage || "english").toLowerCase().trim();
 
     // ================================
