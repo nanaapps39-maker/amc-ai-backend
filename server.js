@@ -2779,7 +2779,8 @@ app.post("/api/translate", async (req, res) => {
       "dagbani", "gonja",
       "yoruba", "yo",
       "hausa", "ha",
-      "swahili", "sw"
+      "swahili", "sw",
+      "ja", "japanese"
     ];
 
     if (!SUPPORTED_LANGUAGES.includes(langKey)) {
