@@ -5424,27 +5424,25 @@ import { getLatestProKey } from "./get-latest-pro-key.js";
 // ===============================
 async function checkSatcomEngine() {
   try {
-    const payload = {
-      message: "health_check",
-      module: "satcom_diagnostics",
-      log_text: "health_check_ping",
-      timestamp: Date.now()
-    };
 
     const response = await fetch(
-      `${process.env.SATCOM_ENGINE_URL}/diagnose`,
+      `${process.env.SATCOM_ENGINE_URL}/health`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
           "Accept": "application/json",
           "User-Agent": "AMC-AI-Backend"
-        },
-        body: JSON.stringify(payload)
+        }
       }
     );
 
-    return response.ok;
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+
+    return data?.status === "ok";
 
   } catch (err) {
 
