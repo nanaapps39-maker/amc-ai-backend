@@ -2767,21 +2767,71 @@ app.post("/api/translate", async (req, res) => {
     // SUPPORTED LANGUAGE SET (backend truth)
     // ================================
     const SUPPORTED_LANGUAGES = [
-      "en", "english",
-      "fr", "french",
-      "es", "spanish",
-      "pt", "portuguese",
-      "ar", "arabic",
-      "zh", "zh-cn", "chinese",
-      "hi", "hindi",
-      "twi", "akan",
-      "ewe", "ga", "fante",
-      "dagbani", "gonja",
-      "yoruba", "yo",
-      "hausa", "ha",
-      "swahili", "sw",
-      "ja", "japanese"
-    ];
+    "en", "english",
+    "fr", "french",
+    "es", "spanish",
+    "pt", "portuguese",
+    "ar", "arabic",
+    "zh", "zh-cn", "chinese",
+    "ja", "japanese",
+    "hi", "hindi",
+
+    // Africa
+    "twi", "akan",
+    "ewe",
+    "ga",
+    "fante",
+    "dagbani",
+    "gonja",
+    "yoruba", "yo",
+    "hausa", "ha",
+    "swahili", "sw",
+
+   // Europe
+   "de", "german",
+   "it", "italian",
+   "nl", "dutch",
+   "ru", "russian",
+   "uk", "ukrainian",
+   "pl", "polish",
+   "tr", "turkish",
+   "el", "greek",
+   "sv", "swedish",
+   "no", "norwegian",
+   "da", "danish",
+   "fi", "finnish",
+   "ro", "romanian",
+   "cs", "czech",
+   "hu", "hungarian",
+   "bg", "bulgarian",
+   "sr", "serbian",
+   "hr", "croatian",
+   "sk", "slovak",
+   "sl", "slovenian",
+
+   // Asia-Pacific
+   "ko", "korean",
+   "th", "thai",
+   "vi", "vietnamese",
+   "id", "indonesian",
+   "ms", "malay",
+   "tl", "filipino",
+
+   // Middle East
+   "he", "hebrew",
+   "fa", "persian",
+   "ur", "urdu",
+
+   // Additional Global
+   "bn", "bengali",
+   "ta", "tamil",
+   "te", "telugu",
+   "ml", "malayalam",
+   "gu", "gujarati",
+   "mr", "marathi",
+   "ne", "nepali",
+   "si", "sinhala"
+ ];
 
     if (!SUPPORTED_LANGUAGES.includes(langKey)) {
       console.warn("Unsupported target language:", langKey);
@@ -2803,6 +2853,46 @@ app.post("/api/translate", async (req, res) => {
     if (langKey === "yo") canonicalTarget = "yoruba";
     if (langKey === "ha") canonicalTarget = "hausa";
     if (langKey === "sw") canonicalTarget = "swahili";
+    if (langKey === "german") canonicalTarget = "de";
+    if (langKey === "italian") canonicalTarget = "it";
+    if (langKey === "dutch") canonicalTarget = "nl";
+    if (langKey === "russian") canonicalTarget = "ru";
+    if (langKey === "ukrainian") canonicalTarget = "uk";
+    if (langKey === "polish") canonicalTarget = "pl";
+    if (langKey === "turkish") canonicalTarget = "tr";
+    if (langKey === "greek") canonicalTarget = "el";
+    if (langKey === "swedish") canonicalTarget = "sv";
+    if (langKey === "norwegian") canonicalTarget = "no";
+    if (langKey === "danish") canonicalTarget = "da";
+    if (langKey === "finnish") canonicalTarget = "fi";
+    if (langKey === "romanian") canonicalTarget = "ro";
+    if (langKey === "czech") canonicalTarget = "cs";
+    if (langKey === "hungarian") canonicalTarget = "hu";
+    if (langKey === "bulgarian") canonicalTarget = "bg";
+    if (langKey === "serbian") canonicalTarget = "sr";
+    if (langKey === "croatian") canonicalTarget = "hr";
+    if (langKey === "slovak") canonicalTarget = "sk";
+    if (langKey === "slovenian") canonicalTarget = "sl";
+
+    if (langKey === "korean") canonicalTarget = "ko";
+    if (langKey === "thai") canonicalTarget = "th";
+    if (langKey === "vietnamese") canonicalTarget = "vi";
+    if (langKey === "indonesian") canonicalTarget = "id";
+    if (langKey === "malay") canonicalTarget = "ms";
+    if (langKey === "filipino") canonicalTarget = "tl";
+
+    if (langKey === "hebrew") canonicalTarget = "he";
+    if (langKey === "persian") canonicalTarget = "fa";
+    if (langKey === "urdu") canonicalTarget = "ur";
+
+    if (langKey === "bengali") canonicalTarget = "bn";
+    if (langKey === "tamil") canonicalTarget = "ta";
+    if (langKey === "telugu") canonicalTarget = "te";
+    if (langKey === "malayalam") canonicalTarget = "ml";
+    if (langKey === "gujarati") canonicalTarget = "gu";
+    if (langKey === "marathi") canonicalTarget = "mr";
+    if (langKey === "nepali") canonicalTarget = "ne";
+    if (langKey === "sinhala") canonicalTarget = "si";
 
     // ================================
     // GHANA / AFRICA OVERRIDE ENGINE
