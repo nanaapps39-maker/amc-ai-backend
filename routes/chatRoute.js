@@ -11,6 +11,11 @@ import {
 import calculateLinkBudget
 from "../linkBudget.js";
 
+import {
+    saveMemory,
+    loadMemory
+} from "../memoryService.js";
+
 const router = express.Router();
 
 // ======================================================
@@ -18,6 +23,12 @@ const router = express.Router();
 // ======================================================
 router.post("/", async (req, res) => {
     const rawMessage = req.body.message || "";
+
+const userId =
+    req.body.userId || "default-user";
+
+const memory =
+    loadMemory(userId);
 
 const groq = new Groq({
         apiKey: process.env.GROQ_API_KEY
@@ -204,6 +215,30 @@ try {
     let maritimeFacts = "";
 
     let satcomFacts = "";
+
+let memoryContext = "";
+
+if (memory) {
+
+    memoryContext = `
+PREVIOUS MEMORY
+
+Role:
+${memory.role || "Unknown"}
+
+Last Topic:
+${memory.lastTopic || "Unknown"}
+
+Last Module:
+${memory.lastModule || "Unknown"}
+
+Last Summary:
+${memory.lastSummary || "Unknown"}
+
+IMPORTANT:
+Use this memory if relevant to the user's request.
+`;
+}
     
 
     if (
@@ -336,7 +371,9 @@ ${budget.survivabilityScore}/100
                 },
                 {
                     role: "user",
-                    content: `
+                   content: `
+
+${memoryContext}
 
 ${maritimeFacts}
 
@@ -353,6 +390,16 @@ ${rawMessage}
 
     const reply =
         completion.choices[0].message.content;
+
+saveMemory(
+    userId,
+    {
+        role: "satcom_engineer",
+        lastTopic: rawMessage,
+        lastModule: "AMC Chat Session",
+        lastSummary: reply.substring(0, 500)
+    }
+);
 
     return res.json(
         buildV31Response(
