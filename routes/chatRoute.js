@@ -391,15 +391,24 @@ ${rawMessage}
     const reply =
         completion.choices[0].message.content;
 
-saveMemory(
-    userId,
-    {
-        role: "satcom_engineer",
-        lastTopic: rawMessage,
-        lastModule: "AMC Chat Session",
-        lastSummary: reply.substring(0, 500)
-    }
-);
+const shouldRemember =
+    rawMessage.toLowerCase().includes("remember") ||
+    rawMessage.toLowerCase().includes("my name is") ||
+    rawMessage.toLowerCase().includes("i am") ||
+    rawMessage.toLowerCase().includes("i'm");
+
+if (shouldRemember) {
+
+    saveMemory(
+        userId,
+        {
+            role: "satcom_engineer",
+            lastTopic: rawMessage,
+            lastModule: "AMC Chat Session",
+            lastSummary: reply.substring(0, 500)
+        }
+    );
+}
 
     return res.json(
         buildV31Response(
