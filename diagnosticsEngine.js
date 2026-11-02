@@ -57,7 +57,12 @@ Analyse the following SATCOM issue:
   let satcomV2 = null;
 
   try {
-    satcomV2 = await runSatcomReasoning(query);
+    satcomV2 = await runSatcomReasoning({
+      message: query,
+      module: "SATCOM Diagnostics",
+      log_text: query,
+      timestamp: Date.now()
+  });
   } catch (err) {
     console.error("SATCOM v2 engine error:", err.message);
     satcomV2 = {
