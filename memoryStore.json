@@ -1,0 +1,19 @@
+{
+  "users": {
+    "student001": {
+      "role": "student",
+      "lastTopic": "Advanced Bunker Surveying",
+      "lastModule": "Module 4",
+      "lastSummary": "ROB verification and fuel reconciliation",
+      "updatedAt": "2026-11-02T09:15:00Z"
+    },
+
+    "engineer001": {
+      "role": "satcom_engineer",
+      "lastTopic": "Network Congestion",
+      "lastModule": "SATCOM Diagnostics",
+      "lastSummary": "Packet loss investigation on VSAT link",
+      "updatedAt": "2026-11-02T09:20:00Z"
+    }
+  }
+}

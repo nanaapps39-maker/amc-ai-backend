@@ -69,6 +69,9 @@ import maritimeRoutes from "./routes/maritimeRoutes.js";
 // ⭐ FUSION ROUTES (ESM-SAFE IMPORT)
 import fusionRoutes from "./routes/fusionRoutes.js";
 
+// ⭐ MEMORY ENGINE V1 (ESM-SAFE IMPORT)
+import memoryRoutes from "./memoryRoutes.js";
+
 // ⭐ FUSION ENGINE (CORE MODULE)
 import { getFusionHealth, repairFusionEngine } from "./fusionEngine.js";
 
@@ -97,6 +100,13 @@ app.set("trust proxy", 1);
 
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+
+// ======================================================
+// MEMORY ENGINE V1
+// ======================================================
+
+app.use("/memory", memoryRoutes);
 
 // ⭐ Enable ICO Compliance Headers Globally
 app.use(compliance);
@@ -5493,6 +5503,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ Groq Routing: CONNECTED");
   console.log("✔ OpenAI Routing: CONNECTED");
   console.log("✔ Diagnostics Engine: READY");
+  console.log("✔ Memory Engine v1: READY");
   console.log("✔ Attachment Mode: READY");
   console.log("✔ Maritime AI Modules: INITIALIZED");
   console.log(
