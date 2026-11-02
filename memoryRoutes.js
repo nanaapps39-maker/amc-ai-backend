@@ -3,14 +3,14 @@
 // Memory Engine v1 Routes
 // ======================================================
 
-const express = require("express");
+import express from "express";
 
-const {
+import {
   saveMemory,
   loadMemory,
   deleteMemory,
   continueSession
-} = require("./memoryService");
+} from "./memoryService.js";
 
 const router = express.Router();
 
@@ -155,4 +155,4 @@ router.delete("/:userId", (req, res) => {
 
 });
 
-module.exports = router;
+export default router;
