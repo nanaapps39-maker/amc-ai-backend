@@ -14,19 +14,29 @@ export async function runSatcomReasoning(payload) {
   const url = `${SATCOM_ENGINE_URL}/reasoning`;
   const start = Date.now();
 
+console.log("SATCOM URL:", url);
+console.log("SATCOM Payload:", JSON.stringify(payload, null, 2));
+
   try {
     const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-    const latencyMs = Date.now() - start;
+  console.log("SATCOM Response Status:", res.status);
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`SATCOM engine HTTP ${res.status}: ${text}`);
-    }
+  const latencyMs = Date.now() - start;
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    console.log("SATCOM Error Body:", text);
+
+    throw new Error(
+    `SATCOM engine HTTP ${res.status}: ${text}`
+   );
+ }
 
     const data = await res.json();
 

@@ -114,6 +114,18 @@ async function handleDiagnostics(payload) {
 
   let satcomV2;
   try {
+
+  console.log(
+  "HandleDiagnostics Payload:",
+  JSON.stringify(payload, null, 2)
+);
+
+
+console.log(
+  "Calling SATCOM from orchestration.js"
+);
+
+
     satcomV2 = await runSatcomReasoning(payload);
   } catch (err) {
     satcomV2 = {
