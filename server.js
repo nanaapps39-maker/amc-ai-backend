@@ -5477,11 +5477,34 @@ app.listen(PORT, "0.0.0.0", async () => {
 
   const latestKey = getLatestProKey();
 
-  const satcomHealth = await getSatcomHealth();
-  const fusionHealth = await getFusionHealth();
-  const fusionRepair = await repairFusionEngine();
+  let satcomHealth = null;
+  let fusionHealth = null;
+  let fusionRepair = null;
+  let satcomEngineOnline = false;
 
-  const satcomEngineOnline = await checkSatcomEngine();
+  try {
+     satcomHealth = await getSatcomHealth();
+  }  catch (err) {
+     console.error("SATCOM health failed:", err.message);
+  }
+
+  try {
+     fusionHealth = await getFusionHealth();
+  }  catch (err) {
+     console.error("Fusion health failed:", err.message);
+  }
+
+  try {
+     fusionRepair = await repairFusionEngine();
+  }  catch (err) {
+     console.error("Fusion repair failed:", err.message);
+  }
+
+  try {
+     satcomEngineOnline = await checkSatcomEngine();
+  }  catch (err) {
+     console.error("SATCOM engine check failed:", err.message);
+  }
 
   console.log("====================================================");
   console.log(" AMC Academy Tech AI Backend — Boot Sequence");
