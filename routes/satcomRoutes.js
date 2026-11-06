@@ -37,6 +37,7 @@ Recommended Fix
 ${data.recommendedFix || "No recommendation provided."}
 
 RF Chain Assessment
+
 • Antenna Pointing: ${Math.round((scores.antenna_pointing || 0) * 100)}%
 • Modem State: ${Math.round((scores.modem_state || 0) * 100)}%
 • Cable Integrity: ${Math.round((scores.cable_integrity || 0) * 100)}%
@@ -49,8 +50,6 @@ ${data.historicalValidation?.notes || "No historical validation available."}
 AMC Academy Tech AI
 `;
 }
-
-
 
 
 
