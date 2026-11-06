@@ -117,13 +117,13 @@ router.post("/reason", async (req, res) => {
         console.error("Data:", err.response?.data);
         console.error("Message:", err.message);
 
-        return res.status(500).json({
-            status: "fatal-error",
-            message: "SATCOM Reasoning Engine v2 failed",
-            details: err.response?.data || err.message
-        });
-    }
-});
+        return res.status(err.response?.status || 500).json({
+              status: "fatal-error",
+              message: "SATCOM Reasoning Engine v2 failed",
+              details: err.response?.data || err.message
+       });
+      }
+ });
 
 
 // -------------------------------------------------------------
