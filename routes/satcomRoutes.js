@@ -3,10 +3,15 @@
 import express from "express";
 import axios from "axios";
 
+import {
+    validateSatcomTerm
+} from "../utils/satcomTerminologyValidator.js";
+
 const router = express.Router();
 
 // SATCOM FastAPI Engine
-const SATCOM_ENGINE_URL = "https://amc-satcom-engine.onrender.com";
+const SATCOM_ENGINE_URL =
+    "https://amc-satcom-engine.onrender.com";
 
 
 function renderSatcomDiagnostics(data) {
