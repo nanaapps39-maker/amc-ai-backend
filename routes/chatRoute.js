@@ -13,7 +13,8 @@ from "../linkBudget.js";
 
 import {
     saveMemory,
-    loadMemory
+    loadMemory,
+    getMemoryTimeline
 } from "../memoryService.js";
 
 const router = express.Router();
@@ -29,6 +30,9 @@ const userId =
 
 const memory =
     loadMemory(userId);
+
+const timeline =
+    getMemoryTimeline(userId);
 
 const groq = new Groq({
         apiKey: process.env.GROQ_API_KEY
@@ -218,6 +222,8 @@ try {
 
 let memoryContext = "";
 
+let timelineContext = "";
+
 if (memory) {
 
     memoryContext = `
@@ -239,7 +245,34 @@ IMPORTANT:
 Use this memory if relevant to the user's request.
 `;
 }
-    
+
+if (timeline && timeline.length > 0) {
+
+    const recentHistory =
+        timeline.slice(-10);
+
+    timelineContext = `
+MEMORY TIMELINE
+
+${recentHistory.map((entry, index) => `
+
+${index + 1}.
+
+Date:
+${entry.timestamp || "Unknown"}
+
+Module:
+${entry.lastModule || "Unknown"}
+
+Topic:
+${entry.lastTopic || "Unknown"}
+
+Summary:
+${entry.lastSummary || "Unknown"}
+
+`).join("")}
+`;
+}    
 
     if (
         rawMessage.toLowerCase().includes("tema") &&
@@ -362,18 +395,20 @@ ${budget.survivabilityScore}/100
 
 
     const completion =
-        await groq.chat.completions.create({
-            model: process.env.GROQ_MODEL,
-            messages: [
-                {
-                    role: "system",
-                    content: MASTER_SYSTEM_PROMPT
-                },
-                {
-                    role: "user",
-                   content: `
+    await groq.chat.completions.create({
+        model: process.env.GROQ_MODEL,
+        messages: [
+            {
+                role: "system",
+                content: MASTER_SYSTEM_PROMPT
+            },
+            {
+                role: "user",
+                content: `
 
 ${memoryContext}
+
+${timelineContext}
 
 ${maritimeFacts}
 
@@ -384,12 +419,12 @@ USER REQUEST:
 ${rawMessage}
 
 `
-                }
-            ]
-        });
+            }
+        ]
+    });
 
-    const reply =
-        completion.choices[0].message.content;
+const reply =
+    completion.choices[0].message.content;
 
 const importantTopics = [
     "voyage intelligence",
