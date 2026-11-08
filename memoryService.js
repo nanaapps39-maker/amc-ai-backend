@@ -79,10 +79,44 @@ function saveMemory(
 
   const db = loadDatabase();
 
-  db.users[userId] = {
-    ...memoryData,
-    updatedAt: new Date().toISOString()
-  };
+  if (!db.users[userId]) {
+    db.users[userId] = {};
+  }
+
+  if (!db.users[userId].history) {
+    db.users[userId].history = [];
+  }
+
+  db.users[userId].history.push({
+
+    timestamp: new Date().toISOString(),
+
+    role: memoryData.role,
+
+    lastTopic: memoryData.lastTopic,
+
+    lastModule: memoryData.lastModule,
+
+    lastSummary: memoryData.lastSummary
+
+  });
+
+  // Keep existing Memory Engine v1 compatibility
+
+  db.users[userId].role =
+    memoryData.role;
+
+  db.users[userId].lastTopic =
+    memoryData.lastTopic;
+
+  db.users[userId].lastModule =
+    memoryData.lastModule;
+
+  db.users[userId].lastSummary =
+    memoryData.lastSummary;
+
+  db.users[userId].updatedAt =
+    new Date().toISOString();
 
   saveDatabase(db);
 
@@ -101,6 +135,29 @@ function loadMemory(userId) {
     db.users[userId] || null
   );
 }
+
+
+// ------------------------------------
+// Memory Timeline
+// ------------------------------------
+
+function getMemoryTimeline(userId) {
+
+  const db = loadDatabase();
+
+  if (!db.users[userId]) {
+    return [];
+  }
+
+  const userMemory = db.users[userId];
+
+  if (!userMemory.history) {
+    return [];
+  }
+
+  return userMemory.history;
+}
+
 
 // ------------------------------------
 // Delete User Memory
