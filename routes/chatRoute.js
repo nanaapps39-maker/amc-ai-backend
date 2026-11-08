@@ -15,7 +15,8 @@ import {
     saveMemory,
     loadMemory,
     getMemoryTimeline,
-    searchMemory
+    searchMemory,
+    getMemoryByCategory
 } from "../memoryService.js";
 
 const router = express.Router();
@@ -241,6 +242,39 @@ if (
         }
     });
 }
+
+
+
+// ======================================================
+// MEMORY CATEGORY SEARCH
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().startsWith("/memory-category ")
+) {
+
+    const category =
+        rawMessage
+            .replace("/memory-category ", "")
+            .trim();
+
+    const results =
+        getMemoryByCategory(
+            userId,
+            category
+        );
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                results,
+                null,
+                2
+            )
+        }
+    });
+}
+
 
 
 

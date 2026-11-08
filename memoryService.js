@@ -87,19 +87,57 @@ function saveMemory(
     db.users[userId].history = [];
   }
 
-  db.users[userId].history.push({
+  let category = "GENERAL";
 
-    timestamp: new Date().toISOString(),
+if (
+  (memoryData.lastModule || "")
+    .toLowerCase()
+    .includes("voyage")
+) {
+  category = "VOYAGE";
+}
 
-    role: memoryData.role,
+else if (
+  (memoryData.lastModule || "")
+    .toLowerCase()
+    .includes("satcom")
+) {
+  category = "SATCOM";
+}
 
-    lastTopic: memoryData.lastTopic,
+else if (
+  (memoryData.lastModule || "")
+    .toLowerCase()
+    .includes("beam")
+) {
+  category = "SATCOM";
+}
 
-    lastModule: memoryData.lastModule,
+else if (
+  (memoryData.lastModule || "")
+    .toLowerCase()
+    .includes("memory")
+) {
+  category = "MEMORY";
+}
 
-    lastSummary: memoryData.lastSummary
+db.users[userId].history.push({
 
-  });
+  timestamp: new Date().toISOString(),
+
+  category: category,
+
+  role: memoryData.role,
+
+  lastTopic: memoryData.lastTopic,
+
+  lastModule: memoryData.lastModule,
+
+  lastSummary: memoryData.lastSummary
+
+});  
+
+
 
   // Keep existing Memory Engine v1 compatibility
 
@@ -190,6 +228,28 @@ function searchMemory(userId, keyword) {
 }
 
 
+// ------------------------------------
+// Memory Category Search
+// ------------------------------------
+
+function getMemoryByCategory(
+  userId,
+  category
+) {
+
+  const history =
+    getMemoryTimeline(userId);
+
+  return history.filter(entry =>
+
+    (entry.category || "")
+      .toLowerCase()
+      === category.toLowerCase()
+
+  );
+}
+
+
 
 // ------------------------------------
 // Delete User Memory
@@ -239,5 +299,6 @@ export {
   deleteMemory,
   continueSession,
   getMemoryTimeline,
-  searchMemory
+  searchMemory,
+  getMemoryByCategory
 };
