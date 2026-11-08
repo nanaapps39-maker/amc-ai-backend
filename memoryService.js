@@ -1,6 +1,6 @@
 // ======================================================
 // AMC Academy Tech AI R&D Labs
-// Memory Engine v1
+// Memory Engine v2
 // ======================================================
 
 import fs from "fs";
@@ -204,5 +204,6 @@ export {
   saveMemory,
   loadMemory,
   deleteMemory,
-  continueSession
+  continueSession,
+  getMemoryTimeline
 };
