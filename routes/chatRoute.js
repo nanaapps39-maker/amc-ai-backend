@@ -391,11 +391,31 @@ ${rawMessage}
     const reply =
         completion.choices[0].message.content;
 
+const importantTopics = [
+    "voyage intelligence",
+    "satcom",
+    "beam intelligence",
+    "future trends",
+    "gateway",
+    "bvlos",
+    "cybersecurity",
+    "link budget"
+];
+
 const shouldRemember =
+
     rawMessage.toLowerCase().includes("remember") ||
+
     rawMessage.toLowerCase().includes("my name is") ||
+
     rawMessage.toLowerCase().includes("i am") ||
-    rawMessage.toLowerCase().includes("i'm");
+
+    rawMessage.toLowerCase().includes("i'm") ||
+
+    importantTopics.some(
+        topic =>
+            rawMessage.toLowerCase().includes(topic)
+    );
 
 if (shouldRemember) {
 
