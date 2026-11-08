@@ -14,7 +14,8 @@ from "../linkBudget.js";
 import {
     saveMemory,
     loadMemory,
-    getMemoryTimeline
+    getMemoryTimeline,
+    searchMemory
 } from "../memoryService.js";
 
 const router = express.Router();
@@ -209,6 +210,38 @@ Return only the translation.
         }
     });
 }
+
+
+// ======================================================
+// MEMORY SEARCH ENGINE
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().startsWith("/memory-search ")
+) {
+
+    const keyword =
+        rawMessage
+            .replace("/memory-search ", "")
+            .trim();
+
+    const results =
+        searchMemory(
+            userId,
+            keyword
+        );
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                results,
+                null,
+                2
+            )
+        }
+    });
+}
+
 
 
 // ======================================================

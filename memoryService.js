@@ -1,6 +1,6 @@
 // ======================================================
 // AMC Academy Tech AI R&D Labs
-// Memory Engine v2
+// Memory Engine v2.1
 // ======================================================
 
 import fs from "fs";
@@ -160,6 +160,38 @@ function getMemoryTimeline(userId) {
 
 
 // ------------------------------------
+// Memory Search Engine
+// ------------------------------------
+
+function searchMemory(userId, keyword) {
+
+  const history =
+    getMemoryTimeline(userId);
+
+  return history.filter(entry =>
+
+    (entry.lastTopic || "")
+      .toLowerCase()
+      .includes(keyword.toLowerCase())
+
+    ||
+
+    (entry.lastModule || "")
+      .toLowerCase()
+      .includes(keyword.toLowerCase())
+
+    ||
+
+    (entry.lastSummary || "")
+      .toLowerCase()
+      .includes(keyword.toLowerCase())
+
+  );
+}
+
+
+
+// ------------------------------------
 // Delete User Memory
 // ------------------------------------
 
@@ -200,10 +232,12 @@ function continueSession(userId) {
   };
 }
 
+
 export {
   saveMemory,
   loadMemory,
   deleteMemory,
   continueSession,
-  getMemoryTimeline
+  getMemoryTimeline,
+  searchMemory
 };
