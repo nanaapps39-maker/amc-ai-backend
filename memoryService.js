@@ -250,6 +250,92 @@ function getMemoryByCategory(
 }
 
 
+// ------------------------------------
+// Knowledge Graph
+// ------------------------------------
+
+function addRelationship(
+  userId,
+  moduleName,
+  relatedModules
+) {
+
+  const db = loadDatabase();
+
+  if (!db.users[userId]) {
+    db.users[userId] = {};
+  }
+
+  if (!db.users[userId].knowledgeGraph) {
+    db.users[userId].knowledgeGraph = {};
+  }
+
+  db.users[userId].knowledgeGraph[moduleName] = {
+    related: relatedModules,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveDatabase(db);
+
+  return db.users[userId].knowledgeGraph[moduleName];
+}
+
+
+// ------------------------------------
+// Get Relationships
+// ------------------------------------
+
+function getRelationships(
+  userId,
+  moduleName
+) {
+
+  const db = loadDatabase();
+
+  if (
+    !db.users[userId] ||
+    !db.users[userId].knowledgeGraph
+  ) {
+    return null;
+  }
+
+  return (
+    db.users[userId]
+      .knowledgeGraph[moduleName] || null
+  );
+}
+
+
+// ------------------------------------
+// Search Related Modules
+// ------------------------------------
+
+function searchRelatedModules(
+  userId,
+  keyword
+) {
+
+  const db = loadDatabase();
+
+  if (
+    !db.users[userId] ||
+    !db.users[userId].knowledgeGraph
+  ) {
+    return [];
+  }
+
+  return Object.entries(
+    db.users[userId].knowledgeGraph
+  ).filter(([moduleName]) =>
+
+    moduleName
+      .toLowerCase()
+      .includes(
+        keyword.toLowerCase()
+      )
+  );
+}
+
 
 // ------------------------------------
 // Delete User Memory
@@ -300,5 +386,8 @@ export {
   continueSession,
   getMemoryTimeline,
   searchMemory,
-  getMemoryByCategory
+  getMemoryByCategory,
+  addRelationship,
+  getRelationships,
+  searchRelatedModules
 };

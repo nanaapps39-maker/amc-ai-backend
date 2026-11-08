@@ -16,7 +16,10 @@ import {
     loadMemory,
     getMemoryTimeline,
     searchMemory,
-    getMemoryByCategory
+    getMemoryByCategory,
+    addRelationship,
+    getRelationships,
+    searchRelatedModules
 } from "../memoryService.js";
 
 const router = express.Router();
@@ -276,6 +279,125 @@ if (
 }
 
 
+
+// ======================================================
+// KNOWLEDGE GRAPH - ADD RELATION
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().startsWith("/add-relation ")
+) {
+
+    const payload =
+        rawMessage.replace(
+            "/add-relation ",
+            ""
+        );
+
+    const parts =
+        payload.split("|");
+
+    if (parts.length < 2) {
+
+        return res.json({
+            payload: {
+                reply:
+                    "Usage: /add-relation Module|Relation1,Relation2"
+            }
+        });
+    }
+
+    const moduleName =
+        parts[0].trim();
+
+    const relatedModules =
+        parts[1]
+            .split(",")
+            .map(item => item.trim());
+
+    const result =
+        addRelationship(
+            userId,
+            moduleName,
+            relatedModules
+        );
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                result,
+                null,
+                2
+            )
+        }
+    });
+}
+
+
+
+// ======================================================
+// KNOWLEDGE GRAPH - MODULE RELATIONS
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().startsWith("/module-relations ")
+) {
+
+    const moduleName =
+        rawMessage.replace(
+            "/module-relations ",
+            ""
+        ).trim();
+
+    const result =
+        getRelationships(
+            userId,
+            moduleName
+        );
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                result,
+                null,
+                2
+            )
+        }
+    });
+}
+
+
+
+// ======================================================
+// KNOWLEDGE GRAPH - SEARCH
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().startsWith("/related-modules ")
+) {
+
+    const keyword =
+        rawMessage.replace(
+            "/related-modules ",
+            ""
+        ).trim();
+
+    const result =
+        searchRelatedModules(
+            userId,
+            keyword
+        );
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                result,
+                null,
+                2
+            )
+        }
+    });
+}
 
 
 // ======================================================
