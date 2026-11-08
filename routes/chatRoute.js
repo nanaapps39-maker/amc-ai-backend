@@ -419,24 +419,42 @@ const shouldRemember =
 
 if (shouldRemember) {
 
+    let detectedModule = "General";
+
+    if (rawMessage.toLowerCase().includes("voyage intelligence")) {
+        detectedModule = "Voyage Intelligence v1";
+    }
+    else if (rawMessage.toLowerCase().includes("satcom")) {
+        detectedModule = "SATCOM Diagnostics";
+    }
+    else if (rawMessage.toLowerCase().includes("beam intelligence")) {
+        detectedModule = "Beam Intelligence";
+    }
+    else if (rawMessage.toLowerCase().includes("future trends")) {
+        detectedModule = "Future Trends Engine";
+    }
+    else if (rawMessage.toLowerCase().includes("bvlos")) {
+        detectedModule = "BVLOS Engine";
+    }
+
     saveMemory(
         userId,
         {
             role: "satcom_engineer",
             lastTopic: rawMessage,
-            lastModule: "AMC Chat Session",
+            lastModule: detectedModule,
             lastSummary: reply.substring(0, 500)
         }
     );
 }
 
-    return res.json(
-        buildV31Response(
-            "chat",
-            { reply },
-            1.0
-        )
-    );
+return res.json(
+    buildV31Response(
+        "chat",
+        { reply },
+        1.0
+    )
+);
 
 } catch (err) {
 
