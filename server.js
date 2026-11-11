@@ -54,6 +54,12 @@ import compliance from "./middlewarecompliance.js";
 // ⭐ Renderer v3.1 Wrapper (PLACE IT HERE)
 import { buildV31Response } from "./rendererMode.js";
 
+// 🌍 World Clock Service
+import {
+  worldClock,
+  getGlobalWorldClock
+} from "./services/worldClockService.js";
+
 // ⭐ SATCOM ROUTES (ESM-SAFE IMPORT)
 import satcomRoutes from "./routes/satcomRoutes.js";
 
@@ -1094,42 +1100,6 @@ async function applyUpgrade(manifest) {
   console.log(`[UPGRADE] Completed version ${manifest.version}`);
 }
 
-// ===============================
-// 🌍 GLOBAL WORLD CLOCK
-// ===============================
-const worldClock = () => new Date().toISOString();
-
-export function getGlobalWorldClock() {
-  const now = new Date();
-
-  return {
-    utc: now.toISOString(),
-
-    london: now.toLocaleString("en-GB", {
-      timeZone: "Europe/London"
-    }),
-
-    accra: now.toLocaleString("en-GB", {
-      timeZone: "Africa/Accra"
-    }),
-
-    dubai: now.toLocaleString("en-GB", {
-      timeZone: "Asia/Dubai"
-    }),
-
-    singapore: now.toLocaleString("en-GB", {
-      timeZone: "Asia/Singapore"
-    }),
-
-    tokyo: now.toLocaleString("en-GB", {
-      timeZone: "Asia/Tokyo"
-    }),
-
-    newYork: now.toLocaleString("en-US", {
-      timeZone: "America/New_York"
-    })
-  };
-}
 
 // ===============================
 // Basic Security Headers

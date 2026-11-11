@@ -22,6 +22,10 @@ import {
     searchRelatedModules
 } from "../memoryService.js";
 
+import {
+    getGlobalWorldClock
+} from "../services/worldClockService.js";
+
 const router = express.Router();
 
 // ======================================================
@@ -398,6 +402,52 @@ if (
         }
     });
 }
+
+
+
+// ======================================================
+// 🌍 GLOBAL WORLD CLOCK
+// ======================================================
+
+if (
+    rawMessage.toLowerCase().includes("world clock") ||
+    rawMessage.toLowerCase().includes("utc time") ||
+    rawMessage.toLowerCase().includes("global clock") ||
+    rawMessage.toLowerCase().includes("current time")
+) {
+
+    const clock = getGlobalWorldClock();
+
+    return res.json({
+        payload: {
+            reply: `
+🌍 Global World Clock
+
+UTC:
+${clock.utc}
+
+London:
+${clock.london}
+
+Accra:
+${clock.accra}
+
+Dubai:
+${clock.dubai}
+
+Singapore:
+${clock.singapore}
+
+Tokyo:
+${clock.tokyo}
+
+New York:
+${clock.newYork}
+`
+        }
+    });
+}
+
 
 
 // ======================================================
