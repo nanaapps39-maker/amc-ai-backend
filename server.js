@@ -2443,6 +2443,10 @@ if (isFutureTrendRequest) {
     ) {
       const match = userMessage.match(/AMC-PRO-[A-Z0-9]+/i);
       const key = match ? match[0].trim() : "";
+
+      console.log("PRO KEY REQUEST:", userMessage);
+      console.log("EXTRACTED KEY:", key);
+
       const result = validateProKey(key);
 
       if (!result) {

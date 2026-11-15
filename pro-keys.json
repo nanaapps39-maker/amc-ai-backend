@@ -32,12 +32,12 @@
     "expiry_at": "2026-09-10T23:59:59Z"
   },
   {
-    "key": "AMC-0CF468C9A240",
-    "type": "customer",
-    "seats": 1,
-    "email": "francis.adams@example.com",
-    "active": true,
-    "created_at": "2026-11-15T14:04:00Z",
-    "expiry_at": "2026-12-15T23:59:59Z"
+  "key": "AMC-PRO-55ADA7B6",
+  "type": "customer",
+  "seats": 1,
+  "email": "francis.adams@example.com",
+  "active": true,
+  "created_at": "2026-11-15T14:04:00Z",
+  "expiry_at": "2026-12-15T23:59:59Z"
   }
 ]
