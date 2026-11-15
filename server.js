@@ -2436,11 +2436,8 @@ if (isFutureTrendRequest) {
       .replace(/&nbsp;/g, " ")
       .trim();
 
-    if (
-      lower.includes("validate") &&
-      lower.includes("pro") &&
-      lower.includes("key")
-    ) {
+    if (/AMC-PRO-[A-Z0-9]+/i.test(userMessage)) {
+
       const match = userMessage.match(/AMC-PRO-[A-Z0-9]+/i);
       const key = match ? match[0].trim() : "";
 
@@ -2448,6 +2445,8 @@ if (isFutureTrendRequest) {
       console.log("EXTRACTED KEY:", key);
 
       const result = validateProKey(key);
+
+      console.log("VALIDATION RESULT:", result);
 
       if (!result) {
         return res.json(
