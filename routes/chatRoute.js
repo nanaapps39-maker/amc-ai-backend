@@ -503,6 +503,42 @@ if (
 
 
 // ======================================================
+// PORT INTELLIGENCE AUTO ROUTING
+// ======================================================
+
+const portCodeMatch =
+    rawMessage.match(/\b[A-Z]{5}\b/);
+
+if (
+    (
+        rawMessage.toLowerCase().includes("port") ||
+        rawMessage.toLowerCase().includes("unlocode") ||
+        rawMessage.toLowerCase().includes("port code")
+    ) &&
+    portCodeMatch
+) {
+
+    const code = portCodeMatch[0];
+
+    const response = await fetch(
+        `https://amc-ai-backend-1.onrender.com/ports/code/${code}`
+    );
+
+    const data = await response.json();
+
+    return res.json({
+        payload: {
+            reply: JSON.stringify(
+                data,
+                null,
+                2
+            )
+        }
+    });
+}
+
+
+// ======================================================
 // 3️⃣ NORMAL AI CHAT — GROQ MODEL
 // ======================================================
 try {
