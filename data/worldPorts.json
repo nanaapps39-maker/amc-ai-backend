@@ -82808,5 +82808,19 @@
   "unlocode": "GHTEM",
   "lat": 5.6333,
   "lon": 0.0167
-}
-]
+  },
+  {
+  "portName": "Southampton",
+  "country": "GB",
+  "unlocode": "GBSOU",
+  "lat": 50.9,
+  "lon": -1.4
+  },
+  {
+  "portName": "Felixstowe",
+  "country": "GB",
+  "unlocode": "GBFXT",
+  "lat": 51.95,
+  "lon": 1.32
+  }
+  ]
