@@ -2427,7 +2427,7 @@ if (isFutureTrendRequest) {
   );
 }
  
-   // ===============================
+    // ===============================
     // PRO KEY VALIDATION (DIRECT CALL)
     // ===============================
     const lower = userMessage
@@ -2441,7 +2441,8 @@ if (isFutureTrendRequest) {
       lower.includes("pro") &&
       lower.includes("key")
     ) {
-      const key = userMessage.split(" ").pop().trim();
+      const match = userMessage.match(/AMC-PRO-[A-Z0-9]+/i);
+      const key = match ? match[0].trim() : "";
       const result = validateProKey(key);
 
       if (!result) {
@@ -2467,7 +2468,7 @@ if (isFutureTrendRequest) {
       }
 
       // ⭐ ACTIVE CHECK
-      if (result.payload.active === false) {
+      if (result.payload.status !== "active") {
         return res.json(
           buildV31Response(
             "chat",
@@ -2481,7 +2482,12 @@ if (isFutureTrendRequest) {
         buildV31Response(
           "chat",
           {
-            reply: `✔ Pro Key Active\nAssigned To: ${result.payload.assignedTo || result.payload.email || result.payload.user || "Unknown"}`
+            reply: `✔ Pro Key Active
+
+            Email: ${result.payload.email}
+            Type: ${result.payload.type}
+            Seats: ${result.payload.seats}
+            Expiry: ${result.payload.expiry_at || "No Expiry"}`
           },
           1.0
         )
