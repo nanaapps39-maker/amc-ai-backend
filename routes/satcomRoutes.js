@@ -36,6 +36,14 @@ ${data.severity || "Not Assessed"}
 Recommended Fix
 ${data.recommendedFix || "No recommendation provided."}
 
+Evidence
+
+${
+    Array.isArray(data.evidence) && data.evidence.length > 0
+        ? data.evidence.map(item => `• ${item}`).join("\n")
+        : "No supporting evidence available."
+}
+
 RF Chain Assessment
 
 • Antenna Pointing: ${Math.round((scores.antenna_pointing || 0) * 100)}%
