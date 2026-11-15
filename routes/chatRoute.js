@@ -449,6 +449,58 @@ ${clock.newYork}
 }
 
 
+// ======================================================
+// SATCOM AUTO ROUTING
+// ======================================================
+
+if (
+
+    rawMessage.toLowerCase().includes("rain fade") ||
+
+    rawMessage.toLowerCase().includes("ber") ||
+
+    rawMessage.toLowerCase().includes("link margin") ||
+
+    rawMessage.toLowerCase().includes("gyro") ||
+
+    rawMessage.toLowerCase().includes("tracking alarm") ||
+
+    rawMessage.toLowerCase().includes("tracking alarms") ||
+
+    rawMessage.toLowerCase().includes("modem reset") ||
+
+    rawMessage.toLowerCase().includes("voltage fluctuation") ||
+
+    rawMessage.toLowerCase().includes("power warning") ||
+
+    rawMessage.toLowerCase().includes("carrier acquisition")
+
+) {
+
+    const response = await fetch(
+        "https://amc-ai-backend-1.onrender.com/satcom/reason",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: rawMessage,
+                module: "satcom"
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    return res.json({
+        payload: {
+            reply: data.result || JSON.stringify(data, null, 2)
+        }
+    });
+}
+
+
 
 // ======================================================
 // 3️⃣ NORMAL AI CHAT — GROQ MODEL
