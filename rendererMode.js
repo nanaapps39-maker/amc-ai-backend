@@ -11,12 +11,41 @@ export function setRendererMode(mode) {
     currentMode = mode;
 }
 
+
+// =====================================================
+// Renderer v3.2 Sanitizer Layer
+// =====================================================
+
+function sanitizeOutput(text = "") {
+
+    return text
+        .replace(/<br\s*\/?>/gi, "\n")
+
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&nbsp;/g, " ")
+
+        .replace(/<\/?[^>]+>/g, "")
+
+        .replace(/^\s*-\s*/gm, "• ")
+        .replace(/^\s*\*\s*/gm, "• ")
+
+        .replace(/^\|[-\s|:]+\|$/gm, "")
+
+        .replace(/\n{3,}/g, "\n\n")
+
+        .trim();
+}
+
 function renderSimple(message) {
     return {
         mode: "simple",
-        output: message.toString(),
+        output: sanitizeOutput(
+            message?.toString() || ""
+        ),
         formatting: {
-            markdown: true,
+            markdown: false,
             sections: false,
             spacing: "compact",
             style: "basic"
@@ -24,12 +53,17 @@ function renderSimple(message) {
     };
 }
 
+
+
+
 function renderMinimal(message) {
     return {
         mode: "minimal",
-        output: message.toString(),
+        output: sanitizeOutput(
+            message?.toString() || ""
+        ),
         formatting: {
-            markdown: true,
+            markdown: false,
             sections: true,
             spacing: "medium",
             style: "professional-minimal"
@@ -39,11 +73,16 @@ function renderMinimal(message) {
 
 // ⭐ Upgraded Professional Renderer (Backend-Only)
 function renderProfessional(message) {
+
+    const cleanedMessage = sanitizeOutput(
+        message?.toString() || ""
+    );
+
     return {
         mode: "professional",
-        output: message.toString(),
+        output: cleanedMessage,
         formatting: {
-            markdown: true,
+            markdown: false,
             sections: true,
             spacing: "wide",
             style: "professional",
