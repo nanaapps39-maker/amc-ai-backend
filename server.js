@@ -5628,7 +5628,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ ICO Compliance: ACTIVE (ZC236313)");
   console.log("✔ GDPR Mode: ENABLED");
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
-  console.log("✔ Renderer v3.1 Mode: Professional Edition");
+  console.log("✔     Renderer v3.2  Professional  Sanitisation  Engine: ACTIVE");
 
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
 
