@@ -4,7 +4,7 @@
 // ======================================================
 // AMC Academy Tech AI Backend
 // Upgrade Build: OEM BVLOS Controller + SATCOM Engine + Multi-Link Failover
-// Deployment: Render Cloud — November 16, 2026
+// Deployment: Render Cloud — November 17, 2026
 // AMC Academy Tech AI R&D Labs
 // ======================================================
 
@@ -5628,8 +5628,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("✔ ICO Compliance: ACTIVE (ZC236313)");
   console.log("✔ GDPR Mode: ENABLED");
   console.log("✔ Data Controller: Apps Maritime Consultancy Ltd");
-  console.log("✔     Renderer v3.2  Professional  Sanitisation  Engine: ACTIVE");
-
+  console.log("✔ Renderer  v3.2  Professional  Sanitisation Engine: ACTIVE");
   console.log("✔ Future Trends Engine: READY (Phase 6 Structure)");
 
   console.log(
