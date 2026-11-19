@@ -26,17 +26,25 @@ function sanitizeOutput(text = "") {
         .replace(/&amp;/g, "&")
         .replace(/&nbsp;/g, " ")
 
+        // Remove strong tags
+        .replace(/<strong[^>]*>/gi, "")
+        .replace(/<\/strong>/gi, "")
+
+        // Remove all remaining HTML tags
         .replace(/<\/?[^>]+>/g, "")
 
+        // Convert markdown bullets
         .replace(/^\s*-\s*/gm, "• ")
         .replace(/^\s*\*\s*/gm, "• ")
 
-        .replace(/^\|[-\s|:]+\|$/gm, "")
+        // Remove markdown tables
+        .replace(/^\|.*\|$/gm, "")
 
         .replace(/\n{3,}/g, "\n\n")
 
         .trim();
 }
+
 
 function renderSimple(message) {
     return {
